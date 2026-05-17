@@ -47,7 +47,6 @@ def init_db():
             forma027 TEXT DEFAULT ""
         )
     ''')
-    # Köhnə bazaya manualFileData sütunu yoxdursa əlavə et
     try:
         cursor.execute("ALTER TABLE applications ADD COLUMN manualFileData TEXT DEFAULT ''")
         conn.commit()
@@ -70,10 +69,6 @@ class DecisionUpdate(BaseModel):
 @app.get("/")
 async def root():
     return FileResponse("index.html")
-
-@app.get("/{page}.html")
-async def get_html(page: str):
-    return FileResponse(f"{page}.html")
 
 @app.get("/image.png")
 async def get_image():
@@ -150,7 +145,6 @@ async def update_decision(data: DecisionUpdate):
     cursor = conn.cursor()
 
     if data.manualFileData:
-        # Fayl yüklənibsə, onu da saxla
         cursor.execute('''
             UPDATE applications
             SET decisionStatus = ?, educationForm = ?, notes = ?, expiryDate = ?,
@@ -183,14 +177,9 @@ try:
 except Exception:
     pass
 
-from fastapi import FastAPI
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
-
-app = FastAPI()
-
-app.mount("/static", StaticFiles(directory="."), name="static")
-
-@app.get("/")
-def home():
-    return FileResponse("index.html")
+@app.get("/{page}.html")
+async def get_html(page: str):
+    file_path = f"{page}.html"
+    if os.path.exists(file_path):
+        return FileResponse(file_path)
+    return {"detail": "Not Found"}
