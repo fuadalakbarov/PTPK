@@ -184,9 +184,13 @@ except Exception:
     pass
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
+app.mount("/static", StaticFiles(directory="."), name="static")
+
 @app.get("/")
 def home():
-    return {"message": "PTPK works"}
+    return FileResponse("index.html")
