@@ -33,7 +33,6 @@
         }
         .app-window { display: flex; width: 100%; max-width: 1650px; height: 85vh; background: #ffffff; border-radius: 16px; border: 2px solid var(--border-window); box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3); overflow: hidden; }
         
-        /* 🔒 İzolyasiya olunmuş sol menyu */
         .nav-sidebar { width: 80px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 25px 0; background: #ffffff; border-right: 2px solid var(--border-window); flex-shrink: 0; }
         .nav-item { width: 48px; height: 48px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: #ffffff; font-size: 18px; background: var(--brand-blue); border: 2px solid var(--brand-blue); cursor: default; }
         
@@ -135,7 +134,7 @@
                     <option value="Gəncə şəhər 7 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 7 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər M.P.Vaqif adına 8 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.P.Vaqif adına 8 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər 9 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 9 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər M.Hadi adına 10 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər  M.Hadi adına 10 nömrəli tam orta ümumtəhsil məktəbi</option>
+                    <option value="Gəncə şəhər M.Hadi adına 10 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Hadi adına 10 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər N.Gəncəvi adına 11 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər N.Gəncəvi adına 11 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər V.Əliyev adına 12 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər V.Əliyev adına 12 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər H.Əliyev adına 13 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər H.Əliyev adına 13 nömrəli tam orta ümumtəhsil məktəbi</option>
@@ -442,28 +441,37 @@ function getStatusPillClass(status) {
 
 async function loadCommissionTable() {
     const tableBody = document.getElementById('table-data-body');
-    if(!tableBody) return;
+    if (!tableBody) return;
     tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Yüklənir...</td></tr>';
 
     let data = [];
     try {
         const res = await fetch('/api/komissiya/get-applications');
+        if (!res.ok) throw new Error('Server xətası: ' + res.status);
         data = await res.json();
+        if (!Array.isArray(data)) throw new Error('Yanlış cavab formatı');
     } catch(e) {
-        tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:red;">&#9888;&#65039; Serverə qoşulmaq mümkün olmadı. Python serveri işlədiyindən əmin olun.</td></tr>';
+        tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:red;">
+            &#9888; Serverə qoşulmaq mümkün olmadı: ${e.message}
+            <br><small style="color:#94a3b8;">Səhifəni yeniləyin və ya Render servisinin aktiv olduğunu yoxlayın.</small>
+        </td></tr>`;
         return;
     }
 
-    if(data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">Cədvəldə məlumat yoxdur. Sənəd göndərin və ya əllə yazın.</td></tr>`;
+    if (data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-muted);">
+            Cədvəldə məlumat yoxdur. Sənəd göndərin və ya əllə yazın.
+        </td></tr>`;
         return;
     }
 
     let grouped = {};
     data.forEach(app => {
-        if(!grouped[app.schoolText]) grouped[app.schoolText] = [];
+        if (!grouped[app.schoolText]) grouped[app.schoolText] = [];
         grouped[app.schoolText].push(app);
     });
+
+    tableBody.innerHTML = '';
 
     for (let school in grouped) {
         let schoolRow = document.createElement('tr');
@@ -474,7 +482,7 @@ async function loadCommissionTable() {
         grouped[school].forEach(app => {
             let tr = document.createElement('tr');
             tr.className = "student-row";
-            if(selectedAppId === app.id) tr.classList.add('active');
+            if (selectedAppId === app.id) tr.classList.add('active');
             tr.onclick = function() { selectStudent(app, tr); };
 
             let statusClass = getStatusPillClass(app.decisionStatus);
@@ -492,7 +500,7 @@ async function loadCommissionTable() {
                     </button>
                 </td>
                 <td style="text-align:center;">
-                    <button style="border:none; background:none; cursor:pointer;" onclick="event.stopPropagation(); deleteStudent('${app.id}')">
+                    <button style="border:none;background:none;cursor:pointer;" onclick="event.stopPropagation(); deleteStudent('${app.id}')">
                         <i class="fa-solid fa-trash-can" style="color:var(--danger-red);"></i>
                     </button>
                 </td>
@@ -506,16 +514,14 @@ async function addStudentManually() {
     const name = document.getElementById('manual-name').value.trim();
     const fin = document.getElementById('manual-fin').value.trim().toUpperCase();
     const schoolSelect = document.getElementById('manual-school');
-    const schoolValue = schoolSelect.value;
     const schoolText = schoolSelect.options[schoolSelect.selectedIndex].text;
     
     const year = document.getElementById('manual-year').value;
-    const docStatus = document.getElementById('manual-doc').value;
     const decisionStatus = document.getElementById('manual-status').value;
     const expiryInput = document.getElementById('manual-expiry').value;
     const educationForm = document.getElementById('manual-form').value;
 
-    if(!name || !fin) {
+    if (!name || !fin) {
         alert("Zəhmət olmasa şagirdin adını və FİN kodunu yazın!");
         return;
     }
@@ -537,9 +543,7 @@ async function addStudentManually() {
     formData.append('forma027', emptyBlob, 'bos.txt');
 
     try {
-        const res = await fetch('/api/school/submit-student', {
-            method: 'POST', body: formData
-        });
+        const res = await fetch('/api/school/submit-student', {method: 'POST', body: formData});
         if (res.ok) {
             const result = await res.json();
             await fetch('/api/komissiya/update-decision', {
@@ -552,21 +556,24 @@ async function addStudentManually() {
             document.getElementById('manual-expiry').value = "";
             document.getElementById('manual-form').value = "-";
             await loadCommissionTable();
-        } else { alert("⚠️ Server xətası."); }
-    } catch(e) { alert("⚠️ Serverə qoşulmaq mümkün olmadı!"); }
+        } else {
+            alert("⚠️ Server xətası.");
+        }
+    } catch(e) {
+        alert("⚠️ Serverə qoşulmaq mümkün olmadı!");
+    }
 }
 
 function handleManualFile(input) {
     const file = input.files[0];
     if (!file) return;
-
     uploadedFileName = file.name;
     const reader = new FileReader();
     reader.onload = function(e) {
         const result = e.target.result;
         const sizeKB = Math.round((result.length * 2) / 1024);
         if (sizeKB > 3000) {
-            alert("⚠️ Fayl həddən böyükdür (" + sizeKB + " KB). LocalStorage limiti 5MB-dır. Kiçik həcmli PDF istifadə edin, əks halda saxlanılmaya bilər.");
+            alert("⚠️ Fayl həddən böyükdür (" + sizeKB + " KB). Kiçik həcmli PDF istifadə edin.");
         }
         uploadedFileBase64 = result;
         const infoLabel = document.getElementById('file-info-label');
@@ -587,19 +594,17 @@ function selectStudent(app, rowElement) {
 
     document.getElementById('panel-name').innerText = app.name + " (" + app.fin + ")";
     document.getElementById('panel-school').innerText = app.schoolText;
-    
     document.getElementById('text-notes').value = app.notes || "";
     document.getElementById('select-status').value = app.decisionStatus || "Gözləmədə";
     document.getElementById('select-form').value = app.educationForm !== "-" ? app.educationForm : "Evdə təhsil (Ümumi proqram)";
     document.getElementById('decision-expiry-date').value = app.expiryDate && app.expiryDate !== "-" ? app.expiryDate.split('.').reverse().join('-') : "";
 
-    // Fayl yükləmə sahəsini sıfırla
     uploadedFileBase64 = app.manualFileData || null;
     uploadedFileName = app.manualFileName || null;
     document.getElementById('manual-file-upload').value = "";
     
     const infoLabel = document.getElementById('file-info-label');
-    if(app.hasManualFile) {
+    if (app.hasManualFile) {
         infoLabel.innerText = "Sistemdə fayl var: " + app.manualFileName;
         infoLabel.style.display = "block";
         document.getElementById('upload-status-text').style.display = "none";
@@ -626,7 +631,6 @@ async function saveCommissionDecision() {
         expiryDate: expiryDate
     };
 
-    // Yüklənmiş fayl varsa, onu da serverə göndər
     if (uploadedFileBase64) {
         payload.manualFileData = uploadedFileBase64;
         payload.manualFileName = uploadedFileName;
@@ -645,7 +649,7 @@ async function saveCommissionDecision() {
             alert("⚠️ Server xətası. Qərar yazılmadı.");
         }
     } catch(e) {
-        alert("⚠️ Serverə qoşulmaq mümkün olmadı! Python serveri işlədiyindən əmin olun.");
+        alert("⚠️ Serverə qoşulmaq mümkün olmadı!");
     }
 }
 
@@ -660,10 +664,9 @@ async function downloadDecisionPDF(id) {
         return;
     }
 
-    if(!app) { alert("⚠️ Məlumat tapılmadı!"); return; }
+    if (!app) { alert("⚠️ Məlumat tapılmadı!"); return; }
 
-    // Əgər ekspert əllə xüsusi skan sənəd yükləyibsə, birbaşa həmin sənədi endirir
-    if(app.hasManualFile && app.manualFileData) {
+    if (app.hasManualFile && app.manualFileData) {
         const link = document.createElement("a");
         link.href = app.manualFileData;
         link.download = "Rəsmi_Qərar_" + app.manualFileName;
@@ -671,9 +674,7 @@ async function downloadDecisionPDF(id) {
         return;
     }
 
-    // Əgər əllə yüklənən sənəd yoxdursa, avtomatlaşdırılmış mətn generasiya edilir
-    const pdfContent = `
-==================================================
+    const pdfContent = `==================================================
         PSİXOLOJİ-TİBBİ-PEDAQOJİ KOMİSSİYA
           GƏNCƏ-DAŞKƏSƏN REGİONAL TƏHSİL İDARƏSİ
 ==================================================
@@ -703,11 +704,11 @@ Sistem tərəfindən rəqəmsal olaraq təsdiqlənmişdir.
 }
 
 async function deleteStudent(id) {
-    if(confirm("Məlumatı silmək istəyirsiniz?")) {
+    if (confirm("Məlumatı silmək istəyirsiniz?")) {
         try {
             await fetch('/api/komissiya/delete-application?id=' + id, {method: 'DELETE'});
         } catch(e) {}
-        if(selectedAppId === id) {
+        if (selectedAppId === id) {
             selectedAppId = null;
             document.getElementById('sidebar-default-msg').style.display = "block";
             document.getElementById('sidebar-actual-content').style.display = "none";
@@ -720,16 +721,22 @@ async function exportAllExcel() {
     let data = [];
     try {
         const res = await fetch('/api/komissiya/get-applications');
+        if (!res.ok) throw new Error('Server xətası');
         data = await res.json();
-    } catch(e) {}
+        if (!Array.isArray(data)) throw new Error('Yanlış cavab');
+    } catch(e) {
+        alert("⚠️ Məlumat alınmadı: " + e.message);
+        return;
+    }
+
     if (data.length === 0) { alert("Cədvəldə məlumat yoxdur!"); return; }
 
     const headers = ['Şagirdin S.A.A. (FİN)', 'Tədris İli', 'Sənəd Statusu', 'Qərar Statusu', 'Müddət', 'Təhsil Forması', 'Məktəb'];
+    
     let html = '<table border="1"><thead><tr>' +
         headers.map(h => `<th style="background:#0f172a;color:#fff;font-weight:bold;padding:6px 10px;">${h}</th>`).join('') +
         '</tr></thead><tbody>';
 
-    // Group by school
     let grouped = {};
     data.forEach(app => {
         if (!grouped[app.schoolText]) grouped[app.schoolText] = [];
@@ -752,12 +759,19 @@ async function exportAllExcel() {
     }
     html += '</tbody></table>';
 
+    // UTF-8 BOM ilə düzgün Azərbaycan hərfləri
+    const fullHtml = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">' +
+        '<head><meta charset="UTF-8"></head><body>' + html + '</body></html>';
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + fullHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = 'data:application/vnd.ms-excel,﻿' + encodeURIComponent(html);
+    a.href = url;
     a.download = 'PTPK_Komissiya_Siyahisi.xls';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
 
 function filterStudents() {
