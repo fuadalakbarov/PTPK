@@ -1,1 +1,109 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTPK | İcazəli İstifadəçi Siyahısı (Admin)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: #f4f6f9; color: #333; padding: 40px 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px; margin-bottom: 25px; }
+        .header h1 { font-size: 24px; color: #1e293b; }
+        .logout-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+        .logout-btn:hover { background: #dc2626; }
+        .form-group { display: flex; gap: 15px; margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        input, select { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
+        input[type="email"] { flex: 2; }
+        input[type="text"] { flex: 1; }
+        select { flex: 0.5; }
+        .add-btn { background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .add-btn:hover { background: #1d4ed8; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        th { background-color: #f8fafc; color: #64748b; font-weight: 600; }
+        tr:hover { background-color: #fcfdfe; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .badge.admin { background: #dbeafe; color: #1e40af; }
+        .badge.user { background: #e2e8f0; color: #334155; }
+        .delete-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-weight: 500; }
+        .delete-btn:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
 
+<div class="container">
+    <div class="header">
+        <h1>🔐 PTPK Giriş İcazələri İdarəetmə Paneli</h1>
+        <button class="logout-btn" onclick="logout()">Çıxış</button>
+    </div>
+
+    <div class="form-group">
+        <input type="email" id="newEmail" placeholder="Gmail ünvanı">
+        <input type="text" id="newName" placeholder="Ad, Soyad (könüllü)">
+        <select id="newRole">
+            <option value="user">İstifadəçi (Məktəb)</option>
+            <option value="admin">Admin (İdarə)</option>
+        </select>
+        <button class="add-btn" onclick="addEmail()">Əlavə Et</button>
+    </div>
+
+    <table id="emailsTable">
+        <thead>
+            <tr>
+                <th>Gmail</th>
+                <th>Ad / Soyad</th>
+                <th>Rol</th>
+                <th>Əməliyyat</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            </tbody>
+    </table>
+</div>
+
+<script>
+    const token = localStorage.getItem('ptpk_token');
+    const role = localStorage.getItem('ptpk_role');
+
+    if (!token || role !== 'admin') {
+        alert('Bu panelə giriş icazəniz yoxdur!');
+        window.location.href = '/login.html';
+    }
+
+    function renderTable() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = `
+            <tr>
+                <td>fuad.pennsl@gmail.com</td>
+                <td>Fuad Ələkbərov</td>
+                <td><span class="badge admin">admin</span></td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>ptpk.portal@gmail.com</td>
+                <td>PTPK Sistem</td>
+                <td><span class="badge user">user</span></td>
+                <td><button class="delete-btn" onclick="alert('İlkin istifadəçi silinə bilməz')">Sil</button></td>
+            </tr>
+        `;
+    }
+
+    function addEmail() {
+        const email = document.getElementById('newEmail').value.trim();
+        if(!email) { alert('Gmail ünvanı mütləqdir!'); return; }
+        alert('İstifadəçi uğurla əlavə edildi!');
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login.html';
+    }
+
+    window.onload = renderTable;
+</script>
+</body>
+</html>
