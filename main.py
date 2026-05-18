@@ -1,7 +1,7 @@
-import sqlite3
 import os
-import shutil
 import time
+import shutil
+import httpx
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -19,43 +19,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-DB_NAME = "ptpk.db"
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-def init_db():
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS applications (
-            id TEXT PRIMARY KEY,
-            fin TEXT, name TEXT, schoolText TEXT, schoolValue TEXT,
-            type TEXT, year TEXT,
-            docStatus TEXT DEFAULT "Tam Sənəd",
-            decisionStatus TEXT DEFAULT "Gözləmədə",
-            expiryDate TEXT DEFAULT "-",
-            educationForm TEXT DEFAULT "-",
-            notes TEXT DEFAULT "",
-            hasManualFile INTEGER DEFAULT 0,
-            manualFileName TEXT DEFAULT "",
-            manualFileData TEXT DEFAULT "",
-            coverLetter TEXT DEFAULT "",
-            residenceCertificate TEXT DEFAULT "",
-            xasiyyetname TEXT DEFAULT "",
-            idCopies TEXT DEFAULT "",
-            tabel TEXT DEFAULT "",
-            forma027 TEXT DEFAULT ""
-        )
-    ''')
-    try:
-        cursor.execute("ALTER TABLE applications ADD COLUMN manualFileData TEXT DEFAULT ''")
-        conn.commit()
-    except Exception:
-        pass
-    conn.commit()
-    conn.close()
-
-init_db()
+# Supabase konfiqurasiyası
+SUPABASE_URL = "https://vlyuxgtwvfgbwaysbymv.supabase.co/rest/v1"
+SUPABASE_KEY = "sb_publishable_ypvms5773MfwuTMLrKnuXg_ExSAH6KX"
+HEADERS = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": f"Bearer {SUPABASE_KEY}",
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+}
 
 class DecisionUpdate(BaseModel):
     id: str
@@ -107,69 +82,72 @@ async def submit_student(
     f_tab   = save_file(tabel, "tabel")
     f_027   = save_file(forma027, "forma027")
 
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute('''
-        INSERT INTO applications
-        (id, fin, name, schoolText, schoolValue, type, year,
-         docStatus, decisionStatus, expiryDate, educationForm, notes,
-         hasManualFile, manualFileName, manualFileData,
-         coverLetter, residenceCertificate, xasiyyetname, idCopies, tabel, forma027)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-    ''', (
-        app_id, finCode.upper(), studentName,
-        schoolSelect, schoolSelect,
-        applicationType + " Müraciət",
-        academicYear,
-        "Tam Sənəd", "Gözləmədə", "-", "-", "",
-        0, "", "",
-        f_cover, f_res, f_xas, f_id, f_tab, f_027
-    ))
-    conn.commit()
-    conn.close()
+    payload = {
+        "id": app_id,
+        "fin": finCode.upper(),
+        "name": studentName,
+        "schoolText": schoolSelect,
+        "schoolValue": schoolSelect,
+        "type": applicationType + " Müraciət",
+        "year": academicYear,
+        "docStatus": "Tam Sənəd",
+        "decisionStatus": "Gözləmədə",
+        "expiryDate": "-",
+        "educationForm": "-",
+        "notes": "",
+        "hasManualFile": 0,
+        "manualFileName": "",
+        "manualFileData": "",
+        "coverLetter": f_cover,
+        "residenceCertificate": f_res,
+        "xasiyyetname": f_xas,
+        "idCopies": f_id,
+        "tabel": f_tab,
+        "forma027": f_027
+    }
+
+    async with httpx.AsyncClient() as client:
+        r = await client.post(f"{SUPABASE_URL}/applications", json=payload, headers=HEADERS)
+
     return {"status": "success", "id": app_id}
 
 @app.get("/api/komissiya/get-applications")
 async def get_applications():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM applications ORDER BY schoolText, name")
-    rows = cursor.fetchall()
-    conn.close()
-    return [dict(row) for row in rows]
+    async with httpx.AsyncClient() as client:
+        r = await client.get(
+            f"{SUPABASE_URL}/applications?order=schoolText.asc,name.asc",
+            headers=HEADERS
+        )
+    return r.json()
 
 @app.post("/api/komissiya/update-decision")
 async def update_decision(data: DecisionUpdate):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-
+    payload = {
+        "decisionStatus": data.decisionStatus,
+        "educationForm": data.educationForm,
+        "notes": data.notes,
+        "expiryDate": data.expiryDate,
+    }
     if data.manualFileData:
-        cursor.execute('''
-            UPDATE applications
-            SET decisionStatus = ?, educationForm = ?, notes = ?, expiryDate = ?,
-                hasManualFile = 1, manualFileName = ?, manualFileData = ?
-            WHERE id = ?
-        ''', (data.decisionStatus, data.educationForm, data.notes, data.expiryDate,
-              data.manualFileName or "", data.manualFileData, data.id))
-    else:
-        cursor.execute('''
-            UPDATE applications
-            SET decisionStatus = ?, educationForm = ?, notes = ?, expiryDate = ?
-            WHERE id = ?
-        ''', (data.decisionStatus, data.educationForm, data.notes, data.expiryDate, data.id))
+        payload["manualFileData"] = data.manualFileData
+        payload["manualFileName"] = data.manualFileName or ""
+        payload["hasManualFile"] = 1
 
-    conn.commit()
-    conn.close()
+    async with httpx.AsyncClient() as client:
+        r = await client.patch(
+            f"{SUPABASE_URL}/applications?id=eq.{data.id}",
+            json=payload,
+            headers=HEADERS
+        )
     return {"status": "success"}
 
 @app.delete("/api/komissiya/delete-application")
 async def delete_application(id: str):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM applications WHERE id = ?", (id,))
-    conn.commit()
-    conn.close()
+    async with httpx.AsyncClient() as client:
+        await client.delete(
+            f"{SUPABASE_URL}/applications?id=eq.{id}",
+            headers=HEADERS
+        )
     return {"status": "deleted"}
 
 try:
