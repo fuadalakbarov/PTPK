@@ -447,7 +447,7 @@ async function loadCommissionTable() {
 
     let data = [];
     try {
-        const res = await fetch('http://127.0.0.1:8001/api/komissiya/get-applications');
+        const res = await fetch('/api/komissiya/get-applications');
         data = await res.json();
     } catch(e) {
         tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:red;">&#9888;&#65039; Serverə qoşulmaq mümkün olmadı. Python serveri işlədiyindən əmin olun.</td></tr>';
@@ -537,12 +537,12 @@ async function addStudentManually() {
     formData.append('forma027', emptyBlob, 'bos.txt');
 
     try {
-        const res = await fetch('http://127.0.0.1:8001/api/school/submit-student', {
+        const res = await fetch('/api/school/submit-student', {
             method: 'POST', body: formData
         });
         if (res.ok) {
             const result = await res.json();
-            await fetch('http://127.0.0.1:8001/api/komissiya/update-decision', {
+            await fetch('/api/komissiya/update-decision', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({id: result.id, decisionStatus: decisionStatus, educationForm: educationForm, notes: "", expiryDate: expiryDate})
@@ -633,7 +633,7 @@ async function saveCommissionDecision() {
     }
 
     try {
-        const res = await fetch('http://127.0.0.1:8001/api/komissiya/update-decision', {
+        const res = await fetch('/api/komissiya/update-decision', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload)
@@ -652,7 +652,7 @@ async function saveCommissionDecision() {
 async function downloadDecisionPDF(id) {
     let app = null;
     try {
-        const res = await fetch('http://127.0.0.1:8001/api/komissiya/get-applications');
+        const res = await fetch('/api/komissiya/get-applications');
         const data = await res.json();
         app = data.find(item => item.id === id);
     } catch(e) {
@@ -705,7 +705,7 @@ Sistem tərəfindən rəqəmsal olaraq təsdiqlənmişdir.
 async function deleteStudent(id) {
     if(confirm("Məlumatı silmək istəyirsiniz?")) {
         try {
-            await fetch('http://127.0.0.1:8001/api/komissiya/delete-application?id=' + id, {method: 'DELETE'});
+            await fetch('/api/komissiya/delete-application?id=' + id, {method: 'DELETE'});
         } catch(e) {}
         if(selectedAppId === id) {
             selectedAppId = null;
@@ -719,7 +719,7 @@ async function deleteStudent(id) {
 async function exportAllExcel() {
     let data = [];
     try {
-        const res = await fetch('http://127.0.0.1:8001/api/komissiya/get-applications');
+        const res = await fetch('/api/komissiya/get-applications');
         data = await res.json();
     } catch(e) {}
     if (data.length === 0) { alert("Cədvəldə məlumat yoxdur!"); return; }
