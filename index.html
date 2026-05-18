@@ -552,7 +552,7 @@ async function submitForm() {
 
     try {
         // Məlumatları Mac-inizdə işləyən Python serverinə (port 8001) göndəririk
-        const response = await fetch('http://127.0.0.1:8001/api/school/submit-student', {
+        const response = await fetch('/api/school/submit-student', {
             method: 'POST',
             body: formData
         });
