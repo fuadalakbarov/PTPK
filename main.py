@@ -24,7 +24,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # Supabase konfiqurasiyası
 SUPABASE_URL = "https://vlyuxgtwvfgbwaysbymv.supabase.co/rest/v1"
-SUPABASE_KEY = "sb_secret_OZWeirgghUYnJ4VN8aed9Q_GQQ-Z52P"
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
 HEADERS = {
     "apikey": SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
