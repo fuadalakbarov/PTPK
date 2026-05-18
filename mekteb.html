@@ -587,11 +587,10 @@
         const selectedSchool = document.getElementById('schoolFilter').value;
         const searchKeyword = document.getElementById('studentSearch').value.trim().toUpperCase();
 
-        const validStatuses = ['Təsdiqləndi', 'Qüvvədədir', 'Təsdiq edildi', 'Aktiv'];
         let filtered = allApplications.filter(app => {
             const schoolMatch = (app.schoolText || '').trim() === selectedSchool.trim();
-            const statusMatch = validStatuses.includes(app.decisionStatus) ||
-                                (app.decisionStatus && app.decisionStatus.includes('Qüvvəd'));
+            const st = (app.decisionStatus || '');
+            const statusMatch = st === 'Qüvvədədir' || st === 'Təsdiqləndi' || st === 'Aktiv' || st.indexOf('vv') !== -1;
             return schoolMatch && statusMatch;
         });
 
