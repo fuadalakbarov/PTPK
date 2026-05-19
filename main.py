@@ -1,33 +1,16 @@
 import os
-import time
-import shutil
+import random
+import string
 import httpx
-from fastapi import FastAPI, UploadFile, File, Form
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from datetime import datetime, timedelta
+from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Optional
-from auth_routes import router as auth_router
 
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Autentifikasiya API endpoint-lərini bura daxil edirik
-app.include_router(auth_router)
-
-UPLOAD_DIR = "uploads"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+router = APIRouter()
 
 SUPABASE_URL = "https://vlyuxgtwvfgbwaysbymv.supabase.co/rest/v1"
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "").strip()
 HEADERS = {
     "apikey": SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
@@ -35,162 +18,172 @@ HEADERS = {
     "Prefer": "return=representation"
 }
 
-class DecisionUpdate(BaseModel):
-    id: str
-    decisionStatus: str
-    educationForm: str
-    notes: str
-    expiryDate: str
-    manualFileData: Optional[str] = None
-    manualFileName: Optional[str] = None
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "").strip()
+SENDER_EMAIL  = "fuad.pennsl@gmail.com"
+SENDER_NAME   = "PTPK Systems"
 
-# ==========================================
-# SƏHİFƏLƏRİN MARŞRUTLARI (PAGE ROUTES)
-# ==========================================
+class SendOTPRequest(BaseModel):
+    email: str
+    target_role: Optional[str] = None
 
-@app.get("/")
-async def root():
-    # Əsas ana səhifə məktəblərin giriş səhifəsi olur
-    return FileResponse("login.html")
+class VerifyOTPRequest(BaseModel):
+    email: str
+    code: str
 
-@app.get("/login")
-async def login_page():
-    # Məktəblər üçün ümumi giriş linki
-    return FileResponse("login.html")
+class CheckSessionRequest(BaseModel):
+    token: str
 
-@app.get("/login/komissiya")
-async def komissiya_login_page():
-    # Komissiya üzvləri üçün tamamilə ayrıca giriş səhifəsi
-    return FileResponse("login-komissiya.html")
+def generate_otp():
+    return ''.join(random.choices(string.digits, k=6))
 
-@app.get("/komissiya")
-async def komissiya_page():
-    # Komissiyanın əsas idarəetmə paneli
-    return FileResponse("komissiya (1).html")
+def generate_token():
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=64))
 
-@app.get("/index")
-async def index_page():
-    # Məktəblərin sənəd göndərmə paneli
-    return FileResponse("index (1).html")
+def build_email_html(code: str) -> str:
+    return f"""
+    <html><body style="font-family: Arial, sans-serif; background: #f1f5f9; padding: 30px;">
+    <div style="max-width: 420px; margin: auto; background: #ffffff; border-radius: 8px; padding: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+        <h2 style="color: #0f172a; margin-bottom: 10px;">PTPK Giriş Kodu</h2>
+        <p style="color: #475569; font-size: 14px;">Sistemə daxil olmaq üçün birdəfəlik şifrəniz:</p>
+        <div style="background: #f8fafc; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #0284c7; border: 1px solid #cbd5e1; border-radius: 6px; margin: 20px 0;">
+            {code}
+        </div>
+        <p style="color: #94a3b8; font-size: 12px;">Bu kod 5 dəqiqə ərzində qüvvədədir. Əgər sorğunu siz etməmisinizsə, bu məktubu silə bilərsiniz.</p>
+    </div>
+    </body></html>
+    """
 
+@router.post("/api/auth/send-otp")
+async def send_otp(req: SendOTPRequest):
+    email = req.email.strip().lower()
+    if not email:
+        return {"status": "error", "message": "Email boş ola bilməz."}
 
-# ==========================================
-# APPLİCATİON API ENDPOINT-LƏRİ
-# ==========================================
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            res = await client.get(f"{SUPABASE_URL}/users?email=eq.{email}", headers=HEADERS)
+        users = res.json()
+        if not users:
+            return {"status": "error", "message": "Bu email ünvanı sistemdə qeydiyyatda deyil."}
+        
+        user = users[0]
+        if req.target_role == "komissiya" and user.get("role") != "komissiya":
+            return {"status": "error", "message": "Bu səhifə yalnız Komissiya üzvləri üçündür."}
+            
+    except Exception as e:
+        return {"status": "error", "message": "İstifadəçi təsdiqlənmə xətası."}
 
-@app.post("/api/school/submit-student")
-async def submit_student(
-    finCode: str = Form(...),
-    studentName: str = Form(...),
-    schoolSelect: str = Form(...),
-    schoolText: str = Form(...),
-    birthDate: str = Form(...),
-    gender: str = Form(...),
-    parentName: str = Form(...),
-    parentPhone: str = Form(...),
-    district: str = Form(...),
-    year: str = Form(...),
-    coverLetter: UploadFile = File(...),
-    residenceCertificate: UploadFile = File(...),
-    xasiyyetname: UploadFile = File(...),
-    idCopies: UploadFile = File(...),
-    tabel: UploadFile = File(...),
-    forma027: UploadFile = File(...)
-):
-    app_id = f"app_{int(time.time())}"
+    otp = generate_otp()
+    expires_at = (datetime.utcnow() + timedelta(minutes=5)).isoformat()
+
+    otp_payload = {"email": email, "code": otp, "expires_at": expires_at}
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            await client.post(
+                f"{SUPABASE_URL}/otps",
+                json=otp_payload,
+                headers={**HEADERS, "Prefer": "resolution=merge-duplicates"}
+            )
+    except Exception:
+        return {"status": "error", "message": "Kod sistem tərəfindən qeydə alına bilmədi."}
+
+    email_payload = {
+        "sender": {"name": SENDER_NAME, "email": SENDER_EMAIL},
+        "to": [{"email": email}],
+        "subject": "PTPK Giriş Şifrəsi",
+        "htmlContent": build_email_html(otp)
+    }
     
-    # Faylları yadda saxlayırıq
-    files_dict = {
-        "coverLetter": coverLetter,
-        "residenceCertificate": residenceCertificate,
-        "xasiyyetname": xasiyyetname,
-        "idCopies": idCopies,
-        "tabel": tabel,
-        "forma027": forma027
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            brevo_res = await client.post(
+                "https://api.brevo.com/v3/smtp/email",
+                json=email_payload,
+                headers={"api-key": BREVO_API_KEY, "Content-Type": "application/json"}
+            )
+        if brevo_res.status_code not in [200, 201, 202]:
+            return {"status": "error", "message": "E-mail bildiriş xətası."}
+    except Exception:
+        return {"status": "error", "message": "E-mail provayderi ilə əlaqə qurulmadı."}
+
+    return {"status": "success", "message": "OTP göndərildi."}
+
+@router.post("/api/auth/verify-otp")
+async def verify_otp(req: VerifyOTPRequest):
+    email = req.email.strip().lower()
+    code  = req.code.strip()
+    now   = datetime.utcnow().isoformat()
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            r = await client.get(
+                f"{SUPABASE_URL}/otps?email=eq.{email}&code=eq.{code}&expires_at=gt.{now}",
+                headers=HEADERS
+            )
+        otps = r.json()
+        if not otps:
+            return {"status": "error", "message": "Kod yanlışdır və ya vaxtı bitib."}
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            ru = await client.get(f"{SUPABASE_URL}/users?email=eq.{email}", headers=HEADERS)
+        users = ru.json()
+        if not users:
+            return {"status": "error", "message": "İstifadəçi tapılmadı."}
+
+        user = users[0]
+        role = user.get("role", "school")
+        full_name = user.get("full_name", email)
+
+        token = generate_token()
+        session_expiry = (datetime.utcnow() + timedelta(hours=8)).isoformat()
+        
+        session_payload = {
+            "token": token,
+            "email": email,
+            "role": role,
+            "expires_at": session_expiry
+        }
+        
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            await client.post(f"{SUPABASE_URL}/sessions", json=session_payload, headers=HEADERS)
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            await client.delete(f"{SUPABASE_URL}/otps?email=eq.{email}", headers=HEADERS)
+
+    except Exception as e:
+        return {"status": "error", "message": "Doğrulama zamanı gözlənilməz xəta."}
+
+    return {
+        "status": "success",
+        "token": token,
+        "role": role,
+        "full_name": full_name,
+        "email": email
     }
 
-    saved_paths = {}
-    for key, f in files_dict.items():
-        ext = os.path.splitext(f.filename)[1]
-        filename = f"{app_id}_{key}{ext}"
-        filepath = os.path.join(UPLOAD_DIR, filename)
-        with open(filepath, "wb") as buffer:
-            shutil.copyfileobj(f.file, buffer)
-        saved_paths[key] = f"/files/{filename}"
+@router.post("/api/auth/check-session")
+async def check_session(req: CheckSessionRequest):
+    token = req.token.strip()
+    now   = datetime.utcnow().isoformat()
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            r = await client.get(
+                f"{SUPABASE_URL}/sessions?token=eq.{token}&expires_at=gt.{now}",
+                headers=HEADERS
+            )
+        sessions = r.json()
+        if not sessions:
+            return {"status": "invalid"}
+        return {"status": "valid", "email": sessions[0]["email"], "role": sessions[0]["role"]}
+    except Exception:
+        return {"status": "invalid"}
 
-    payload = {
-        "id": app_id,
-        "fin": finCode,
-        "name": studentName,
-        "schoolSelect": schoolSelect,
-        "schoolText": schoolText,
-        "birthDate": birthDate,
-        "gender": gender,
-        "parentName": parentName,
-        "parentPhone": parentPhone,
-        "district": district,
-        "year": year,
-        "coverLetter": saved_paths["coverLetter"],
-        "residenceCertificate": saved_paths["residenceCertificate"],
-        "xasiyyetname": saved_paths["xasiyyetname"],
-        "idCopies": saved_paths["idCopies"],
-        "tabel": saved_paths["tabel"],
-        "forma027": saved_paths["forma027"],
-        "docStatus": "Yoxlanılıb",
-        "decisionStatus": "Gözləmədə",
-        "educationForm": "-",
-        "notes": "-",
-        "expiryDate": "-",
-        "hasManualFile": 0,
-        "manualFileData": "",
-        "manualFileName": ""
-    }
-
-    async with httpx.AsyncClient() as client:
-        await client.post(f"{SUPABASE_URL}/applications", json=payload, headers=HEADERS)
-
-    return {"status": "success", "id": app_id}
-
-@app.get("/api/komissiya/get-applications")
-async def get_applications():
-    async with httpx.AsyncClient() as client:
-        r = await client.get(
-            f"{SUPABASE_URL}/applications?order=schoolText.asc,name.asc",
-            headers=HEADERS
-        )
-    return r.json()
-
-@app.post("/api/komissiya/update-decision")
-async def update_decision(data: DecisionUpdate):
-    payload = {
-        "decisionStatus": data.decisionStatus,
-        "educationForm": data.educationForm,
-        "notes": data.notes,
-        "expiryDate": data.expiryDate,
-    }
-    if data.manualFileData:
-        payload["manualFileData"] = data.manualFileData
-        payload["manualFileName"] = data.manualFileName or ""
-        payload["hasManualFile"] = 1
-
-    async with httpx.AsyncClient() as client:
-        r = await client.patch(
-            f"{SUPABASE_URL}/applications?id=eq.{data.id}",
-            json=payload,
-            headers=HEADERS
-        )
+@router.post("/api/auth/logout")
+async def logout(req: CheckSessionRequest):
+    token = req.token.strip()
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            await client.delete(f"{SUPABASE_URL}/sessions?token=eq.{token}", headers=HEADERS)
+    except Exception:
+        pass
     return {"status": "success"}
-
-@app.delete("/api/komissiya/delete-application")
-async def delete_application(id: str):
-    async with httpx.AsyncClient() as client:
-        await client.delete(
-            f"{SUPABASE_URL}/applications?id=eq.{id}",
-            headers=HEADERS
-        )
-    return {"status": "deleted"}
-
-try:
-    app.mount("/files", StaticFiles(directory=UPLOAD_DIR), name="files")
-except Exception:
-    pass
