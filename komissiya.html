@@ -491,7 +491,15 @@ function closeLogoutModal() {
 }
 
 function confirmLogout() {
-    window.location.href = "/logout";
+    // Bütün cookie-ləri sil
+    document.cookie.split(";").forEach(function(c) {
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    // sessionStorage və localStorage təmizlə
+    sessionStorage.clear();
+    localStorage.clear();
+    // Login səhifəsinə yönləndir
+    window.location.replace("/");
 }
 
 // ──────────────────────────────────────────────
