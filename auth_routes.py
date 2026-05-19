@@ -77,14 +77,14 @@ async def send_otp_email(to_email: str, code: str):
     msg.attach(MIMEText(html, "html"))
 
     with smtplib.SMTP("smtp-relay.brevo.com", 587) as server:
-    server.starttls()
-    server.login(SMTP_EMAIL, SMTP_PASSWORD)
-    
+        server.starttls()
+        server.login(SMTP_EMAIL, SMTP_PASSWORD)
+        server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+
 @router.post("/api/auth/send-otp")
 async def send_otp(req: SendOTPRequest):
     email = req.email.strip().lower()
 
-    # İstifadəçi siyahıda varmı?
     async with httpx.AsyncClient() as client:
         r = await client.get(
             f"{SUPABASE_URL}/allowed_users?email=eq.{email}&active=eq.true",
@@ -98,20 +98,17 @@ async def send_otp(req: SendOTPRequest):
     code = generate_otp()
     expires_at = (datetime.utcnow() + timedelta(minutes=10)).isoformat()
 
-    # Köhnə OTP-ləri sil
     async with httpx.AsyncClient() as client:
         await client.delete(
             f"{SUPABASE_URL}/otp_codes?email=eq.{email}",
             headers=HEADERS
         )
-        # Yeni OTP yaz
         await client.post(
             f"{SUPABASE_URL}/otp_codes",
             json={"email": email, "code": code, "expires_at": expires_at, "used": False},
             headers=HEADERS
         )
 
-    # Email göndər
     try:
         await send_otp_email(email, code)
     except Exception as e:
@@ -141,14 +138,12 @@ async def verify_otp(req: VerifyOTPRequest):
 
     otp_id = records[0]["id"]
 
-    # OTP-ni istifadə olunmuş kimi işarələ
     async with httpx.AsyncClient() as client:
         await client.patch(
             f"{SUPABASE_URL}/otp_codes?id=eq.{otp_id}",
             json={"used": True},
             headers=HEADERS
         )
-        # İstifadəçi məlumatını al
         r2 = await client.get(
             f"{SUPABASE_URL}/allowed_users?email=eq.{email}&active=eq.true",
             headers=HEADERS
@@ -164,7 +159,6 @@ async def verify_otp(req: VerifyOTPRequest):
     token = generate_token()
     expires_at = (datetime.utcnow() + timedelta(hours=8)).isoformat()
 
-    # Session yaz
     async with httpx.AsyncClient() as client:
         await client.post(
             f"{SUPABASE_URL}/sessions",
