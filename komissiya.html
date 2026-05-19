@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- PDF birləşdirmə üçün pdf-lib -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
     
     <style>
@@ -34,9 +33,19 @@
         }
         .app-window { display: flex; width: 100%; max-width: 1650px; height: 85vh; background: #ffffff; border-radius: 16px; border: 2px solid var(--border-window); box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3); overflow: hidden; }
         
-        .nav-sidebar { width: 80px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 25px 0; background: #ffffff; border-right: 2px solid var(--border-window); flex-shrink: 0; }
+        .nav-sidebar { width: 80px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 25px 0; background: #ffffff; border-right: 2px solid var(--border-window); flex-shrink: 0; }
         .nav-item { width: 48px; height: 48px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: #ffffff; font-size: 18px; background: var(--brand-blue); border: 2px solid var(--brand-blue); cursor: default; }
         
+        .btn-logout {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center;
+            color: var(--danger-red); font-size: 18px;
+            background: #fee2e2; border: 2px solid #fca5a5;
+            cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s;
+            margin-bottom: 5px;
+        }
+        .btn-logout:hover { background: var(--danger-red); color: #ffffff; border-color: var(--danger-red); }
+
         .viewport { flex: 1; padding: 25px 30px; display: flex; flex-direction: column; background: #ffffff; height: 100%; overflow: hidden; }
         .brand-header { display: flex; align-items: center; gap: 20px; padding-bottom: 15px; border-bottom: 2px solid #e2e8f0; flex-shrink: 0; }
         .brand-logo { height: 45px; width: auto; }
@@ -84,7 +93,6 @@
         .status-pill.quvvede { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
         .status-pill.dusub { background: #fee2e2; color: var(--danger-red); border: 1px solid #fca5a5; }
 
-        /* Sənədlər düyməsi */
         .btn-docs { 
             background: var(--brand-blue); color: white; border: none; border-radius: 5px; 
             padding: 4px 8px; font-size: 11px; font-weight: 700; cursor: pointer; 
@@ -161,6 +169,38 @@
         .merge-status.success { background: #dcfce7; color: var(--success-green); display: block; }
         .merge-status.error { background: #fee2e2; color: var(--danger-red); display: block; }
 
+        /* Logout confirm modal */
+        .logout-modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6);
+            z-index: 2000; align-items: center; justify-content: center;
+        }
+        .logout-modal-overlay.open { display: flex; }
+        .logout-modal-box {
+            background: #fff; border-radius: 14px; border: 2px solid var(--primary-navy);
+            width: 340px; max-width: 95vw; box-shadow: 0 20px 50px rgba(15,23,42,0.4);
+            overflow: hidden;
+        }
+        .logout-modal-header {
+            background: var(--danger-red); color: #fff;
+            padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .logout-modal-header h3 { font-size: 14px; font-weight: 700; }
+        .logout-modal-body { padding: 20px 18px; }
+        .logout-modal-body p { font-size: 14px; color: var(--text-dark); margin-bottom: 20px; font-weight: 500; }
+        .logout-modal-actions { display: flex; gap: 8px; }
+        .btn-logout-cancel {
+            flex: 1; background: #f1f5f9; color: var(--primary-navy);
+            border: 2px solid #cbd5e1; border-radius: 7px; padding: 10px; font-size: 13px; font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-logout-cancel:hover { background: #e2e8f0; }
+        .btn-logout-confirm {
+            flex: 1; background: var(--danger-red); color: #fff;
+            border: none; border-radius: 7px; padding: 10px; font-size: 13px; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-logout-confirm:hover { background: #b91c1c; }
+
         .preview-container { border: 2px solid var(--border-strong); border-radius: 8px; background: #ffffff; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
         .right-card-body { flex: 1; overflow-y: auto; padding: 15px; }
         .decision-box { margin-top: 12px; padding-top: 12px; border-top: 2px dashed #e2e8f0; }
@@ -196,9 +236,7 @@
                 <span id="modal-student-school">—</span>
             </div>
 
-            <div class="doc-list" id="doc-list">
-                <!-- JS tərəfindən doldurulur -->
-            </div>
+            <div class="doc-list" id="doc-list"></div>
 
             <div class="modal-actions">
                 <button class="btn-merge-pdf" id="btn-merge" onclick="mergeAndDownload()">
@@ -213,11 +251,35 @@
     </div>
 </div>
 
+<!-- ══════════════ LOGOUT MODALI ══════════════ -->
+<div class="logout-modal-overlay" id="logoutModal">
+    <div class="logout-modal-box">
+        <div class="logout-modal-header">
+            <h3><i class="fa-solid fa-right-from-bracket"></i> &nbsp;Sistemdən Çıxış</h3>
+            <button class="modal-close" onclick="closeLogoutModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="logout-modal-body">
+            <p>Sistemdən çıxmaq istədiyinizə əminsinizmi?</p>
+            <div class="logout-modal-actions">
+                <button class="btn-logout-cancel" onclick="closeLogoutModal()">
+                    <i class="fa-solid fa-xmark"></i> Xeyr, Qal
+                </button>
+                <button class="btn-logout-confirm" onclick="confirmLogout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Bəli, Çıx
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="app-window">
     <div class="nav-sidebar">
         <div class="nav-item" title="Komissiya Ekspertiza Modulu">
             <i class="fa-solid fa-users-gear"></i>
         </div>
+        <button class="btn-logout" title="Sistemdən Çıxış" onclick="openLogoutModal()">
+            <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
     </div>
 
     <div class="viewport">
@@ -403,11 +465,9 @@ let selectedAppId = null;
 let uploadedFileBase64 = null;
 let uploadedFileName = null;
 
-// Modal üçün qlobal dəyişən
 let currentModalApp = null;
-let mergedPdfBytes = null; // saxlanmış birləşdirilmiş PDF
+let mergedPdfBytes = null;
 
-// Sənəd adları (index.html-dəki field adları ilə eyni)
 const DOC_FIELDS = [
     { key: 'coverLetter',           label: '1. Məktəbin müşayiət məktubu' },
     { key: 'residenceCertificate',  label: '2. Yaşayış yerindən arayış' },
@@ -419,6 +479,24 @@ const DOC_FIELDS = [
 
 document.addEventListener("DOMContentLoaded", loadCommissionTable);
 
+// ──────────────────────────────────────────────
+//  LOGOUT
+// ──────────────────────────────────────────────
+function openLogoutModal() {
+    document.getElementById('logoutModal').classList.add('open');
+}
+
+function closeLogoutModal() {
+    document.getElementById('logoutModal').classList.remove('open');
+}
+
+function confirmLogout() {
+    window.location.href = "/logout";
+}
+
+// ──────────────────────────────────────────────
+//  KÖMƏKÇI
+// ──────────────────────────────────────────────
 function getStatusPillClass(status) {
     if (status === "Qüvvədədir") return "quvvede";
     if (status === "Qüvvədən düşüb") return "dusub";
@@ -431,7 +509,6 @@ function getStatusPillClass(status) {
 async function openDocsModal(appId, event) {
     if (event) event.stopPropagation();
 
-    // Bütün məlumatları yüklə
     let app = null;
     try {
         const res = await fetch('/api/komissiya/get-applications');
@@ -446,16 +523,14 @@ async function openDocsModal(appId, event) {
     currentModalApp = app;
     mergedPdfBytes = null;
 
-    // Modal başlığı
     document.getElementById('modal-student-name').textContent = app.name + ' (' + app.fin + ')';
     document.getElementById('modal-student-school').textContent = app.schoolText;
 
-    // Sənəd siyahısını qur
     const list = document.getElementById('doc-list');
     list.innerHTML = '';
 
     DOC_FIELDS.forEach(field => {
-        const fname = app[field.key]; // fayl adı (e.g. "PTPK_123_mushayiet.pdf")
+        const fname = app[field.key];
         const hasFile = fname && fname.length > 3;
 
         const item = document.createElement('div');
@@ -480,7 +555,6 @@ async function openDocsModal(appId, event) {
         list.appendChild(item);
     });
 
-    // Manuel fayl da varsa əlavə et
     if (app.hasManualFile && app.manualFileName) {
         const item = document.createElement('div');
         item.className = 'doc-item';
@@ -500,7 +574,6 @@ async function openDocsModal(appId, event) {
         list.appendChild(item);
     }
 
-    // Status sıfırla
     showMergeStatus('', '');
     document.getElementById('btn-merge').disabled = false;
     document.getElementById('btn-save').disabled = false;
@@ -514,13 +587,11 @@ function closeDocsModal() {
     mergedPdfBytes = null;
 }
 
-// Tək sənədi server /files/ endpoint-indən aç
 function openSingleDoc(fname) {
     if (!fname) return;
     window.open('/files/' + fname, '_blank');
 }
 
-// Manuel faylı base64-dən aç
 function openManualDoc() {
     if (!currentModalApp || !currentModalApp.manualFileData) return;
     const a = document.createElement('a');
@@ -530,17 +601,14 @@ function openManualDoc() {
 }
 
 // ──────────────────────────────────────────────
-//  PDF BİRLƏŞDİRMƏ (pdf-lib)
+//  PDF BİRLƏŞDİRMƏ
 // ──────────────────────────────────────────────
-
-// Sənədi server-dən ArrayBuffer kimi yüklə
 async function fetchDocBytes(fname) {
     const res = await fetch('/files/' + fname);
     if (!res.ok) return null;
     return await res.arrayBuffer();
 }
 
-// Şəkil faylını PDF-ə çevir (pdf-lib ilə)
 async function imageToPdfBytes(arrayBuf, mimeType) {
     const { PDFDocument } = PDFLib;
     const doc = await PDFDocument.create();
@@ -555,7 +623,6 @@ async function imageToPdfBytes(arrayBuf, mimeType) {
     return await doc.save();
 }
 
-// Bütün sənədləri yükləyib birləşdir
 async function buildMergedPdf() {
     const { PDFDocument } = PDFLib;
     const app = currentModalApp;
@@ -584,7 +651,6 @@ async function buildMergedPdf() {
                 const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
                 pdfBytes = await imageToPdfBytes(buf, mime);
             } else {
-                // .doc/.docx kimi faylları cəld bir blank səhifə ilə əvəz et
                 const tmpDoc = await PDFDocument.create();
                 const page = tmpDoc.addPage();
                 const { rgb } = PDFLib;
@@ -619,12 +685,9 @@ async function buildMergedPdf() {
     return bytes;
 }
 
-// "PDF Endir" düyməsi
 async function mergeAndDownload() {
     let bytes = mergedPdfBytes;
-    if (!bytes) {
-        bytes = await buildMergedPdf();
-    }
+    if (!bytes) bytes = await buildMergedPdf();
     if (!bytes) return;
 
     const blob = new Blob([bytes], { type: 'application/pdf' });
@@ -637,18 +700,14 @@ async function mergeAndDownload() {
     showMergeStatus('✅ PDF uğurla endirildi!', 'success');
 }
 
-// "Saxla" düyməsi — birləşdirilmiş PDF-i Supabase-ə yaz (manualFileData kimi)
 async function mergeAndSave() {
     let bytes = mergedPdfBytes;
-    if (!bytes) {
-        bytes = await buildMergedPdf();
-    }
+    if (!bytes) bytes = await buildMergedPdf();
     if (!bytes) return;
 
     showMergeStatus('Serverə yazılır...', 'info');
     document.getElementById('btn-save').disabled = true;
 
-    // ArrayBuffer → base64
     const base64 = arrayBufferToBase64(bytes);
     const dataUrl = 'data:application/pdf;base64,' + base64;
     const fileName = currentModalApp.fin + '_Muraciet_Senedleri.pdf';
@@ -745,13 +804,12 @@ async function loadCommissionTable() {
 
             let statusClass = getStatusPillClass(app.decisionStatus);
 
-            // Yüklənmiş sənəd varmı?
             const hasUploadedDocs = DOC_FIELDS.some(f => app[f.key] && app[f.key].length > 3);
             const hasSavedPdf = app.hasManualFile && app.manualFileName && app.manualFileName.includes('_Muraciet_');
             const docsLabel = hasSavedPdf
                 ? '<i class="fa-solid fa-check-circle"></i> Saxlanıb'
                 : (hasUploadedDocs ? '<i class="fa-solid fa-folder"></i> Sənədlər' : '<i class="fa-solid fa-folder-open" style="color:#cbd5e1"></i> Yoxdur');
-            const docsBtnClass = hasSavedPdf ? 'btn-docs has-docs' : (hasUploadedDocs ? 'btn-docs' : 'btn-docs');
+            const docsBtnClass = hasSavedPdf ? 'btn-docs has-docs' : 'btn-docs';
 
             tr.innerHTML = `
                 <td><strong>${app.name} (${app.fin})</strong></td>
@@ -784,7 +842,7 @@ async function loadCommissionTable() {
 }
 
 // ──────────────────────────────────────────────
-//  DİGƏR FUNKSIYALAR (orijinaldan saxlanıb)
+//  DİGƏR FUNKSIYALAR
 // ──────────────────────────────────────────────
 async function addStudentManually() {
     const name = document.getElementById('manual-name').value.trim();
@@ -916,7 +974,6 @@ async function downloadDecisionPDF(id) {
         return;
     }
 
-    // Sadə mətn hesabatı
     const txt = `PTPK QƏRAR HESABATI\n${'-'.repeat(50)}\nŞAGİRD: ${app.name} (${app.fin})\nMƏKTƏB: ${app.schoolText}\nTƏDRİS İLİ: ${app.year}\nSTATUS: ${app.decisionStatus || 'Gözləmədə'}\nTƏHSİL FORMASI: ${app.educationForm}\nMÜDDƏT: ${app.expiryDate || '-'}\nRƏY: ${app.notes || '-'}\n${'-'.repeat(50)}\nTarix: ${new Date().toLocaleDateString('az-AZ')}`;
     const blob = new Blob([txt], {type: 'text/plain;charset=utf-8'});
     const a = document.createElement('a');
