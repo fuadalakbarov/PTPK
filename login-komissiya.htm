@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTPK | Regional Komissiya Girişi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-navy: #0f172a;     /* Komissiya paneli üçün korporativ tünd rəng */
+            --brand-blue: #0284c7;       
+            --bg-light: #f8fafc;
+            --text-dark: #0f172a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body { 
+            background: var(--bg-light); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh;
+        }
+        
+        .login-card {
+            background: white; 
+            padding: 40px; 
+            border-radius: 14px; 
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+            width: 100%; 
+            max-width: 420px; 
+            border-top: 5px solid var(--primary-navy);
+        }
+
+        .header { 
+            text-align: center; 
+            margin-bottom: 35px; 
+        }
+
+        .header i { 
+            font-size: 45px; 
+            color: var(--primary-navy); 
+            margin-bottom: 12px; 
+        }
+
+        .header h2 { 
+            font-size: 24px; 
+            color: var(--primary-navy); 
+            font-weight: 700; 
+            letter-spacing: -0.5px;
+        }
+
+        .header p { 
+            font-size: 14px; 
+            color: #64748b; 
+            margin-top: 6px; 
+        }
+
+        .form-group { 
+            margin-bottom: 22px; 
+            position: relative; 
+        }
+
+        .form-group label { 
+            display: block; 
+            font-size: 13px; 
+            font-weight: 600; 
+            color: #475569; 
+            margin-bottom: 8px; 
+        }
+
+        .form-group input {
+            width: 100%; 
+            padding: 12px 42px 12px 14px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 8px;
+            font-size: 14px; 
+            transition: all 0.2s ease;
+            color: var(--text-dark);
+        }
+
+        .form-group input:focus { 
+            outline: none; 
+            border-color: var(--brand-blue); 
+            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1); 
+        }
+
+        .form-group i.input-icon { 
+            position: absolute; 
+            right: 14px; 
+            top: 40px; 
+            color: #94a3b8; 
+            font-size: 16px;
+        }
+
+        .btn {
+            width: 100%; 
+            padding: 13px; 
+            background: var(--primary-navy); 
+            color: white; 
+            border: none;
+            border-radius: 8px; 
+            font-size: 15px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover { 
+            background: #1e293b; 
+        }
+        
+        .alert { 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-size: 13px; 
+            margin-bottom: 20px; 
+            display: none; 
+            text-align: center; 
+            font-weight: 500;
+        }
+
+        .alert-error { 
+            background: #fef2f2; 
+            color: #991b1b; 
+            border: 1px solid #fca5a5; 
+        }
+
+        .alert-success { 
+            background: #f0fdf4; 
+            color: #166534; 
+            border: 1px solid #86efac; 
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--brand-blue);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="header">
+        <i class="fa-solid fa-building-shield"></i>
+        <h2>PTPK Komissiya</h2>
+        <p>Ekspertlər və komissiya üzvləri üçün rəsmi giriş</p>
+    </div>
+
+    <div id="alertBox" class="alert"></div>
+
+    <div id="stepEmail">
+        <div class="form-group">
+            <label>Komissiya E-maili</label>
+            <input type="email" id="email" placeholder="komissiya@rto.az">
+            <i class="fa-solid fa-envelope input-icon"></i>
+        </div>
+        <button class="btn" onclick="sendOTP()">Birdəfəlik Şifrə Göndər</button>
+        <a href="/login" class="back-link"><i class="fa-solid fa-arrow-left"></i> Məktəb Girişinə Keç</a>
+    </div>
+
+    <div id="stepOTP" style="display: none;">
+        <div class="form-group">
+            <label>E-mailinizə göndərilən 6 rəqəmli OTP kod</label>
+            <input type="text" id="otpCode" placeholder="000000" maxlength="6" style="letter-spacing: 6px; text-align: center; font-size: 18px; font-weight: bold;">
+            <i class="fa-solid fa-key input-icon"></i>
+        </div>
+        <button class="btn" onclick="verifyOTP()">Doğrula və Daxil Ol</button>
+    </div>
+</div>
+
+<script>
+    const alertBox = document.getElementById('alertBox');
+    const stepEmail = document.getElementById('stepEmail');
+    const stepOTP = document.getElementById('stepOTP');
+
+    function showAlert(msg, type='error') {
+        alertBox.innerText = msg;
+        alertBox.className = `alert alert-${type}`;
+        alertBox.style.display = 'block';
+    }
+
+    async function sendOTP() {
+        const email = document.getElementById('email').value.trim();
+        if(!email) return showAlert("Zəhmət olmasa email ünvanınızı daxil edin.");
+
+        try {
+            const res = await fetch('/api/auth/send-otp', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            
+            if(data.status === 'success') {
+                showAlert("Birdəfəlik kod emailinizə göndərildi.", "success");
+                stepEmail.style.display = 'none';
+                stepOTP.style.display = 'block';
+            } else {
+                showAlert(data.message || "Giriş icazəsi yoxdur və ya xəta baş verdi.");
+            }
+        } catch(e) {
+            showAlert("Serverlə əlaqə kəsildi.");
+        }
+    }
+
+    async function verifyOTP() {
+        const email = document.getElementById('email').value.trim();
+        const code = document.getElementById('otpCode').value.trim();
+        if(!code) return showAlert("Zəhmət olmasa 6 rəqəmli kodu daxil edin.");
+
+        try {
+            const res = await fetch('/api/auth/verify-otp', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email, code })
+            });
+            const data = await res.json();
+
+            if(data.status === 'success') {
+                // TƏHLÜKƏSİZLİK SÜZGƏCİ: Əgər bu adam komissiya deyilsə səhifəyə buraxmırıq
+                if(data.role !== 'komissiya') {
+                    showAlert("Giriş rədd edildi: Bu giriş yalnız komissiya üzvləri üçündür.");
+                    return;
+                }
+
+                localStorage.setItem('ptpk_token', data.token);
+                localStorage.setItem('ptpk_role', data.role);
+                localStorage.setItem('ptpk_name', data.full_name);
+                
+                showAlert("Giriş uğurludur! Yönləndirilirsiniz...", "success");
+                setTimeout(() => {
+                    window.location.href = '/komissiya';
+                }, 1000);
+            } else {
+                showAlert(data.message || "Daxil edilən kod səhvdir.");
+            }
+        } catch(e) {
+            showAlert("Xəta baş verdi.");
+        }
+    }
+</script>
+</body>
+</html>
