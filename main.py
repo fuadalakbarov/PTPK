@@ -20,13 +20,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Auth router-i qoş
 app.include_router(auth_router)
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Supabase konfiqurasiyası
 SUPABASE_URL = "https://vlyuxgtwvfgbwaysbymv.supabase.co/rest/v1"
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
 HEADERS = {
@@ -52,6 +50,22 @@ async def root():
 @app.get("/login")
 async def login_page():
     return FileResponse("login.html")
+
+@app.get("/komissiya")
+async def komissiya_page():
+    return FileResponse("komissiya.html")
+
+@app.get("/admin")
+async def admin_page():
+    return FileResponse("admin.html")
+
+@app.get("/mekteb")
+async def mekteb_page():
+    return FileResponse("mekteb.html")
+
+@app.get("/index")
+async def index_page():
+    return FileResponse("index.html")
 
 @app.get("/image.png")
 async def get_image():
@@ -162,10 +176,3 @@ try:
     app.mount("/files", StaticFiles(directory=UPLOAD_DIR), name="files")
 except Exception:
     pass
-
-@app.get("/{page}.html")
-async def get_html(page: str):
-    file_path = f"{page}.html"
-    if os.path.exists(file_path):
-        return FileResponse(file_path)
-    return {"detail": "Not Found"}
