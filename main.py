@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import Optional
+from auth_routes import router as auth_router
 
 app = FastAPI()
 
@@ -18,6 +19,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Auth router-i qoş
+app.include_router(auth_router)
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -43,7 +47,11 @@ class DecisionUpdate(BaseModel):
 
 @app.get("/")
 async def root():
-    return FileResponse("index.html")
+    return FileResponse("login.html")
+
+@app.get("/login")
+async def login_page():
+    return FileResponse("login.html")
 
 @app.get("/image.png")
 async def get_image():
