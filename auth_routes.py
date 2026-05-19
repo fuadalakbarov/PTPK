@@ -76,8 +76,7 @@ async def send_otp_email(to_email: str, code: str):
     """
     msg.attach(MIMEText(html, "html"))
 
-    with smtplib.SMTP("smtp-relay.brevo.com", 587) as server:
-        server.starttls()
+    with smtplib.SMTP_SSL("smtp-relay.brevo.com", 465) as server:
         server.login(SMTP_EMAIL, SMTP_PASSWORD)
         server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
 
