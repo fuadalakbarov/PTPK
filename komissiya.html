@@ -103,7 +103,6 @@
         .btn-docs.has-docs:hover { background: #15803d; }
         .btn-docs.loading { background: #94a3b8; cursor: wait; }
 
-        /* Modal */
         .modal-overlay {
             display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6);
             z-index: 1000; align-items: center; justify-content: center;
@@ -169,7 +168,6 @@
         .merge-status.success { background: #dcfce7; color: var(--success-green); display: block; }
         .merge-status.error { background: #fee2e2; color: var(--danger-red); display: block; }
 
-        /* Logout confirm modal */
         .logout-modal-overlay {
             display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6);
             z-index: 2000; align-items: center; justify-content: center;
@@ -235,9 +233,7 @@
                 <div id="modal-student-name">—</div>
                 <span id="modal-student-school">—</span>
             </div>
-
             <div class="doc-list" id="doc-list"></div>
-
             <div class="modal-actions">
                 <button class="btn-merge-pdf" id="btn-merge" onclick="mergeAndDownload()">
                     <i class="fa-solid fa-file-pdf"></i> PDF Endir
@@ -464,7 +460,6 @@
 let selectedAppId = null;
 let uploadedFileBase64 = null;
 let uploadedFileName = null;
-
 let currentModalApp = null;
 let mergedPdfBytes = null;
 
@@ -484,7 +479,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
     loadCommissionTable();
-
 });
 
 // ──────────────────────────────────────────────
@@ -498,10 +492,26 @@ function closeLogoutModal() {
     document.getElementById('logoutModal').classList.remove('open');
 }
 
-function confirmLogout() {
+async function confirmLogout() {
+    const token = localStorage.getItem('ptpk_token');
+
+    // Əvvəlcə localStorage-i təmizlə
     localStorage.removeItem('ptpk_token');
     localStorage.removeItem('ptpk_role');
     localStorage.removeItem('ptpk_email');
+
+    // Serverdə session-u arxa planda sil, gözləmə
+    if (token) {
+        try {
+            await fetch('/api/auth/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token })
+            });
+        } catch (e) {}
+    }
+
+    // Login səhifəsinə yönləndir — replace ilə ki geri düyməsi işləməsin
     window.location.replace('/login');
 }
 
@@ -543,7 +553,6 @@ async function openDocsModal(appId, event) {
     DOC_FIELDS.forEach(field => {
         const fname = app[field.key];
         const hasFile = fname && fname.length > 3;
-
         const item = document.createElement('div');
         item.className = 'doc-item';
         item.innerHTML = `
@@ -557,9 +566,7 @@ async function openDocsModal(appId, event) {
                     </div>
                 </div>
             </div>
-            <button class="btn-open-doc" 
-                    onclick="openSingleDoc('${fname}')"
-                    ${!hasFile ? 'disabled' : ''}>
+            <button class="btn-open-doc" onclick="openSingleDoc('${fname}')" ${!hasFile ? 'disabled' : ''}>
                 <i class="fa-solid fa-eye"></i> Aç
             </button>
         `;
@@ -588,7 +595,6 @@ async function openDocsModal(appId, event) {
     showMergeStatus('', '');
     document.getElementById('btn-merge').disabled = false;
     document.getElementById('btn-save').disabled = false;
-
     document.getElementById('docsModal').classList.add('open');
 }
 
@@ -648,14 +654,11 @@ async function buildMergedPdf() {
     for (const field of DOC_FIELDS) {
         const fname = app[field.key];
         if (!fname || fname.length <= 3) continue;
-
         try {
             const buf = await fetchDocBytes(fname);
             if (!buf) continue;
-
             const ext = fname.split('.').pop().toLowerCase();
             let pdfBytes;
-
             if (ext === 'pdf') {
                 pdfBytes = buf;
             } else if (['jpg', 'jpeg', 'png'].includes(ext)) {
@@ -666,13 +669,10 @@ async function buildMergedPdf() {
                 const page = tmpDoc.addPage();
                 const { rgb } = PDFLib;
                 page.drawText(`[${field.label}]\nFayl növü dəstəklənmir: ${fname}`, {
-                    x: 50, y: page.getHeight() - 80,
-                    size: 12, color: rgb(0.3, 0.3, 0.3),
-                    lineHeight: 20
+                    x: 50, y: page.getHeight() - 80, size: 12, color: rgb(0.3, 0.3, 0.3), lineHeight: 20
                 });
                 pdfBytes = await tmpDoc.save();
             }
-
             const srcDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
             const pages = await mergedDoc.copyPages(srcDoc, srcDoc.getPageIndices());
             pages.forEach(p => mergedDoc.addPage(p));
@@ -683,7 +683,7 @@ async function buildMergedPdf() {
     }
 
     if (addedCount === 0) {
-        showMergeStatus('⚠️ Heç bir sənəd yüklənə bilmədi. Fayllar serverdə mövcuddurmu?', 'error');
+        showMergeStatus('⚠️ Heç bir sənəd yüklənə bilmədi.', 'error');
         document.getElementById('btn-merge').disabled = false;
         document.getElementById('btn-save').disabled = false;
         return null;
@@ -700,7 +700,6 @@ async function mergeAndDownload() {
     let bytes = mergedPdfBytes;
     if (!bytes) bytes = await buildMergedPdf();
     if (!bytes) return;
-
     const blob = new Blob([bytes], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -752,9 +751,7 @@ async function mergeAndSave() {
 function arrayBufferToBase64(buffer) {
     let binary = '';
     const bytes = new Uint8Array(buffer);
-    for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-    }
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
     return window.btoa(binary);
 }
 
@@ -780,16 +777,12 @@ async function loadCommissionTable() {
         data = await res.json();
         if (!Array.isArray(data)) throw new Error('Yanlış cavab formatı');
     } catch(e) {
-        tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:red;">
-            &#9888; Serverə qoşulmaq mümkün olmadı: ${e.message}
-        </td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:red;">&#9888; Serverə qoşulmaq mümkün olmadı: ${e.message}</td></tr>`;
         return;
     }
 
     if (data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-muted);">
-            Cədvəldə məlumat yoxdur.
-        </td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-muted);">Cədvəldə məlumat yoxdur.</td></tr>`;
         return;
     }
 
@@ -814,7 +807,6 @@ async function loadCommissionTable() {
             tr.onclick = function() { selectStudent(app, tr); };
 
             let statusClass = getStatusPillClass(app.decisionStatus);
-
             const hasUploadedDocs = DOC_FIELDS.some(f => app[f.key] && app[f.key].length > 3);
             const hasSavedPdf = app.hasManualFile && app.manualFileName && app.manualFileName.includes('_Muraciet_');
             const docsLabel = hasSavedPdf
@@ -830,9 +822,7 @@ async function loadCommissionTable() {
                 <td>${app.expiryDate || '-'}</td>
                 <td>${app.educationForm}</td>
                 <td style="text-align:center;">
-                    <button class="${docsBtnClass}" 
-                            onclick="openDocsModal('${app.id}', event)" 
-                            title="Müraciət sənədlərini göstər / PDF endir">
+                    <button class="${docsBtnClass}" onclick="openDocsModal('${app.id}', event)" title="Müraciət sənədlərini göstər / PDF endir">
                         ${docsLabel}
                     </button>
                 </td>
