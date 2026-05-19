@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- PDF birləşdirmə üçün pdf-lib -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
     
     <style>
         :root {
@@ -22,7 +24,6 @@
             --success-green: #16a34a;
             --danger-red: #dc2626;
             --warning-orange: #d97706;
-            --excel-bg: #f8fafc;
         }
 
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
@@ -33,7 +34,6 @@
         }
         .app-window { display: flex; width: 100%; max-width: 1650px; height: 85vh; background: #ffffff; border-radius: 16px; border: 2px solid var(--border-window); box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3); overflow: hidden; }
         
-        /* 🔒 İzolyasiya olunmuş sol menyu */
         .nav-sidebar { width: 80px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 25px 0; background: #ffffff; border-right: 2px solid var(--border-window); flex-shrink: 0; }
         .nav-item { width: 48px; height: 48px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: #ffffff; font-size: 18px; background: var(--brand-blue); border: 2px solid var(--brand-blue); cursor: default; }
         
@@ -61,14 +61,15 @@
         .excel-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
         .excel-table th { background: var(--primary-navy); color: white; font-weight: 700; padding: 12px 10px; position: sticky; top: 0; z-index: 10; }
         
-        .excel-table th:nth-child(1), .excel-table td:nth-child(1) { width: 25%; }
-        .excel-table th:nth-child(2), .excel-table td:nth-child(2) { width: 10%; }
-        .excel-table th:nth-child(3), .excel-table td:nth-child(3) { width: 9%; }
-        .excel-table th:nth-child(4), .excel-table td:nth-child(4) { width: 12%; }
-        .excel-table th:nth-child(5), .excel-table td:nth-child(5) { width: 11%; }
-        .excel-table th:nth-child(6), .excel-table td:nth-child(6) { width: 21%; }
-        .excel-table th:nth-child(7), .excel-table td:nth-child(7) { width: 6%; }
-        .excel-table th:nth-child(8), .excel-table td:nth-child(8) { width: 6%; }
+        .excel-table th:nth-child(1), .excel-table td:nth-child(1) { width: 22%; }
+        .excel-table th:nth-child(2), .excel-table td:nth-child(2) { width: 9%; }
+        .excel-table th:nth-child(3), .excel-table td:nth-child(3) { width: 8%; }
+        .excel-table th:nth-child(4), .excel-table td:nth-child(4) { width: 11%; }
+        .excel-table th:nth-child(5), .excel-table td:nth-child(5) { width: 10%; }
+        .excel-table th:nth-child(6), .excel-table td:nth-child(6) { width: 20%; }
+        .excel-table th:nth-child(7), .excel-table td:nth-child(7) { width: 13%; }
+        .excel-table th:nth-child(8), .excel-table td:nth-child(8) { width: 4%; }
+        .excel-table th:nth-child(9), .excel-table td:nth-child(9) { width: 3%; }
 
         .school-row { background: #e2e8f0 !important; font-weight: 700; color: var(--primary-navy); }
         .school-row td { padding: 10px; border-bottom: 2px solid #cbd5e1; }
@@ -82,6 +83,83 @@
         .status-pill.gozleme { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
         .status-pill.quvvede { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
         .status-pill.dusub { background: #fee2e2; color: var(--danger-red); border: 1px solid #fca5a5; }
+
+        /* Sənədlər düyməsi */
+        .btn-docs { 
+            background: var(--brand-blue); color: white; border: none; border-radius: 5px; 
+            padding: 4px 8px; font-size: 11px; font-weight: 700; cursor: pointer; 
+            display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+        }
+        .btn-docs:hover { background: var(--primary-navy); }
+        .btn-docs.has-docs { background: var(--success-green); }
+        .btn-docs.has-docs:hover { background: #15803d; }
+        .btn-docs.loading { background: #94a3b8; cursor: wait; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6);
+            z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff; border-radius: 14px; border: 2px solid var(--primary-navy);
+            width: 460px; max-width: 95vw; box-shadow: 0 20px 50px rgba(15,23,42,0.4);
+            overflow: hidden;
+        }
+        .modal-header {
+            background: var(--primary-navy); color: #fff;
+            padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header h3 { font-size: 14px; font-weight: 700; }
+        .modal-close { background: none; border: none; color: #fff; font-size: 18px; cursor: pointer; line-height: 1; }
+        .modal-body { padding: 18px; }
+        .modal-student-info { 
+            background: #f1f5f9; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;
+            font-size: 13px; color: var(--primary-navy); font-weight: 600;
+        }
+        .modal-student-info span { color: var(--text-muted); font-weight: 500; display: block; font-size: 11px; margin-top: 2px; }
+
+        .doc-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+        .doc-item {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 7px; padding: 9px 12px;
+        }
+        .doc-item-left { display: flex; align-items: center; gap: 8px; }
+        .doc-item-left i { font-size: 15px; color: var(--brand-blue); width: 18px; text-align: center; }
+        .doc-item-name { font-size: 12px; font-weight: 600; color: var(--text-dark); }
+        .doc-item-status { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+        .doc-item-status.ok { color: var(--success-green); }
+        .doc-item-status.missing { color: #94a3b8; }
+        .btn-open-doc { 
+            background: none; border: 1px solid var(--brand-blue); color: var(--brand-blue);
+            border-radius: 5px; padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer;
+        }
+        .btn-open-doc:hover { background: var(--brand-blue); color: #fff; }
+        .btn-open-doc:disabled { border-color: #cbd5e1; color: #cbd5e1; cursor: not-allowed; }
+
+        .modal-actions { display: flex; gap: 8px; }
+        .btn-merge-pdf {
+            flex: 1; background: var(--primary-navy); color: #fff;
+            border: none; border-radius: 7px; padding: 11px; font-size: 13px; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+        }
+        .btn-merge-pdf:hover { background: var(--brand-blue); }
+        .btn-merge-pdf:disabled { background: #94a3b8; cursor: wait; }
+        .btn-save-pdf {
+            flex: 1; background: var(--success-green); color: #fff;
+            border: none; border-radius: 7px; padding: 11px; font-size: 13px; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+        }
+        .btn-save-pdf:hover { background: #15803d; }
+        .btn-save-pdf:disabled { background: #94a3b8; cursor: wait; }
+
+        .merge-status { 
+            margin-top: 10px; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+            display: none;
+        }
+        .merge-status.info { background: #e0f2fe; color: #0369a1; display: block; }
+        .merge-status.success { background: #dcfce7; color: var(--success-green); display: block; }
+        .merge-status.error { background: #fee2e2; color: var(--danger-red); display: block; }
 
         .preview-container { border: 2px solid var(--border-strong); border-radius: 8px; background: #ffffff; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
         .right-card-body { flex: 1; overflow-y: auto; padding: 15px; }
@@ -104,6 +182,36 @@
     </style>
 </head>
 <body>
+
+<!-- ══════════════ SƏNƏDLƏR MODALI ══════════════ -->
+<div class="modal-overlay" id="docsModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-folder-open"></i> &nbsp;Müraciət Sənədləri</h3>
+            <button class="modal-close" onclick="closeDocsModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-student-info" id="modal-student-info">
+                <div id="modal-student-name">—</div>
+                <span id="modal-student-school">—</span>
+            </div>
+
+            <div class="doc-list" id="doc-list">
+                <!-- JS tərəfindən doldurulur -->
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-merge-pdf" id="btn-merge" onclick="mergeAndDownload()">
+                    <i class="fa-solid fa-file-pdf"></i> PDF Endir
+                </button>
+                <button class="btn-save-pdf" id="btn-save" onclick="mergeAndSave()">
+                    <i class="fa-solid fa-floppy-disk"></i> Saxla
+                </button>
+            </div>
+            <div class="merge-status" id="merge-status"></div>
+        </div>
+    </div>
+</div>
 
 <div class="app-window">
     <div class="nav-sidebar">
@@ -128,14 +236,14 @@
                 <optgroup label="🏢 GƏNCƏ ŞƏHƏRI">
                     <option value="Gəncə şəhər İ.Qayıbov adına 1 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər İ.Qayıbov adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər Ə.Cavad adına 2 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər Ə.Cavad adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər M.Mehdizadə adına 3 nömrəli tam orta ümumtəhsil məktəb-liseyi">Gəncə şəhər M.Mehdizadə adına 3 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
-                    <option value="Gəncə şəhər M.Hadi adına 4 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Hadi adına 4 nömrəli tam orta ümumtəhsil məktəbi</option>
+                    <option value="Gəncə şəhər 3 nömrəli tam orta ümumtəhsil məktəb-liseyi">Gəncə şəhər 3 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
+                    <option value="Gəncə şəhər M.Mehdizadə adına 4 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Mehdizadə adına 4 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər M.Ə.Sabir adına 5 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Ə.Sabir adına 5 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər C.Cabbarlı adına 6 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər C.Cabbarlı adına 6 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər 7 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 7 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər M.P.Vaqif adına 8 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.P.Vaqif adına 8 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər 9 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 9 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 10 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 10 nömrəli tam orta ümumtəhsil məktəbi</option>
+                    <option value="Gəncə şəhər M.Hadi adına 10 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Hadi adına 10 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər N.Gəncəvi adına 11 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər N.Gəncəvi adına 11 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər V.Əliyev adına 12 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər V.Əliyev adına 12 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər H.Əliyev adına 13 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər H.Əliyev adına 13 nömrəli tam orta ümumtəhsil məktəbi</option>
@@ -146,166 +254,28 @@
                     <option value="Gəncə şəhər N.Aydın adına 18 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər N.Aydın adına 18 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər 19 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 19 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər M.A.Abbaszadə adına 20 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.A.Abbaszadə adına 20 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 21 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 21 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 22 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 22 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 23 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 23 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 24 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 24 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 25 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 25 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 26 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 26 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər İ.Məmmədov adına 27 nömrəli tam orta ümumtəhsil məktəb-liseyi">Gəncə şəhər İ.Məmmədov adına 27 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
-                    <option value="Gəncə şəhər 28 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 28 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 29 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 29 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 30 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 30 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 31 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 31 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 32 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 32 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 33 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 33 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 34 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 34 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 35 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 35 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 36 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 36 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 37 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 37 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 38 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 38 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 39 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 39 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 40 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 40 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 41 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 41 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 42 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 42 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 43 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 43 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Gəncə şəhər İnteqrasiya təlimli İnternat Tipli Gimnaziya">Gəncə şəhər İnteqrasiya təlimli İnternat Tipli Gimnaziya</option>
                     <option value="Gəncə şəhər 45 nömrəli xüsusi məktəbi">Gəncə şəhər 45 nömrəli xüsusi məktəbi</option>
                 </optgroup>
                 <optgroup label="🏢 GÖYGÖL RAYONU">
                     <option value="Göygöl şəhər 1 nömrəli tam orta ümumtəhsil məktəbi">Göygöl şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Göygöl şəhər 2 nömrəli tam orta ümumtəhsil məktəb-liseyi">Göygöl şəhər 2 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
-                    <option value="Xaqani kənd tam orta ümumtəhsil məktəbi">Xaqani kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Toğanalı kənd tam orta ümumtəhsil məktəbi">Toğanalı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Üçtəpə kənd tam orta ümumtəhsil məktəbi">Üçtəpə kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Xanalılar kənd tam orta ümumtəhsil məktəbi">Xanalılar kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Firuzabad kənd tam orta ümumtəhsil məktəbi">Firuzabad kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Hacıməlik kənd tam orta ümumtəhsil məktəbi">Hacıməlik kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Aşıqlı kənd tam orta ümumtəhsil məktəbi">Aşıqlı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Quşqara kənd tam orta ümumtəhsil məktəbi">Quşqara kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Balçılı kənd tam orta ümumtəhsil məktəbi">Balçılı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Almalı kənd tam orta ümumtəhsil məktəbi">Almalı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Çaykənd kənd tam orta ümumtəhsil məktəbi">Çaykənd kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Çaylı kənd tam orta ümumtəhsil məktəbi">Çaylı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Dozular kənd tam orta ümumtəhsil məktəbi">Dozular kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə kənd tam orta ümumtəhsil məktəbi">Gəncə kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Göykənd kənd ümumi orta məktəbi">Göykənd kənd ümumi orta məktəbi</option>
-                    <option value="Qızılca kənd tam orta ümumtəhsil məktəbi">Qızılca kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Köşkü kənd tam orta ümumtəhsil məktəbi">Köşkü kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Mollacəlilli kənd tam orta ümumtəhsil məktəbi">Mollacəlilli kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Nadel kənd tam orta ümumtəhsil məktəbi">Nadel kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Pənahlılar kənd tam orta ümumtəhsil məktəbi">Pənahlılar kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Sarısu kənd ümumi orta məktəbi">Sarısu kənd ümumi orta məktəbi</option>
-                    <option value="Şəhriyar kənd tam orta ümumtəhsil məktəbi">Şəhriyar kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Yenikənd kənd tam orta ümumtəhsil məktəbi">Yenikənd kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Zurnabad kənd tam orta ümumtəhsil məktəbi">Zurnabad kənd tam orta ümumtəhsil məktəbi</option>
                 </optgroup>
                 <optgroup label="🏢 DAŞKƏSƏN RAYONU">
                     <option value="Daşkəsən şəhər S.Vurğun adına 1 nömrəli tam orta ümumtəhsil məktəbi">Daşkəsən şəhər S.Vurğun adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Daşkəsən şəhər A.Mürsəlov adına 2 nömrəli tam orta ümumtəhsil məktəbi">Daşkəsən şəhər A.Mürsəlov adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Quşçu kənd tam orta ümumtəhsil məktəbi">Quşçu kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Bayan kənd tam orta ümumtəhsil məktəbi">Bayan kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Əhmədli kənd tam orta ümumtəhsil məktəbi">Əhmədli kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Alaxançallı kənd tam orta ümumtəhsil məktəbi">Alaxançallı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Zivlan kənd tam orta ümumtəhsil məktəbi">Zivlan kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gurbulaq kənd tam orta ümumtəhsil məktəbi">Gurbulaq kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Xoşbulaq kənd tam orta ümumtəhsil məktəbi">Xoşbulaq kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Almalı kənd ümumi orta məktəbi">Almalı kənd ümumi orta məktəbi</option>
-                    <option value="Astaf kənd tam orta ümumtəhsil məktəbi">Astaf kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Çaykənd kənd tam orta ümumtəhsil məktəbi">Çaykənd kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Çıraqlı kənd tam orta ümumtəhsil məktəbi">Çıraqlı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Daşkəsən kənd tam orta ümumtəhsil məktəbi">Daşkəsən kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Emilli kənd tam orta ümumtəhsil məktəbi">Emilli kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Göyvilyurd kənd tam orta ümumtəhsil məktəbi">Göyvilyurd kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Xaçbulaq kənd tam orta ümumtəhsil məktəbi">Xaçbulaq kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Qabaqtəpə kənd tam orta ümumtəhsil məktəbi">Qabaqtəpə kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Qarataq kənd ümumi orta məktəbi">Qarataq kənd ümumi orta məktəbi</option>
-                    <option value="Mollahasanlı kənd tam orta ümumtəhsil məktəbi">Mollahasanlı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Muganlı kənd tam orta ümumtəhsil məktəbi">Muganlı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Pirverdilər kənd tam orta ümumtəhsil məktəbi">Pirverdilər kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Quşçu qəsəbə tam orta ümumtəhsil məktəbi">Quşçu qəsəbə tam orta ümumtəhsil məktəbi</option>
-                    <option value="Səbətkeçməz kənd tam orta ümumtəhsil məktəbi">Səbətkeçməz kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Şahvələdli kənd tam orta ümumtəhsil məktəbi">Şahvələdli kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Tazakənd kənd tam orta ümumtəhsil məktəbi">Tazakənd kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Yenikənd kənd tam orta ümumtəhsil məktəbi">Yenikənd kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Yolqullar kənd tam orta ümumtəhsil məktəbi">Yolqullar kənd tam orta ümumtəhsil məktəbi</option>
                 </optgroup>
                 <optgroup label="🏢 GORANBOY RAYONU">
                     <option value="Goranboy şəhər 1 nömrəli tam orta ümumtəhsil məktəbi">Goranboy şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Goranboy şəhər 2 nömrəli tam orta ümumtəhsil məktəbi">Goranboy şəhər 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Dəliməmmədli şəhər tam orta ümumtəhsil məktəbi">Dəliməmmədli şəhər tam orta ümumtəhsil məktəbi</option>
-                    <option value="Aşağı Ağcakənd qəsəbə tam orta ümumtəhsil məktəbi">Aşağı Ağcakənd qəsəbə tam orta ümumtəhsil məktəbi</option>
-                    <option value="Qazanbulaq qəsəbə tam orta ümumtəhsil məktəbi">Qazanbulaq qəsəbə tam orta ümumtəhsil məktəbi</option>
-                    <option value="Goran qəsəbə tam orta ümumtəhsil məktəbi">Goran qəsəbə tam orta ümumtəhsil məktəbi</option>
-                    <option value="Xan Qərvənd kənd tam orta ümumtəhsil məktəbi">Xan Qərvənd kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Səfikürd kənd tam orta ümumtəhsil məktəbi">Səfikürd kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Tap Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi">Tap Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Borsunlu kənd tam orta ümumtəhsil məktəbi">Borsunlu kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Qızılhacılı kənd 1 nömrəli tam orta ümumtəhsil məktəbi">Qızılhacılı kənd 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Qızılhacılı kənd 2 nömrəli tam orta ümumtəhsil məktəbi">Qızılhacılı kənd 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Boluslu kənd tam orta ümumtəhsil məktəbi">Boluslu kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Nadir kənd tam orta ümumtəhsil məktəbi">Nadir kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Veyisli kənd tam orta ümumtəhsil məktəbi">Veyisli kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Alpout kənd tam orta ümumtəhsil məktəbi">Alpout kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Baxçakürd kənd tam orta ümumtəhsil məktəbi">Baxçakürd kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Abram kənd tam orta ümumtəhsil məktəbi">Abram kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Buzluq kənd ümumi orta məktəbi">Buzluq kənd ümumi orta məktəbi</option>
-                    <option value="Gülüstan kənd tam orta ümumtəhsil məktəbi">Gülüstan kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Ərzuman kənd tam orta ümumtəhsil məktəbi">Ərzuman kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Fəxralı kənd tam orta ümumtəhsil məktəbi">Fəxralı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Qaradağlı kənd tam orta ümumtəhsil məktəbi">Qaradağlı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Qaraməmmədli kənd tam orta ümumtəhsil məktəbi">Qaraməmmədli kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Qazan kənd tam orta ümumtəhsil məktəbi">Qazan kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Quşçular kənd tam orta ümumtəhsil məktəbi">Quşçular kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Meşəli kənd ümumi orta məktəbi">Meşəli kənd ümumi orta məktəbi</option>
-                    <option value="Sarısu kənd tam orta ümumtəhsil məktəbi">Sarısu kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Semax kənd ümumi orta məktəbi">Semax kənd ümumi orta məktəbi</option>
-                    <option value="Toly kənd tam orta ümumtəhsil məktəbi">Toly kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Xoylunlu kənd tam orta ümumtəhsil məktəbi">Xoylunlu kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Zeyva kənd tam orta ümumtəhsil məktəbi">Zeyva kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Goranboy rayon İnteqrasiya təlimli İnternat Tipli Gimnaziya">Goranboy rayon İnteqrasiya təlimli İnternat Tipli Gimnaziya</option>
                 </optgroup>
                 <optgroup label="🏢 SAMUX RAYONU">
                     <option value="Samux şəhər 1 nömrəli tam orta ümumtəhsil məktəbi">Samux şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Samux şəhər 2 nömrəli tam orta ümumtəhsil məktəbi">Samux şəhər 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Alıuşağı kənd tam orta ümumtəhsil məktəbi">Samux rayon Alıuşağı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Burunqovaq kənd tam orta ümumtəhsil məktəbi">Samux rayon Burunqovaq kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Çobanddağ kənd ümumi orta məktəbi">Samux rayon Çobanddağ kənd ümumi orta məktəbi</option>
-                    <option value="Samux rayon Əhmədbəyli kənd tam orta ümumtəhsil məktəbi">Samux rayon Əhmədbəyli kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Əli Bayramlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Əli Bayramlı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Füzuli kənd tam orta ümumtəhsil məktəbi">Samux rayon Füzuli kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Göyüşlü kənd ümumi orta məktəbi">Samux rayon Göyüşlü kənd ümumi orta məktəbi</option>
-                    <option value="Samux rayon Hacıalılı kənd tam orta ümumtəhsil məktəbi">Samux rayon Hacıalılı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon İnstitut qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon İnstitut qəsəbə tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Kəsəmən kənd tam orta ümumtəhsil məktəbi">Samux rayon Kəsəmən kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Kolayır kənd tam orta ümumtəhsil məktəbi">Samux rayon Kolayır kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Qarabağlar kənd 1 nömrəli tam orta ümumtəhsil məktəbi">Samux rayon Qarabağlar kənd 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Qarabağlar kənd 2 nömrəli tam orta ümumtəhsil məktəbi">Samux rayon Qarabağlar kənd 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Qarabağlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Qarabağlı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Qədili kənd ümumi orta məktəbi">Samux rayon Qədili kənd ümumi orta məktəbi</option>
-                    <option value="Samux rayon Qırıqlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Qırıqlı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Qobustu kənd əsas məktəbi">Samux rayon Qobustu kənd əsas məktəbi</option>
-                    <option value="Samux rayon Ləki kənd tam orta ümumtəhsil məktəbi">Samux rayon Ləki kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Poylu kənd tam orta ümumtəhsil məktəbi">Samux rayon Poylu kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Poylu qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon Poylu qəsəbə tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Salahlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Salahlı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Səfərliyev adına qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon Səfərliyev adına qəsəbə tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Sərkar kənd tam orta ümumtəhsil məktəbi">Samux rayon Sərkar kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Seyidlər kənd tam orta ümumtəhsil məktəbi">Samux rayon Seyidlər kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Tatlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Tatlı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Yenikənd kənd tam orta ümumtəhsil məktəbi">Samux rayon Yenikənd kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Yenidövran qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon Yenidövran qəsəbə tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Ziyadlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Ziyadlı kənd tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon İstixana qəsəbə ümumi orta məktəbi">Samux rayon İstixana qəsəbə ümumi orta məktəbi</option>
-                    <option value="Samux rayon Ləki kənd ümumi orta məktəbi">Samux rayon Ləki kənd ümumi orta məktəbi</option>
-                    <option value="Samux rayon Poylu kənd ümumi orta məktəbi">Samux rayon Poylu kənd ümumi orta məktəbi</option>
-                    <option value="Samux rayon Qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon Qəsəbə tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux rayon Kolayır kənd əsas məktəbi">Samux rayon Kolayır kənd əsas məktəbi</option>
                 </optgroup>
                 <optgroup label="🏢 NAFTALAN ŞƏHƏRI">
                     <option value="Naftalan şəhər İ.Nəsimi adına 1 nömrəli tam orta ümumtəhsil məktəbi">Naftalan şəhər İ.Nəsimi adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
                     <option value="Naftalan şəhər Z.Rüstəmov adına 2 nömrəli tam orta ümumtəhsil məktəbi">Naftalan şəhər Z.Rüstəmov adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Naftalan şəhər Qaşaltı Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi">Naftalan şəhər Qaşaltı Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi</option>
                 </optgroup>
             </select>
 
@@ -325,7 +295,7 @@
                 <option value="Qüvvədən düşüb">Qüvvədən düşüb</option>
             </select>
 
-            <input type="date" id="manual-expiry" style="width: 115px;" title="Müddət (Qüvvədən düşmə)">
+            <input type="date" id="manual-expiry" style="width: 115px;" title="Müddət">
 
             <select id="manual-form" style="width: 155px;">
                 <option value="-">- Seçilməyib -</option>
@@ -364,6 +334,7 @@
                                 <th>Qərar Statusu</th>
                                 <th>Müddət</th>
                                 <th>Təhsil Forması</th>
+                                <th>Müraciət Sənədləri</th>
                                 <th>Endir</th>
                                 <th>Sil</th>
                             </tr>
@@ -432,6 +403,20 @@ let selectedAppId = null;
 let uploadedFileBase64 = null;
 let uploadedFileName = null;
 
+// Modal üçün qlobal dəyişən
+let currentModalApp = null;
+let mergedPdfBytes = null; // saxlanmış birləşdirilmiş PDF
+
+// Sənəd adları (index.html-dəki field adları ilə eyni)
+const DOC_FIELDS = [
+    { key: 'coverLetter',           label: '1. Məktəbin müşayiət məktubu' },
+    { key: 'residenceCertificate',  label: '2. Yaşayış yerindən arayış' },
+    { key: 'xasiyyetname',          label: '3. Xasiyyətnamə' },
+    { key: 'idCopies',              label: '4. Valideyn/Şagird ŞV surəti' },
+    { key: 'tabel',                 label: '5. Qiymət cədvəli / Tabel' },
+    { key: 'forma027',              label: '6. Forma 027 (Tibb arayışı)' },
+];
+
 document.addEventListener("DOMContentLoaded", loadCommissionTable);
 
 function getStatusPillClass(status) {
@@ -440,44 +425,333 @@ function getStatusPillClass(status) {
     return "gozleme";
 }
 
+// ──────────────────────────────────────────────
+//  SƏNƏDLƏR MODALI
+// ──────────────────────────────────────────────
+async function openDocsModal(appId, event) {
+    if (event) event.stopPropagation();
+
+    // Bütün məlumatları yüklə
+    let app = null;
+    try {
+        const res = await fetch('/api/komissiya/get-applications');
+        const data = await res.json();
+        app = data.find(d => d.id === appId);
+    } catch(e) {
+        alert("⚠️ Serverə qoşulmaq mümkün olmadı!");
+        return;
+    }
+    if (!app) { alert("⚠️ Məlumat tapılmadı!"); return; }
+
+    currentModalApp = app;
+    mergedPdfBytes = null;
+
+    // Modal başlığı
+    document.getElementById('modal-student-name').textContent = app.name + ' (' + app.fin + ')';
+    document.getElementById('modal-student-school').textContent = app.schoolText;
+
+    // Sənəd siyahısını qur
+    const list = document.getElementById('doc-list');
+    list.innerHTML = '';
+
+    DOC_FIELDS.forEach(field => {
+        const fname = app[field.key]; // fayl adı (e.g. "PTPK_123_mushayiet.pdf")
+        const hasFile = fname && fname.length > 3;
+
+        const item = document.createElement('div');
+        item.className = 'doc-item';
+        item.innerHTML = `
+            <div class="doc-item-left">
+                <i class="fa-solid ${hasFile ? 'fa-file-lines' : 'fa-file-circle-xmark'}" 
+                   style="color:${hasFile ? 'var(--brand-blue)' : '#cbd5e1'}"></i>
+                <div>
+                    <div class="doc-item-name">${field.label}</div>
+                    <div class="doc-item-status ${hasFile ? 'ok' : 'missing'}">
+                        ${hasFile ? fname : 'Fayl yoxdur'}
+                    </div>
+                </div>
+            </div>
+            <button class="btn-open-doc" 
+                    onclick="openSingleDoc('${fname}')"
+                    ${!hasFile ? 'disabled' : ''}>
+                <i class="fa-solid fa-eye"></i> Aç
+            </button>
+        `;
+        list.appendChild(item);
+    });
+
+    // Manuel fayl da varsa əlavə et
+    if (app.hasManualFile && app.manualFileName) {
+        const item = document.createElement('div');
+        item.className = 'doc-item';
+        item.style.borderColor = 'var(--success-green)';
+        item.innerHTML = `
+            <div class="doc-item-left">
+                <i class="fa-solid fa-stamp" style="color:var(--success-green)"></i>
+                <div>
+                    <div class="doc-item-name">Komissiya Qərarı (Manual)</div>
+                    <div class="doc-item-status ok">${app.manualFileName}</div>
+                </div>
+            </div>
+            <button class="btn-open-doc" onclick="openManualDoc()">
+                <i class="fa-solid fa-eye"></i> Aç
+            </button>
+        `;
+        list.appendChild(item);
+    }
+
+    // Status sıfırla
+    showMergeStatus('', '');
+    document.getElementById('btn-merge').disabled = false;
+    document.getElementById('btn-save').disabled = false;
+
+    document.getElementById('docsModal').classList.add('open');
+}
+
+function closeDocsModal() {
+    document.getElementById('docsModal').classList.remove('open');
+    currentModalApp = null;
+    mergedPdfBytes = null;
+}
+
+// Tək sənədi server /files/ endpoint-indən aç
+function openSingleDoc(fname) {
+    if (!fname) return;
+    window.open('/files/' + fname, '_blank');
+}
+
+// Manuel faylı base64-dən aç
+function openManualDoc() {
+    if (!currentModalApp || !currentModalApp.manualFileData) return;
+    const a = document.createElement('a');
+    a.href = currentModalApp.manualFileData;
+    a.target = '_blank';
+    a.click();
+}
+
+// ──────────────────────────────────────────────
+//  PDF BİRLƏŞDİRMƏ (pdf-lib)
+// ──────────────────────────────────────────────
+
+// Sənədi server-dən ArrayBuffer kimi yüklə
+async function fetchDocBytes(fname) {
+    const res = await fetch('/files/' + fname);
+    if (!res.ok) return null;
+    return await res.arrayBuffer();
+}
+
+// Şəkil faylını PDF-ə çevir (pdf-lib ilə)
+async function imageToPdfBytes(arrayBuf, mimeType) {
+    const { PDFDocument } = PDFLib;
+    const doc = await PDFDocument.create();
+    let img;
+    if (mimeType.includes('png')) {
+        img = await doc.embedPng(arrayBuf);
+    } else {
+        img = await doc.embedJpg(arrayBuf);
+    }
+    const page = doc.addPage([img.width, img.height]);
+    page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+    return await doc.save();
+}
+
+// Bütün sənədləri yükləyib birləşdir
+async function buildMergedPdf() {
+    const { PDFDocument } = PDFLib;
+    const app = currentModalApp;
+
+    showMergeStatus('Sənədlər yüklənir...', 'info');
+    document.getElementById('btn-merge').disabled = true;
+    document.getElementById('btn-save').disabled = true;
+
+    const mergedDoc = await PDFDocument.create();
+    let addedCount = 0;
+
+    for (const field of DOC_FIELDS) {
+        const fname = app[field.key];
+        if (!fname || fname.length <= 3) continue;
+
+        try {
+            const buf = await fetchDocBytes(fname);
+            if (!buf) continue;
+
+            const ext = fname.split('.').pop().toLowerCase();
+            let pdfBytes;
+
+            if (ext === 'pdf') {
+                pdfBytes = buf;
+            } else if (['jpg', 'jpeg', 'png'].includes(ext)) {
+                const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
+                pdfBytes = await imageToPdfBytes(buf, mime);
+            } else {
+                // .doc/.docx kimi faylları cəld bir blank səhifə ilə əvəz et
+                const tmpDoc = await PDFDocument.create();
+                const page = tmpDoc.addPage();
+                const { rgb } = PDFLib;
+                page.drawText(`[${field.label}]\nFayl növü dəstəklənmir: ${fname}`, {
+                    x: 50, y: page.getHeight() - 80,
+                    size: 12, color: rgb(0.3, 0.3, 0.3),
+                    lineHeight: 20
+                });
+                pdfBytes = await tmpDoc.save();
+            }
+
+            const srcDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+            const pages = await mergedDoc.copyPages(srcDoc, srcDoc.getPageIndices());
+            pages.forEach(p => mergedDoc.addPage(p));
+            addedCount++;
+        } catch(e) {
+            console.warn('Sənəd əlavə edilmədi:', fname, e);
+        }
+    }
+
+    if (addedCount === 0) {
+        showMergeStatus('⚠️ Heç bir sənəd yüklənə bilmədi. Fayllar serverdə mövcuddurmu?', 'error');
+        document.getElementById('btn-merge').disabled = false;
+        document.getElementById('btn-save').disabled = false;
+        return null;
+    }
+
+    const bytes = await mergedDoc.save();
+    mergedPdfBytes = bytes;
+    document.getElementById('btn-merge').disabled = false;
+    document.getElementById('btn-save').disabled = false;
+    return bytes;
+}
+
+// "PDF Endir" düyməsi
+async function mergeAndDownload() {
+    let bytes = mergedPdfBytes;
+    if (!bytes) {
+        bytes = await buildMergedPdf();
+    }
+    if (!bytes) return;
+
+    const blob = new Blob([bytes], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${currentModalApp.fin}_Muraciet_Senedleri.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showMergeStatus('✅ PDF uğurla endirildi!', 'success');
+}
+
+// "Saxla" düyməsi — birləşdirilmiş PDF-i Supabase-ə yaz (manualFileData kimi)
+async function mergeAndSave() {
+    let bytes = mergedPdfBytes;
+    if (!bytes) {
+        bytes = await buildMergedPdf();
+    }
+    if (!bytes) return;
+
+    showMergeStatus('Serverə yazılır...', 'info');
+    document.getElementById('btn-save').disabled = true;
+
+    // ArrayBuffer → base64
+    const base64 = arrayBufferToBase64(bytes);
+    const dataUrl = 'data:application/pdf;base64,' + base64;
+    const fileName = currentModalApp.fin + '_Muraciet_Senedleri.pdf';
+
+    try {
+        const res = await fetch('/api/komissiya/update-decision', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: currentModalApp.id,
+                decisionStatus: currentModalApp.decisionStatus || 'Gözləmədə',
+                educationForm: currentModalApp.educationForm || '-',
+                notes: currentModalApp.notes || '',
+                expiryDate: currentModalApp.expiryDate || '-',
+                manualFileData: dataUrl,
+                manualFileName: fileName
+            })
+        });
+        if (res.ok) {
+            showMergeStatus('✅ Birləşdirilmiş PDF bazaya saxlandı: ' + fileName, 'success');
+            await loadCommissionTable();
+        } else {
+            showMergeStatus('⚠️ Server xətası. Fayl yazılmadı.', 'error');
+        }
+    } catch(e) {
+        showMergeStatus('⚠️ Serverə qoşulmaq mümkün olmadı!', 'error');
+    }
+    document.getElementById('btn-save').disabled = false;
+}
+
+function arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
+}
+
+function showMergeStatus(msg, type) {
+    const el = document.getElementById('merge-status');
+    el.className = 'merge-status';
+    if (type) el.classList.add(type);
+    el.textContent = msg;
+}
+
+// ──────────────────────────────────────────────
+//  CƏDVƏL YÜKLƏNMƏSI
+// ──────────────────────────────────────────────
 async function loadCommissionTable() {
     const tableBody = document.getElementById('table-data-body');
-    if(!tableBody) return;
-    tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Yüklənir...</td></tr>';
+    if (!tableBody) return;
+    tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Yüklənir...</td></tr>';
 
     let data = [];
     try {
         const res = await fetch('/api/komissiya/get-applications');
+        if (!res.ok) throw new Error('Server xətası: ' + res.status);
         data = await res.json();
+        if (!Array.isArray(data)) throw new Error('Yanlış cavab formatı');
     } catch(e) {
-        tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:red;">&#9888;&#65039; Serverə qoşulmaq mümkün olmadı. Python serveri işlədiyindən əmin olun.</td></tr>';
+        tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:red;">
+            &#9888; Serverə qoşulmaq mümkün olmadı: ${e.message}
+        </td></tr>`;
         return;
     }
 
-    if(data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">Cədvəldə məlumat yoxdur. Sənəd göndərin və ya əllə yazın.</td></tr>`;
+    if (data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-muted);">
+            Cədvəldə məlumat yoxdur.
+        </td></tr>`;
         return;
     }
 
     let grouped = {};
     data.forEach(app => {
-        if(!grouped[app.schoolText]) grouped[app.schoolText] = [];
+        if (!grouped[app.schoolText]) grouped[app.schoolText] = [];
         grouped[app.schoolText].push(app);
     });
+
+    tableBody.innerHTML = '';
 
     for (let school in grouped) {
         let schoolRow = document.createElement('tr');
         schoolRow.className = "school-row";
-        schoolRow.innerHTML = `<td colspan="8"><i class="fa-solid fa-building"></i> ${school}</td>`;
+        schoolRow.innerHTML = `<td colspan="9"><i class="fa-solid fa-building"></i> ${school}</td>`;
         tableBody.appendChild(schoolRow);
 
         grouped[school].forEach(app => {
             let tr = document.createElement('tr');
             tr.className = "student-row";
-            if(selectedAppId === app.id) tr.classList.add('active');
+            if (selectedAppId === app.id) tr.classList.add('active');
             tr.onclick = function() { selectStudent(app, tr); };
 
             let statusClass = getStatusPillClass(app.decisionStatus);
+
+            // Yüklənmiş sənəd varmı?
+            const hasUploadedDocs = DOC_FIELDS.some(f => app[f.key] && app[f.key].length > 3);
+            const hasSavedPdf = app.hasManualFile && app.manualFileName && app.manualFileName.includes('_Muraciet_');
+            const docsLabel = hasSavedPdf
+                ? '<i class="fa-solid fa-check-circle"></i> Saxlanıb'
+                : (hasUploadedDocs ? '<i class="fa-solid fa-folder"></i> Sənədlər' : '<i class="fa-solid fa-folder-open" style="color:#cbd5e1"></i> Yoxdur');
+            const docsBtnClass = hasSavedPdf ? 'btn-docs has-docs' : (hasUploadedDocs ? 'btn-docs' : 'btn-docs');
 
             tr.innerHTML = `
                 <td><strong>${app.name} (${app.fin})</strong></td>
@@ -487,12 +761,19 @@ async function loadCommissionTable() {
                 <td>${app.expiryDate || '-'}</td>
                 <td>${app.educationForm}</td>
                 <td style="text-align:center;">
-                    <button class="btn-download-cell" onclick="event.stopPropagation(); downloadDecisionPDF('${app.id}')" title="Sənədi Endir">
+                    <button class="${docsBtnClass}" 
+                            onclick="openDocsModal('${app.id}', event)" 
+                            title="Müraciət sənədlərini göstər / PDF endir">
+                        ${docsLabel}
+                    </button>
+                </td>
+                <td style="text-align:center;">
+                    <button class="btn-download-cell" onclick="event.stopPropagation(); downloadDecisionPDF('${app.id}')" title="Qərar sənədini endir">
                         <i class="fa-solid ${app.hasManualFile ? 'fa-file-lines' : 'fa-file-pdf'}" style="${app.hasManualFile ? 'color:var(--success-green);' : ''}"></i>
                     </button>
                 </td>
                 <td style="text-align:center;">
-                    <button style="border:none; background:none; cursor:pointer;" onclick="event.stopPropagation(); deleteStudent('${app.id}')">
+                    <button style="border:none;background:none;cursor:pointer;" onclick="event.stopPropagation(); deleteStudent('${app.id}')">
                         <i class="fa-solid fa-trash-can" style="color:var(--danger-red);"></i>
                     </button>
                 </td>
@@ -502,26 +783,22 @@ async function loadCommissionTable() {
     }
 }
 
+// ──────────────────────────────────────────────
+//  DİGƏR FUNKSIYALAR (orijinaldan saxlanıb)
+// ──────────────────────────────────────────────
 async function addStudentManually() {
     const name = document.getElementById('manual-name').value.trim();
     const fin = document.getElementById('manual-fin').value.trim().toUpperCase();
     const schoolSelect = document.getElementById('manual-school');
-    const schoolValue = schoolSelect.value;
     const schoolText = schoolSelect.options[schoolSelect.selectedIndex].text;
-    
     const year = document.getElementById('manual-year').value;
-    const docStatus = document.getElementById('manual-doc').value;
     const decisionStatus = document.getElementById('manual-status').value;
     const expiryInput = document.getElementById('manual-expiry').value;
     const educationForm = document.getElementById('manual-form').value;
 
-    if(!name || !fin) {
-        alert("Zəhmət olmasa şagirdin adını və FİN kodunu yazın!");
-        return;
-    }
+    if (!name || !fin) { alert("Zəhmət olmasa şagirdin adını və FİN kodunu yazın!"); return; }
 
     const expiryDate = expiryInput ? expiryInput.split('-').reverse().join('.') : "-";
-
     const emptyBlob = new Blob([''], {type: 'application/octet-stream'});
     const formData = new FormData();
     formData.append('finCode', fin);
@@ -537,15 +814,13 @@ async function addStudentManually() {
     formData.append('forma027', emptyBlob, 'bos.txt');
 
     try {
-        const res = await fetch('/api/school/submit-student', {
-            method: 'POST', body: formData
-        });
+        const res = await fetch('/api/school/submit-student', {method: 'POST', body: formData});
         if (res.ok) {
             const result = await res.json();
             await fetch('/api/komissiya/update-decision', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id: result.id, decisionStatus: decisionStatus, educationForm: educationForm, notes: "", expiryDate: expiryDate})
+                body: JSON.stringify({id: result.id, decisionStatus, educationForm, notes: "", expiryDate})
             });
             document.getElementById('manual-name').value = "";
             document.getElementById('manual-fin').value = "";
@@ -559,15 +834,12 @@ async function addStudentManually() {
 function handleManualFile(input) {
     const file = input.files[0];
     if (!file) return;
-
     uploadedFileName = file.name;
     const reader = new FileReader();
     reader.onload = function(e) {
         const result = e.target.result;
         const sizeKB = Math.round((result.length * 2) / 1024);
-        if (sizeKB > 3000) {
-            alert("⚠️ Fayl həddən böyükdür (" + sizeKB + " KB). LocalStorage limiti 5MB-dır. Kiçik həcmli PDF istifadə edin, əks halda saxlanılmaya bilər.");
-        }
+        if (sizeKB > 3000) { alert("⚠️ Fayl həddən böyükdür (" + sizeKB + " KB)."); }
         uploadedFileBase64 = result;
         const infoLabel = document.getElementById('file-info-label');
         infoLabel.innerText = "Yükləndi: " + file.name + " (" + sizeKB + " KB)";
@@ -587,19 +859,17 @@ function selectStudent(app, rowElement) {
 
     document.getElementById('panel-name').innerText = app.name + " (" + app.fin + ")";
     document.getElementById('panel-school').innerText = app.schoolText;
-    
     document.getElementById('text-notes').value = app.notes || "";
     document.getElementById('select-status').value = app.decisionStatus || "Gözləmədə";
     document.getElementById('select-form').value = app.educationForm !== "-" ? app.educationForm : "Evdə təhsil (Ümumi proqram)";
     document.getElementById('decision-expiry-date').value = app.expiryDate && app.expiryDate !== "-" ? app.expiryDate.split('.').reverse().join('-') : "";
 
-    // Fayl yükləmə sahəsini sıfırla
     uploadedFileBase64 = app.manualFileData || null;
     uploadedFileName = app.manualFileName || null;
     document.getElementById('manual-file-upload').value = "";
     
     const infoLabel = document.getElementById('file-info-label');
-    if(app.hasManualFile) {
+    if (app.hasManualFile) {
         infoLabel.innerText = "Sistemdə fayl var: " + app.manualFileName;
         infoLabel.style.display = "block";
         document.getElementById('upload-status-text').style.display = "none";
@@ -611,42 +881,22 @@ function selectStudent(app, rowElement) {
 
 async function saveCommissionDecision() {
     if (!selectedAppId) return;
-
     const notes = document.getElementById('text-notes').value;
     const finalDecision = document.getElementById('select-form').value;
     const status = document.getElementById('select-status').value;
     const expiry = document.getElementById('decision-expiry-date').value;
     const expiryDate = expiry ? expiry.split('-').reverse().join('.') : "-";
 
-    const payload = {
-        id: selectedAppId,
-        decisionStatus: status,
-        educationForm: finalDecision,
-        notes: notes,
-        expiryDate: expiryDate
-    };
-
-    // Yüklənmiş fayl varsa, onu da serverə göndər
-    if (uploadedFileBase64) {
-        payload.manualFileData = uploadedFileBase64;
-        payload.manualFileName = uploadedFileName;
-    }
+    const payload = { id: selectedAppId, decisionStatus: status, educationForm: finalDecision, notes, expiryDate };
+    if (uploadedFileBase64) { payload.manualFileData = uploadedFileBase64; payload.manualFileName = uploadedFileName; }
 
     try {
         const res = await fetch('/api/komissiya/update-decision', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
+            method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
         });
-        if (res.ok) {
-            alert("✅ Komissiya qərarı uğurla bazaya yazıldı!");
-            await loadCommissionTable();
-        } else {
-            alert("⚠️ Server xətası. Qərar yazılmadı.");
-        }
-    } catch(e) {
-        alert("⚠️ Serverə qoşulmaq mümkün olmadı! Python serveri işlədiyindən əmin olun.");
-    }
+        if (res.ok) { alert("✅ Komissiya qərarı uğurla bazaya yazıldı!"); await loadCommissionTable(); }
+        else { alert("⚠️ Server xətası."); }
+    } catch(e) { alert("⚠️ Serverə qoşulmaq mümkün olmadı!"); }
 }
 
 async function downloadDecisionPDF(id) {
@@ -655,59 +905,30 @@ async function downloadDecisionPDF(id) {
         const res = await fetch('/api/komissiya/get-applications');
         const data = await res.json();
         app = data.find(item => item.id === id);
-    } catch(e) {
-        alert("⚠️ Serverə qoşulmaq mümkün olmadı!");
-        return;
-    }
+    } catch(e) { alert("⚠️ Serverə qoşulmaq mümkün olmadı!"); return; }
+    if (!app) { alert("⚠️ Məlumat tapılmadı!"); return; }
 
-    if(!app) { alert("⚠️ Məlumat tapılmadı!"); return; }
-
-    // Əgər ekspert əllə xüsusi skan sənəd yükləyibsə, birbaşa həmin sənədi endirir
-    if(app.hasManualFile && app.manualFileData) {
+    if (app.hasManualFile && app.manualFileData) {
         const link = document.createElement("a");
         link.href = app.manualFileData;
-        link.download = "Rəsmi_Qərar_" + app.manualFileName;
+        link.download = "Qarar_" + (app.manualFileName || app.fin + ".pdf");
         link.click();
         return;
     }
 
-    // Əgər əllə yüklənən sənəd yoxdursa, avtomatlaşdırılmış mətn generasiya edilir
-    const pdfContent = `
-==================================================
-        PSİXOLOJİ-TİBBİ-PEDAQOJİ KOMİSSİYA
-          GƏNCƏ-DAŞKƏSƏN REGİONAL TƏHSİL İDARƏSİ
-==================================================
-MÜƏSSİSƏ: ${app.schoolText}
-TƏDRİS İLİ: ${app.year}
-ŞAGİRD (S.A.A): ${app.name}
-FİN KOD: ${app.fin}
---------------------------------------------------
-QƏRARIN STATUSU: ${app.decisionStatus || 'Gözləmədə'}
-TƏHSİL FORMASI QƏRARI: 
---> ${app.educationForm}
-
-QÜVVƏDƏ OLMA MÜDDƏTİ: ${app.expiryDate || '-'}
---------------------------------------------------
-KOMİSSİYA EKSPERT DİAQNOZU VƏ RƏYİ:
-"${app.notes || 'Rəsmi rəy qeyd edilməmişdir.'}"
---------------------------------------------------
-Tarix: ${new Date().toLocaleDateString('az-AZ')}
-Sistem tərəfindən rəqəmsal olaraq təsdiqlənmişdir.
-==================================================`;
-
-    const blob = new Blob([pdfContent], { type: "text/plain;charset=utf-8" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `${app.fin}_PTPK_Rey_Hesabati.txt`;
-    link.click();
+    // Sadə mətn hesabatı
+    const txt = `PTPK QƏRAR HESABATI\n${'-'.repeat(50)}\nŞAGİRD: ${app.name} (${app.fin})\nMƏKTƏB: ${app.schoolText}\nTƏDRİS İLİ: ${app.year}\nSTATUS: ${app.decisionStatus || 'Gözləmədə'}\nTƏHSİL FORMASI: ${app.educationForm}\nMÜDDƏT: ${app.expiryDate || '-'}\nRƏY: ${app.notes || '-'}\n${'-'.repeat(50)}\nTarix: ${new Date().toLocaleDateString('az-AZ')}`;
+    const blob = new Blob([txt], {type: 'text/plain;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = app.fin + '_PTPK_Qarar.txt';
+    a.click();
 }
 
 async function deleteStudent(id) {
-    if(confirm("Məlumatı silmək istəyirsiniz?")) {
-        try {
-            await fetch('/api/komissiya/delete-application?id=' + id, {method: 'DELETE'});
-        } catch(e) {}
-        if(selectedAppId === id) {
+    if (confirm("Məlumatı silmək istəyirsiniz?")) {
+        try { await fetch('/api/komissiya/delete-application?id=' + id, {method: 'DELETE'}); } catch(e) {}
+        if (selectedAppId === id) {
             selectedAppId = null;
             document.getElementById('sidebar-default-msg').style.display = "block";
             document.getElementById('sidebar-actual-content').style.display = "none";
@@ -720,50 +941,35 @@ async function exportAllExcel() {
     let data = [];
     try {
         const res = await fetch('/api/komissiya/get-applications');
+        if (!res.ok) throw new Error('Server xətası');
         data = await res.json();
-    } catch(e) {}
+    } catch(e) { alert("⚠️ Məlumat alınmadı: " + e.message); return; }
     if (data.length === 0) { alert("Cədvəldə məlumat yoxdur!"); return; }
 
     const headers = ['Şagirdin S.A.A. (FİN)', 'Tədris İli', 'Sənəd Statusu', 'Qərar Statusu', 'Müddət', 'Təhsil Forması', 'Məktəb'];
     let html = '<table border="1"><thead><tr>' +
         headers.map(h => `<th style="background:#0f172a;color:#fff;font-weight:bold;padding:6px 10px;">${h}</th>`).join('') +
         '</tr></thead><tbody>';
-
-    // Group by school
     let grouped = {};
-    data.forEach(app => {
-        if (!grouped[app.schoolText]) grouped[app.schoolText] = [];
-        grouped[app.schoolText].push(app);
-    });
-
+    data.forEach(app => { if (!grouped[app.schoolText]) grouped[app.schoolText] = []; grouped[app.schoolText].push(app); });
     for (let school in grouped) {
         html += `<tr><td colspan="7" style="background:#e2e8f0;font-weight:bold;padding:6px 10px;">${school}</td></tr>`;
         grouped[school].forEach(app => {
-            html += '<tr>' + [
-                `${app.name} (${app.fin})`,
-                app.year || '-',
-                app.docStatus || '-',
-                app.decisionStatus || 'Gözləmədə',
-                app.expiryDate || '-',
-                app.educationForm || '-',
-                app.schoolText || '-'
-            ].map(c => `<td style="padding:5px 10px;">${c}</td>`).join('') + '</tr>';
+            html += '<tr>' + [`${app.name} (${app.fin})`, app.year||'-', app.docStatus||'-', app.decisionStatus||'Gözləmədə', app.expiryDate||'-', app.educationForm||'-', app.schoolText||'-'].map(c => `<td style="padding:5px 10px;">${c}</td>`).join('') + '</tr>';
         });
     }
     html += '</tbody></table>';
-
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + '<html><head><meta charset="UTF-8"></head><body>' + html + '</body></html>'], {type: 'application/vnd.ms-excel;charset=utf-8'});
     const a = document.createElement('a');
-    a.href = 'data:application/vnd.ms-excel,﻿' + encodeURIComponent(html);
+    a.href = URL.createObjectURL(blob);
     a.download = 'PTPK_Komissiya_Siyahisi.xls';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
 function filterStudents() {
     const filter = document.getElementById('studentSearch').value.toUpperCase();
-    const rows = document.querySelectorAll('.student-row');
-    rows.forEach(row => {
+    document.querySelectorAll('.student-row').forEach(row => {
         const text = row.cells[0].textContent || row.cells[0].innerText;
         row.style.display = text.toUpperCase().indexOf(filter) > -1 ? "" : "none";
     });
