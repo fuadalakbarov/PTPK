@@ -20,6 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Autentifikasiya API endpoint-lərini bura daxil edirik
 app.include_router(auth_router)
 
 UPLOAD_DIR = "uploads"
@@ -43,93 +44,110 @@ class DecisionUpdate(BaseModel):
     manualFileData: Optional[str] = None
     manualFileName: Optional[str] = None
 
+# ==========================================
+# SƏHİFƏLƏRİN MARŞRUTLARI (PAGE ROUTES)
+# ==========================================
+
 @app.get("/")
 async def root():
+    # Əsas ana səhifə məktəblərin giriş səhifəsi olur
     return FileResponse("login.html")
 
 @app.get("/login")
 async def login_page():
+    # Məktəblər üçün ümumi giriş linki
     return FileResponse("login.html")
+
+@app.get("/login/komissiya")
+async def komissiya_login_page():
+    # Komissiya üzvləri üçün tamamilə ayrıca giriş səhifəsi
+    return FileResponse("login-komissiya.html")
 
 @app.get("/komissiya")
 async def komissiya_page():
-    return FileResponse("komissiya.html")
-
-@app.get("/admin")
-async def admin_page():
-    return FileResponse("admin.html")
-
-@app.get("/mekteb")
-async def mekteb_page():
-    return FileResponse("mekteb.html")
+    # Komissiyanın əsas idarəetmə paneli
+    return FileResponse("komissiya (1).html")
 
 @app.get("/index")
 async def index_page():
-    return FileResponse("index.html")
+    # Məktəblərin sənəd göndərmə paneli
+    return FileResponse("index (1).html")
 
-@app.get("/image.png")
-async def get_image():
-    return FileResponse("image.png")
+
+# ==========================================
+# APPLİCATİON API ENDPOINT-LƏRİ
+# ==========================================
 
 @app.post("/api/school/submit-student")
 async def submit_student(
     finCode: str = Form(...),
     studentName: str = Form(...),
     schoolSelect: str = Form(...),
-    applicationType: str = Form(...),
-    academicYear: str = Form(...),
+    schoolText: str = Form(...),
+    birthDate: str = Form(...),
+    gender: str = Form(...),
+    parentName: str = Form(...),
+    parentPhone: str = Form(...),
+    district: str = Form(...),
+    year: str = Form(...),
     coverLetter: UploadFile = File(...),
     residenceCertificate: UploadFile = File(...),
     xasiyyetname: UploadFile = File(...),
     idCopies: UploadFile = File(...),
     tabel: UploadFile = File(...),
-    forma027: UploadFile = File(...),
+    forma027: UploadFile = File(...)
 ):
-    app_id = f"PTPK_{int(time.time() * 1000)}"
+    app_id = f"app_{int(time.time())}"
+    
+    # Faylları yadda saxlayırıq
+    files_dict = {
+        "coverLetter": coverLetter,
+        "residenceCertificate": residenceCertificate,
+        "xasiyyetname": xasiyyetname,
+        "idCopies": idCopies,
+        "tabel": tabel,
+        "forma027": forma027
+    }
 
-    def save_file(upload: UploadFile, prefix: str) -> str:
-        if not upload.filename:
-            return ""
-        ext = os.path.splitext(upload.filename)[1]
-        fname = f"{app_id}_{prefix}{ext}"
-        fpath = os.path.join(UPLOAD_DIR, fname)
-        with open(fpath, "wb") as f:
-            shutil.copyfileobj(upload.file, f)
-        return fname
-
-    f_cover = save_file(coverLetter, "mushayiet")
-    f_res   = save_file(residenceCertificate, "yasayis")
-    f_xas   = save_file(xasiyyetname, "xasiyyetname")
-    f_id    = save_file(idCopies, "sv_sureti")
-    f_tab   = save_file(tabel, "tabel")
-    f_027   = save_file(forma027, "forma027")
+    saved_paths = {}
+    for key, f in files_dict.items():
+        ext = os.path.splitext(f.filename)[1]
+        filename = f"{app_id}_{key}{ext}"
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        with open(filepath, "wb") as buffer:
+            shutil.copyfileobj(f.file, buffer)
+        saved_paths[key] = f"/files/{filename}"
 
     payload = {
         "id": app_id,
-        "fin": finCode.upper(),
+        "fin": finCode,
         "name": studentName,
-        "schoolText": schoolSelect,
-        "schoolValue": schoolSelect,
-        "type": applicationType + " Müraciət",
-        "year": academicYear,
-        "docStatus": "Tam Sənəd",
+        "schoolSelect": schoolSelect,
+        "schoolText": schoolText,
+        "birthDate": birthDate,
+        "gender": gender,
+        "parentName": parentName,
+        "parentPhone": parentPhone,
+        "district": district,
+        "year": year,
+        "coverLetter": saved_paths["coverLetter"],
+        "residenceCertificate": saved_paths["residenceCertificate"],
+        "xasiyyetname": saved_paths["xasiyyetname"],
+        "idCopies": saved_paths["idCopies"],
+        "tabel": saved_paths["tabel"],
+        "forma027": saved_paths["forma027"],
+        "docStatus": "Yoxlanılıb",
         "decisionStatus": "Gözləmədə",
-        "expiryDate": "-",
         "educationForm": "-",
-        "notes": "",
+        "notes": "-",
+        "expiryDate": "-",
         "hasManualFile": 0,
-        "manualFileName": "",
         "manualFileData": "",
-        "coverLetter": f_cover,
-        "residenceCertificate": f_res,
-        "xasiyyetname": f_xas,
-        "idCopies": f_id,
-        "tabel": f_tab,
-        "forma027": f_027
+        "manualFileName": ""
     }
 
     async with httpx.AsyncClient() as client:
-        r = await client.post(f"{SUPABASE_URL}/applications", json=payload, headers=HEADERS)
+        await client.post(f"{SUPABASE_URL}/applications", json=payload, headers=HEADERS)
 
     return {"status": "success", "id": app_id}
 
@@ -176,21 +194,3 @@ try:
     app.mount("/files", StaticFiles(directory=UPLOAD_DIR), name="files")
 except Exception:
     pass
-
-
-# main.py faylına əlavə edin və ya yeniləyin:
-
-@app.get("/")
-async def root():
-    # Əsas səhifə olaraq məktəb girişini saxlaya bilərik
-    return FileResponse("login.html")
-
-@app.get("/login")
-async def login_page():
-    # Məktəblər üçün ümumi giriş səhifəsi
-    return FileResponse("login.html")
-
-@app.get("/login/komissiya")
-async def komissiya_login_page():
-    # Komissiya üzvləri üçün xüsusi giriş səhifəsi
-    return FileResponse("login-komissiya.html")
