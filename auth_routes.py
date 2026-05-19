@@ -1,7 +1,10 @@
 import os
 import random
 import string
+import smtplib
 import httpx
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -17,8 +20,8 @@ HEADERS = {
     "Prefer": "return=representation"
 }
 
-BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
-SMTP_EMAIL = os.environ.get("PTPK_SMTP_EMAIL", "abc48a001@smtp-brevo.com")
+SMTP_EMAIL    = os.environ.get("PTPK_SMTP_EMAIL", "")
+SMTP_PASSWORD = os.environ.get("PTPK_SMTP_PASSWORD", "")
 
 class SendOTPRequest(BaseModel):
     email: str
@@ -37,9 +40,14 @@ def generate_token():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=64))
 
 async def send_otp_email(to_email: str, code: str):
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = f"PTPK Giriş Kodu: {code}"
+    msg["From"]    = SMTP_EMAIL
+    msg["To"]      = to_email
+
     html = f"""
     <html><body style="font-family: Arial, sans-serif; background: #f1f5f9; padding: 30px;">
-    <div style="max-width: 420px; margin: auto; background: #ffffff; border-radius: 12px; 
+    <div style="max-width: 420px; margin: auto; background: #ffffff; border-radius: 12px;
                 border: 2px solid #0f172a; overflow: hidden;">
         <div style="background: #0f172a; padding: 20px 24px;">
             <h2 style="color: #ffffff; margin: 0; font-size: 18px;">PTPK Giriş Kodu</h2>
@@ -48,10 +56,10 @@ async def send_otp_email(to_email: str, code: str):
         </div>
         <div style="padding: 28px 24px; text-align: center;">
             <p style="color: #475569; font-size: 14px; margin-bottom: 20px;">
-                Sisteme giriş üçün aşağıdakı 6 rəqəmli kodu daxil edin:</p>
-            <div style="background: #f0f9ff; border: 2px solid #0284c7; border-radius: 10px; 
+                Sistemə giriş üçün aşağıdakı 6 rəqəmli kodu daxil edin:</p>
+            <div style="background: #f0f9ff; border: 2px solid #0284c7; border-radius: 10px;
                         padding: 18px; display: inline-block;">
-                <span style="font-size: 38px; font-weight: 900; letter-spacing: 10px; 
+                <span style="font-size: 38px; font-weight: 900; letter-spacing: 10px;
                              color: #0f172a; font-family: monospace;">{code}</span>
             </div>
             <p style="color: #94a3b8; font-size: 12px; margin-top: 20px;">
@@ -64,25 +72,11 @@ async def send_otp_email(to_email: str, code: str):
     </div>
     </body></html>
     """
+    msg.attach(MIMEText(html, "html"))
 
-    payload = {
-        "sender": {"name": "PTPK", "email": SMTP_EMAIL},
-        "to": [{"email": to_email}],
-        "subject": f"PTPK Giriş Kodu: {code}",
-        "htmlContent": html
-    }
-
-    async with httpx.AsyncClient() as client:
-        r = await client.post(
-            "https://api.brevo.com/v3/smtp/email",
-            json=payload,
-            headers={
-                "api-key": BREVO_API_KEY,
-                "Content-Type": "application/json"
-            }
-        )
-        if r.status_code >= 400:
-            raise Exception(f"Brevo API xətası: {r.text}")
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(SMTP_EMAIL, SMTP_PASSWORD)
+        server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
 
 @router.post("/api/auth/send-otp")
 async def send_otp(req: SendOTPRequest):
@@ -127,8 +121,8 @@ async def send_otp(req: SendOTPRequest):
 @router.post("/api/auth/verify-otp")
 async def verify_otp(req: VerifyOTPRequest):
     email = req.email.strip().lower()
-    code = req.code.strip()
-    now = datetime.utcnow().isoformat()
+    code  = req.code.strip()
+    now   = datetime.utcnow().isoformat()
 
     async with httpx.AsyncClient() as client:
         r = await client.get(
@@ -156,10 +150,10 @@ async def verify_otp(req: VerifyOTPRequest):
     if not users:
         return {"status": "error", "message": "İstifadəçi tapılmadı."}
 
-    user = users[0]
-    role = user.get("role", "user")
+    user     = users[0]
+    role     = user.get("role", "user")
     full_name = user.get("name", "")
-    token = generate_token()
+    token    = generate_token()
     expires_at = (datetime.utcnow() + timedelta(hours=8)).isoformat()
 
     async with httpx.AsyncClient() as client:
@@ -180,7 +174,7 @@ async def verify_otp(req: VerifyOTPRequest):
 @router.post("/api/auth/check-session")
 async def check_session(req: CheckSessionRequest):
     token = req.token.strip()
-    now = datetime.utcnow().isoformat()
+    now   = datetime.utcnow().isoformat()
 
     async with httpx.AsyncClient() as client:
         r = await client.get(
@@ -195,7 +189,7 @@ async def check_session(req: CheckSessionRequest):
     return {
         "status": "valid",
         "email": s["email"],
-        "role": s["role"]
+        "role":  s["role"]
     }
 
 @router.post("/api/auth/logout")
