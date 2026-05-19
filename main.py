@@ -176,3 +176,21 @@ try:
     app.mount("/files", StaticFiles(directory=UPLOAD_DIR), name="files")
 except Exception:
     pass
+
+
+# main.py faylına əlavə edin və ya yeniləyin:
+
+@app.get("/")
+async def root():
+    # Əsas səhifə olaraq məktəb girişini saxlaya bilərik
+    return FileResponse("login.html")
+
+@app.get("/login")
+async def login_page():
+    # Məktəblər üçün ümumi giriş səhifəsi
+    return FileResponse("login.html")
+
+@app.get("/login/komissiya")
+async def komissiya_login_page():
+    # Komissiya üzvləri üçün xüsusi giriş səhifəsi
+    return FileResponse("login-komissiya.html")
