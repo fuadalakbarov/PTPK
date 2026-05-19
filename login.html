@@ -3,1062 +3,608 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PTPK | Komissiya Paneli</title>
+    <title>PTPK | Giriş</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-    
     <style>
         :root {
-            --gradient-start: #0284c7;  
-            --gradient-end: #0f172a;    
-            --primary-navy: #0f172a;     
-            --brand-blue: #0284c7;       
-            --text-dark: #0f172a;        
-            --text-muted: #475569;       
-            --border-strong: #0284c7;    
-            --border-window: #0f172a;    
-            --success-green: #16a34a;
-            --danger-red: #dc2626;
-            --warning-orange: #d97706;
+            --navy: #0f172a;
+            --blue: #0284c7;
+            --blue-light: #e0f2fe;
+            --muted: #475569;
+            --border: #cbd5e1;
+            --success: #16a34a;
+            --danger: #dc2626;
         }
 
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
-        body { 
-            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
-            background-attachment: fixed; height: 100vh; width: 100vw; overflow: hidden; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px;
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0284c7 0%, #0f172a 100%);
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
-        .app-window { display: flex; width: 100%; max-width: 1650px; height: 85vh; background: #ffffff; border-radius: 16px; border: 2px solid var(--border-window); box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3); overflow: hidden; }
-        
-        .nav-sidebar { width: 80px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 25px 0; background: #ffffff; border-right: 2px solid var(--border-window); flex-shrink: 0; }
-        .nav-item { width: 48px; height: 48px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: #ffffff; font-size: 18px; background: var(--brand-blue); border: 2px solid var(--brand-blue); cursor: default; }
-        
-        .btn-logout {
-            width: 48px; height: 48px; border-radius: 12px;
-            display: flex; justify-content: center; align-items: center;
-            color: var(--danger-red); font-size: 18px;
-            background: #fee2e2; border: 2px solid #fca5a5;
-            cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s;
-            margin-bottom: 5px;
-        }
-        .btn-logout:hover { background: var(--danger-red); color: #ffffff; border-color: var(--danger-red); }
 
-        .viewport { flex: 1; padding: 25px 30px; display: flex; flex-direction: column; background: #ffffff; height: 100%; overflow: hidden; }
-        .brand-header { display: flex; align-items: center; gap: 20px; padding-bottom: 15px; border-bottom: 2px solid #e2e8f0; flex-shrink: 0; }
-        .brand-logo { height: 45px; width: auto; }
-        .brand-text h1 { font-size: 20px; font-weight: 700; color: var(--primary-navy); }
-
-        .manual-entry-bar {
-            display: flex; flex-wrap: wrap; gap: 8px; background: #f1f5f9; padding: 12px 15px; margin-top: 15px; border-radius: 8px; border: 2px solid var(--primary-navy); align-items: center; flex-shrink: 0;
-        }
-        .manual-entry-bar input, .manual-entry-bar select { padding: 6px 10px; font-size: 12px; font-weight: 600; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; }
-        .btn-add-manual { background: var(--primary-navy); color: white; padding: 8px 14px; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-        .btn-add-manual:hover { background: var(--brand-blue); }
-
-        .search-container { margin-top: 10px; position: relative; width: 100%; max-width: 450px; flex-shrink: 0; }
-        .search-input { width: 100%; padding: 8px 15px 8px 40px; font-size: 13px; font-weight: 600; border: 2px solid var(--primary-navy); border-radius: 8px; outline: none; }
-        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--primary-navy); }
-
-        .panel-layout { display: grid; grid-template-columns: 2.5fr 1.1fr; gap: 20px; margin-top: 15px; flex: 1; overflow: hidden; }
-        .panel-column { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-        .section-title { font-size: 13px; font-weight: 700; color: var(--primary-navy); margin-bottom: 10px; text-transform: uppercase; }
-
-        .excel-container { flex: 1; overflow: auto; border: 2px solid var(--border-window); border-radius: 8px; }
-        .excel-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
-        .excel-table th { background: var(--primary-navy); color: white; font-weight: 700; padding: 12px 10px; position: sticky; top: 0; z-index: 10; }
-        
-        .excel-table th:nth-child(1), .excel-table td:nth-child(1) { width: 22%; }
-        .excel-table th:nth-child(2), .excel-table td:nth-child(2) { width: 9%; }
-        .excel-table th:nth-child(3), .excel-table td:nth-child(3) { width: 8%; }
-        .excel-table th:nth-child(4), .excel-table td:nth-child(4) { width: 11%; }
-        .excel-table th:nth-child(5), .excel-table td:nth-child(5) { width: 10%; }
-        .excel-table th:nth-child(6), .excel-table td:nth-child(6) { width: 20%; }
-        .excel-table th:nth-child(7), .excel-table td:nth-child(7) { width: 13%; }
-        .excel-table th:nth-child(8), .excel-table td:nth-child(8) { width: 4%; }
-        .excel-table th:nth-child(9), .excel-table td:nth-child(9) { width: 3%; }
-
-        .school-row { background: #e2e8f0 !important; font-weight: 700; color: var(--primary-navy); }
-        .school-row td { padding: 10px; border-bottom: 2px solid #cbd5e1; }
-        .student-row { cursor: pointer; background: #ffffff; height: 44px; }
-        .student-row:nth-child(even) { background: #f8fafc; }
-        .student-row:hover, .student-row.active { background: #f0fdf4 !important; }
-        .student-row td { padding: 8px 10px; border: 1px solid #e2e8f0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
-
-        .status-pill { font-size: 11px; font-weight: 700; padding: 4px 0; width: 100%; text-align: center; border-radius: 4px; display: block; }
-        .status-pill.tam { background: #dcfce7; color: var(--success-green); }
-        .status-pill.gozleme { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
-        .status-pill.quvvede { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-        .status-pill.dusub { background: #fee2e2; color: var(--danger-red); border: 1px solid #fca5a5; }
-
-        .btn-docs { 
-            background: var(--brand-blue); color: white; border: none; border-radius: 5px; 
-            padding: 4px 8px; font-size: 11px; font-weight: 700; cursor: pointer; 
-            display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
-        }
-        .btn-docs:hover { background: var(--primary-navy); }
-        .btn-docs.has-docs { background: var(--success-green); }
-        .btn-docs.has-docs:hover { background: #15803d; }
-        .btn-docs.loading { background: #94a3b8; cursor: wait; }
-
-        /* Modal */
-        .modal-overlay {
-            display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6);
-            z-index: 1000; align-items: center; justify-content: center;
-        }
-        .modal-overlay.open { display: flex; }
-        .modal-box {
-            background: #fff; border-radius: 14px; border: 2px solid var(--primary-navy);
-            width: 460px; max-width: 95vw; box-shadow: 0 20px 50px rgba(15,23,42,0.4);
+        .login-card {
+            background: #ffffff;
+            border-radius: 18px;
+            border: 2px solid var(--navy);
+            box-shadow: 0 24px 60px rgba(15,23,42,0.35);
+            width: 100%;
+            max-width: 420px;
             overflow: hidden;
+            animation: slideUp 0.4s ease;
         }
-        .modal-header {
-            background: var(--primary-navy); color: #fff;
-            padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;
-        }
-        .modal-header h3 { font-size: 14px; font-weight: 700; }
-        .modal-close { background: none; border: none; color: #fff; font-size: 18px; cursor: pointer; line-height: 1; }
-        .modal-body { padding: 18px; }
-        .modal-student-info { 
-            background: #f1f5f9; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;
-            font-size: 13px; color: var(--primary-navy); font-weight: 600;
-        }
-        .modal-student-info span { color: var(--text-muted); font-weight: 500; display: block; font-size: 11px; margin-top: 2px; }
 
-        .doc-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
-        .doc-item {
-            display: flex; align-items: center; justify-content: space-between;
-            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 7px; padding: 9px 12px;
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-        .doc-item-left { display: flex; align-items: center; gap: 8px; }
-        .doc-item-left i { font-size: 15px; color: var(--brand-blue); width: 18px; text-align: center; }
-        .doc-item-name { font-size: 12px; font-weight: 600; color: var(--text-dark); }
-        .doc-item-status { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-        .doc-item-status.ok { color: var(--success-green); }
-        .doc-item-status.missing { color: #94a3b8; }
-        .btn-open-doc { 
-            background: none; border: 1px solid var(--brand-blue); color: var(--brand-blue);
-            border-radius: 5px; padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer;
-        }
-        .btn-open-doc:hover { background: var(--brand-blue); color: #fff; }
-        .btn-open-doc:disabled { border-color: #cbd5e1; color: #cbd5e1; cursor: not-allowed; }
 
-        .modal-actions { display: flex; gap: 8px; }
-        .btn-merge-pdf {
-            flex: 1; background: var(--primary-navy); color: #fff;
-            border: none; border-radius: 7px; padding: 11px; font-size: 13px; font-weight: 700;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
+        .card-header {
+            background: var(--navy);
+            padding: 28px 32px 24px;
+            text-align: center;
         }
-        .btn-merge-pdf:hover { background: var(--brand-blue); }
-        .btn-merge-pdf:disabled { background: #94a3b8; cursor: wait; }
-        .btn-save-pdf {
-            flex: 1; background: var(--success-green); color: #fff;
-            border: none; border-radius: 7px; padding: 11px; font-size: 13px; font-weight: 700;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px;
-        }
-        .btn-save-pdf:hover { background: #15803d; }
-        .btn-save-pdf:disabled { background: #94a3b8; cursor: wait; }
 
-        .merge-status { 
-            margin-top: 10px; padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+        .card-header img {
+            height: 52px;
+            margin-bottom: 14px;
+        }
+
+        .card-header h1 {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+
+        .card-header p {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .card-body {
+            padding: 28px 32px 32px;
+        }
+
+        .steps {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin-bottom: 26px;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .step-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--muted);
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-dot {
+            background: var(--blue);
+            border-color: var(--blue);
+            color: #fff;
+        }
+
+        .step.done .step-dot {
+            background: var(--success);
+            border-color: var(--success);
+            color: #fff;
+        }
+
+        .step-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .step.active .step-label { color: var(--blue); }
+        .step.done .step-label   { color: var(--success); }
+
+        .step-line {
+            flex: 0 0 40px;
+            height: 2px;
+            background: var(--border);
+            margin-bottom: 20px;
+            transition: background 0.3s;
+        }
+
+        .step-line.done { background: var(--success); }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--navy);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 11px 14px;
+            font-size: 14px;
+            font-weight: 500;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+            color: var(--navy);
+            transition: border-color 0.2s;
+            background: #ffffff;
+        }
+
+        .form-group input:focus {
+            border-color: var(--blue);
+        }
+
+        .otp-wrapper {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin: 4px 0;
+        }
+
+        .otp-cell {
+            width: 48px;
+            height: 56px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: 800;
+            text-align: center;
+            color: var(--navy);
+            outline: none;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+
+        .otp-cell:focus {
+            border-color: var(--blue);
+            background: var(--blue-light);
+        }
+
+        .otp-cell.filled {
+            border-color: var(--navy);
+            background: #fff;
+        }
+
+        .btn-main {
+            width: 100%;
+            background: var(--navy);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 13px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+            margin-top: 4px;
+        }
+
+        .btn-main:hover { background: var(--blue); }
+        .btn-main:disabled { background: #94a3b8; cursor: not-allowed; }
+
+        .btn-back {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 0 0;
+            text-decoration: underline;
+        }
+
+        .btn-back:hover { color: var(--navy); }
+
+        .alert {
+            padding: 10px 14px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 16px;
             display: none;
         }
-        .merge-status.info { background: #e0f2fe; color: #0369a1; display: block; }
-        .merge-status.success { background: #dcfce7; color: var(--success-green); display: block; }
-        .merge-status.error { background: #fee2e2; color: var(--danger-red); display: block; }
 
-        /* Logout confirm modal */
-        .logout-modal-overlay {
-            display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6);
-            z-index: 2000; align-items: center; justify-content: center;
-        }
-        .logout-modal-overlay.open { display: flex; }
-        .logout-modal-box {
-            background: #fff; border-radius: 14px; border: 2px solid var(--primary-navy);
-            width: 340px; max-width: 95vw; box-shadow: 0 20px 50px rgba(15,23,42,0.4);
-            overflow: hidden;
-        }
-        .logout-modal-header {
-            background: var(--danger-red); color: #fff;
-            padding: 14px 18px; display: flex; justify-content: space-between; align-items: center;
-        }
-        .logout-modal-header h3 { font-size: 14px; font-weight: 700; }
-        .logout-modal-body { padding: 20px 18px; }
-        .logout-modal-body p { font-size: 14px; color: var(--text-dark); margin-bottom: 20px; font-weight: 500; }
-        .logout-modal-actions { display: flex; gap: 8px; }
-        .btn-logout-cancel {
-            flex: 1; background: #f1f5f9; color: var(--primary-navy);
-            border: 2px solid #cbd5e1; border-radius: 7px; padding: 10px; font-size: 13px; font-weight: 700;
-            cursor: pointer;
-        }
-        .btn-logout-cancel:hover { background: #e2e8f0; }
-        .btn-logout-confirm {
-            flex: 1; background: var(--danger-red); color: #fff;
-            border: none; border-radius: 7px; padding: 10px; font-size: 13px; font-weight: 700;
-            cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
-        }
-        .btn-logout-confirm:hover { background: #b91c1c; }
+        .alert.error   { background: #fee2e2; color: var(--danger);  border: 1px solid #fca5a5; display: flex; gap: 8px; align-items: center; }
+        .alert.success { background: #dcfce7; color: var(--success); border: 1px solid #86efac; display: flex; gap: 8px; align-items: center; }
+        .alert.info    { background: var(--blue-light); color: #0369a1; border: 1px solid #bae6fd; display: flex; gap: 8px; align-items: center; }
 
-        .preview-container { border: 2px solid var(--border-strong); border-radius: 8px; background: #ffffff; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-        .right-card-body { flex: 1; overflow-y: auto; padding: 15px; }
-        .decision-box { margin-top: 12px; padding-top: 12px; border-top: 2px dashed #e2e8f0; }
-        .decision-box label { display: block; font-size: 12px; font-weight: 700; color: var(--primary-navy); margin-top: 10px; margin-bottom: 4px; }
-        .decision-box select, .decision-box textarea, .decision-box input { width: 100%; border: 2px solid var(--border-strong); border-radius: 6px; padding: 8px; font-size: 13px; margin-bottom: 4px; font-weight: 600; outline: none; }
-        .decision-box textarea { height: 60px; resize: none; }
-        
-        .file-upload-wrapper { border: 2px dashed #cbd5e1; border-radius: 6px; padding: 10px; text-align: center; background: #f8fafc; cursor: pointer; margin-bottom: 12px; position: relative; }
-        .file-upload-wrapper:hover { border-color: var(--brand-blue); background: #f0f9ff; }
-        .file-upload-wrapper i { font-size: 18px; color: var(--brand-blue); margin-bottom: 4px; }
-        .file-upload-wrapper p { font-size: 11px; font-weight: 600; color: var(--text-muted); }
-        .file-upload-wrapper input[type="file"] { position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-        .uploaded-file-info { font-size: 11px; color: var(--success-green); font-weight: 700; margin-top: 4px; display: none; }
+        .timer-text {
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 500;
+        }
 
-        .btn-approve { width: 100%; background: var(--success-green); color: white; height: 40px; border: none; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 6px; }
-        .btn-approve:hover { background: #15803d; }
-        .btn-download-cell { border: none; background: none; cursor: pointer; color: var(--brand-blue); font-size: 14px; }
-        .btn-download-cell:hover { color: var(--primary-navy); }
+        .timer-text span { color: var(--blue); font-weight: 700; }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: 6px;
+        }
+
+        .section-sub {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 22px;
+            line-height: 1.5;
+        }
+
+        .section-sub strong { color: var(--navy); }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .copyright {
+            color: rgba(255,255,255,0.65);
+            font-size: 12px;
+            margin-top: 20px;
+            font-weight: 500;
+        }
+
+        .step-panel { display: none; }
+        .step-panel.active { display: block; }
     </style>
 </head>
 <body>
 
-<!-- ══════════════ SƏNƏDLƏR MODALI ══════════════ -->
-<div class="modal-overlay" id="docsModal">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h3><i class="fa-solid fa-folder-open"></i> &nbsp;Müraciət Sənədləri</h3>
-            <button class="modal-close" onclick="closeDocsModal()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="modal-body">
-            <div class="modal-student-info" id="modal-student-info">
-                <div id="modal-student-name">—</div>
-                <span id="modal-student-school">—</span>
-            </div>
-
-            <div class="doc-list" id="doc-list"></div>
-
-            <div class="modal-actions">
-                <button class="btn-merge-pdf" id="btn-merge" onclick="mergeAndDownload()">
-                    <i class="fa-solid fa-file-pdf"></i> PDF Endir
-                </button>
-                <button class="btn-save-pdf" id="btn-save" onclick="mergeAndSave()">
-                    <i class="fa-solid fa-floppy-disk"></i> Saxla
-                </button>
-            </div>
-            <div class="merge-status" id="merge-status"></div>
-        </div>
-    </div>
-</div>
-
-<!-- ══════════════ LOGOUT MODALI ══════════════ -->
-<div class="logout-modal-overlay" id="logoutModal">
-    <div class="logout-modal-box">
-        <div class="logout-modal-header">
-            <h3><i class="fa-solid fa-right-from-bracket"></i> &nbsp;Sistemdən Çıxış</h3>
-            <button class="modal-close" onclick="closeLogoutModal()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="logout-modal-body">
-            <p>Sistemdən çıxmaq istədiyinizə əminsinizmi?</p>
-            <div class="logout-modal-actions">
-                <button class="btn-logout-cancel" onclick="closeLogoutModal()">
-                    <i class="fa-solid fa-xmark"></i> Xeyr, Qal
-                </button>
-                <button class="btn-logout-confirm" onclick="confirmLogout()">
-                    <i class="fa-solid fa-right-from-bracket"></i> Bəli, Çıx
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="app-window">
-    <div class="nav-sidebar">
-        <div class="nav-item" title="Komissiya Ekspertiza Modulu">
-            <i class="fa-solid fa-users-gear"></i>
-        </div>
-        <button class="btn-logout" title="Sistemdən Çıxış" onclick="openLogoutModal()">
-            <i class="fa-solid fa-right-from-bracket"></i>
-        </button>
+<div class="login-card">
+    <div class="card-header">
+        <img src="image.png" alt="PTPK Logo">
+        <h1>Rəqəmsal Sənəd Qəbulu Sistemi</h1>
+        <p>Psixoloji-Tibbi-Pedaqoji Komissiya Portalı</p>
     </div>
 
-    <div class="viewport">
-        <div class="brand-header">
-            <img src="image.png" alt="PTPK Logo" class="brand-logo">
-            <div class="brand-text">
-                <h1>PTPK Komissiya Ekspertiza Paneli (Excel Magistral)</h1>
+    <div class="card-body">
+        <div class="steps">
+            <div class="step active" id="step-ind-1">
+                <div class="step-dot">1</div>
+                <div class="step-label">E-poçt</div>
+            </div>
+            <div class="step-line" id="line-1"></div>
+            <div class="step" id="step-ind-2">
+                <div class="step-dot">2</div>
+                <div class="step-label">Kod</div>
+            </div>
+            <div class="step-line" id="line-2"></div>
+            <div class="step" id="step-ind-3">
+                <div class="step-dot"><i class="fa-solid fa-check" style="font-size:12px;"></i></div>
+                <div class="step-label">Giriş</div>
             </div>
         </div>
 
-        <div class="manual-entry-bar">
-            <input type="text" id="manual-name" placeholder="S.A.A" style="width: 140px;">
-            <input type="text" id="manual-fin" placeholder="FİN" style="width: 75px; text-transform: uppercase;" maxlength="7">
-            
-            <select id="manual-school" style="width: 160px;">
-                <optgroup label="🏢 GƏNCƏ ŞƏHƏRI">
-                    <option value="Gəncə şəhər İ.Qayıbov adına 1 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər İ.Qayıbov adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər Ə.Cavad adına 2 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər Ə.Cavad adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 3 nömrəli tam orta ümumtəhsil məktəb-liseyi">Gəncə şəhər 3 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
-                    <option value="Gəncə şəhər M.Mehdizadə adına 4 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Mehdizadə adına 4 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər M.Ə.Sabir adına 5 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Ə.Sabir adına 5 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər C.Cabbarlı adına 6 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər C.Cabbarlı adına 6 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 7 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 7 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər M.P.Vaqif adına 8 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.P.Vaqif adına 8 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 9 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 9 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər M.Hadi adına 10 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Hadi adına 10 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər N.Gəncəvi adına 11 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər N.Gəncəvi adına 11 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər V.Əliyev adına 12 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər V.Əliyev adına 12 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər H.Əliyev adına 13 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər H.Əliyev adına 13 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər M.Müşfiq adına 14 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Müşfiq adına 14 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər M.Əzizbəyov adına 15 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Əzizbəyov adına 15 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər M.Ş.Vazeh adına 16 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Ş.Vazeh adına 16 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 17 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 17 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər N.Aydın adına 18 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər N.Aydın adına 18 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər 19 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 19 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər M.A.Abbaszadə adına 20 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.A.Abbaszadə adına 20 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Gəncə şəhər İnteqrasiya təlimli İnternat Tipli Gimnaziya">Gəncə şəhər İnteqrasiya təlimli İnternat Tipli Gimnaziya</option>
-                    <option value="Gəncə şəhər 45 nömrəli xüsusi məktəbi">Gəncə şəhər 45 nömrəli xüsusi məktəbi</option>
-                </optgroup>
-                <optgroup label="🏢 GÖYGÖL RAYONU">
-                    <option value="Göygöl şəhər 1 nömrəli tam orta ümumtəhsil məktəbi">Göygöl şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Göygöl şəhər 2 nömrəli tam orta ümumtəhsil məktəb-liseyi">Göygöl şəhər 2 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
-                </optgroup>
-                <optgroup label="🏢 DAŞKƏSƏN RAYONU">
-                    <option value="Daşkəsən şəhər S.Vurğun adına 1 nömrəli tam orta ümumtəhsil məktəbi">Daşkəsən şəhər S.Vurğun adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Daşkəsən şəhər A.Mürsəlov adına 2 nömrəli tam orta ümumtəhsil məktəbi">Daşkəsən şəhər A.Mürsəlov adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                </optgroup>
-                <optgroup label="🏢 GORANBOY RAYONU">
-                    <option value="Goranboy şəhər 1 nömrəli tam orta ümumtəhsil məktəbi">Goranboy şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Goranboy şəhər 2 nömrəli tam orta ümumtəhsil məktəbi">Goranboy şəhər 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                </optgroup>
-                <optgroup label="🏢 SAMUX RAYONU">
-                    <option value="Samux şəhər 1 nömrəli tam orta ümumtəhsil məktəbi">Samux şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Samux şəhər 2 nömrəli tam orta ümumtəhsil məktəbi">Samux şəhər 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                </optgroup>
-                <optgroup label="🏢 NAFTALAN ŞƏHƏRI">
-                    <option value="Naftalan şəhər İ.Nəsimi adına 1 nömrəli tam orta ümumtəhsil məktəbi">Naftalan şəhər İ.Nəsimi adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                    <option value="Naftalan şəhər Z.Rüstəmov adına 2 nömrəli tam orta ümumtəhsil məktəbi">Naftalan şəhər Z.Rüstəmov adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                </optgroup>
-            </select>
+        <div id="alert-box" class="alert"></div>
 
-            <select id="manual-year" style="width: 95px;">
-                <option value="2025/2026">2025/2026</option>
-                <option value="2026/2027">2026/2027</option>
-            </select>
+        <!-- STEP 1: Email -->
+        <div class="step-panel active" id="panel-1">
+            <div class="section-title">Gmail ilə daxil olun</div>
+            <div class="section-sub">Sistemə giriş üçün qeydiyyatda olan Gmail ünvanınızı daxil edin. E-poçtunuza 6 rəqəmli doğrulama kodu göndəriləcək.</div>
 
-            <select id="manual-doc" style="width: 100px;">
-                <option value="Tam Sənəd">Tam Sənəd</option>
-                <option value="Çatışmır">Çatışmır</option>
-            </select>
+            <div class="form-group">
+                <label><i class="fa-brands fa-google"></i> &nbsp;Gmail ünvanı</label>
+                <input type="email" id="email-input" placeholder="nümunə@gmail.com" autocomplete="email">
+            </div>
 
-            <select id="manual-status" style="width: 115px;">
-                <option value="Gözləmədə">Gözləmədə</option>
-                <option value="Qüvvədədir">Qüvvədədir</option>
-                <option value="Qüvvədən düşüb">Qüvvədən düşüb</option>
-            </select>
-
-            <input type="date" id="manual-expiry" style="width: 115px;" title="Müddət">
-
-            <select id="manual-form" style="width: 155px;">
-                <option value="-">- Seçilməyib -</option>
-                <option value="Evdə təhsil (Ümumi proqram)">Evdə təhsil (Ümumi proqram)</option>
-                <option value="Evdə təhsil (Xüsusi proqram)">Evdə təhsil (Xüsusi proqram)</option>
-                <option value="İnklüziv təhsil (Ümumi proqram)">İnklüziv təhsil (Ümumi proqram)</option>
-                <option value="Xüsusi təhsil (Xüsusi proqram)">Xüsusi təhsil (Xüsusi proqram)</option>
-                <option value="Sağlamdır (Ümumi təhsil)">Sağlamdır (Ümumi təhsil)</option>
-            </select>
-
-            <button type="button" class="btn-add-manual" onclick="addStudentManually()">
-                Yaz <i class="fa-solid fa-plus"></i>
+            <button class="btn-main" id="btn-send-otp" onclick="sendOTP()">
+                <i class="fa-solid fa-paper-plane"></i> Kod Göndər
             </button>
         </div>
 
-        <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
-            <div class="search-container" style="margin-top:0; flex:1;">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="studentSearch" class="search-input" placeholder="Cədvəldə axtar..." onkeyup="filterStudents()">
+        <!-- STEP 2: OTP -->
+        <div class="step-panel" id="panel-2">
+            <div class="section-title">Kodu daxil edin</div>
+            <div class="section-sub" id="otp-sub-text">
+                E-poçtunuza göndərilən 6 rəqəmli kodu daxil edin.
             </div>
-            <button onclick="exportAllExcel()" style="display:flex;align-items:center;gap:6px;background:#107c41;color:#fff;border:1px solid #0b592e;padding:8px 16px;font-size:12px;font-weight:700;border-radius:6px;cursor:pointer;white-space:nowrap;flex-shrink:0;">
-                <i class="fa-solid fa-file-excel"></i> Siyahını Excel-ə Endir
+
+            <div class="otp-wrapper">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-0">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-1">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-2">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-3">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-4">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-5">
+            </div>
+
+            <div class="timer-text" id="timer-text">Kodun müddəti: <span id="timer-count">10:00</span></div>
+
+            <button class="btn-main" id="btn-verify" onclick="verifyOTP()" style="margin-top:16px;">
+                <i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol
+            </button>
+
+            <button class="btn-back" onclick="goBack()">
+                <i class="fa-solid fa-arrow-left"></i> Geri qayıt
             </button>
         </div>
 
-        <div class="panel-layout">
-            <div class="panel-column">
-                <div class="section-title"><i class="fa-solid fa-table"></i> Dinamik Excel Verilənlər Bazası</div>
-                <div class="excel-container">
-                    <table class="excel-table">
-                        <thead>
-                            <tr>
-                                <th>Şagirdin Soyadı, Adı (FİN)</th>
-                                <th>Tədris İli</th>
-                                <th>Sənəd</th>
-                                <th>Qərar Statusu</th>
-                                <th>Müddət</th>
-                                <th>Təhsil Forması</th>
-                                <th>Müraciət Sənədləri</th>
-                                <th>Endir</th>
-                                <th>Sil</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-data-body"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="panel-column">
-                <div class="section-title"><i class="fa-solid fa-gavel"></i> Ekspert Qərarı</div>
-                <div class="preview-container">
-                    <div class="right-card-body" id="sidebar-default-msg" style="text-align: center; color: var(--text-muted); padding-top: 40px;">
-                        <i class="fa-solid fa-arrow-pointer" style="font-size: 24px; margin-bottom: 10px;"></i>
-                        <p>Dəyişiklik etmək üçün Excel siyahısından şagird seçin.</p>
-                    </div>
-                    
-                    <div class="right-card-body" id="sidebar-actual-content" style="display: none;">
-                        <h3 id="panel-name" style="font-size: 15px; color: var(--primary-navy);">-</h3>
-                        <p id="panel-school" style="font-size: 12px; color: var(--text-muted); margin: 4px 0;">-</p>
-                        
-                        <div class="decision-box">
-                            <label>Qərarın Statusu:</label>
-                            <select id="select-status">
-                                <option value="Gözləmədə">Gözləmədə</option>
-                                <option value="Qüvvədədir">Qüvvədədir</option>
-                                <option value="Qüvvədən düşüb">Qüvvədən düşüb</option>
-                            </select>
-
-                            <label>Yekun Protokol Qərarı (Təhsil Forması):</label>
-                            <select id="select-form">
-                                <option value="Evdə təhsil (Ümumi proqram)">Evdə təhsil (Ümumi proqram)</option>
-                                <option value="Evdə təhsil (Xüsusi proqram)">Evdə təhsil (Xüsusi proqram)</option>
-                                <option value="İnklüziv təhsil (Ümumi proqram)">İnklüziv təhsil (Ümumi proqram)</option>
-                                <option value="Xüsusi təhsil (Xüsusi proqram)">Xüsusi təhsil (Xüsusi proqram)</option>
-                                <option value="Sağlamdır (Ümumi təhsil)">Sağlamdır (Ümumi təhsil)</option>
-                            </select>
-
-                            <label>Qüvvədən Düşmə Tarixi:</label>
-                            <input type="date" id="decision-expiry-date">
-
-                            <label>Komissiya Diaqnozu / Rəyi:</label>
-                            <textarea id="text-notes" placeholder="Rəsmi protokolu daxil edin..."></textarea>
-                            
-                            <label>Rəsmi Sənədi Əllə Yüklə (Skan/PDF):</label>
-                            <div class="file-upload-wrapper">
-                                <i class="fa-solid fa-cloud-arrow-up"></i>
-                                <p id="upload-status-text">Faylı bura sürükləyin və ya klikləyin</p>
-                                <input type="file" id="manual-file-upload" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="handleManualFile(this)">
-                                <div id="file-info-label" class="uploaded-file-info"></div>
-                            </div>
-
-                            <button type="button" class="btn-approve" onclick="saveCommissionDecision()">
-                                Qərarı Saxla <i class="fa-solid fa-floppy-disk"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+        <!-- STEP 3: Success -->
+        <div class="step-panel" id="panel-3" style="text-align:center;">
+            <div style="font-size:54px; margin-bottom:14px;">✅</div>
+            <div class="section-title" style="text-align:center;">Uğurla daxil oldunuz!</div>
+            <div class="section-sub" style="text-align:center; margin-top:8px;" id="success-text">Yönləndirilirsiniz...</div>
+            <div style="margin-top:20px;">
+                <div class="spinner" style="margin:auto; border-color:rgba(2,132,199,0.3); border-top-color:var(--blue);"></div>
             </div>
         </div>
     </div>
 </div>
+
+<div class="copyright">© 2026 Psixoloji-Tibbi-Pedaqoji Komissiya · by F.Alakbarov</div>
 
 <script>
-let selectedAppId = null;
-let uploadedFileBase64 = null;
-let uploadedFileName = null;
+    const urlParams = new URLSearchParams(window.location.search);
 
-let currentModalApp = null;
-let mergedPdfBytes = null;
+    let timerInterval = null;
+    let timerSeconds = 600;
+    let currentEmail = '';
 
-const DOC_FIELDS = [
-    { key: 'coverLetter',           label: '1. Məktəbin müşayiət məktubu' },
-    { key: 'residenceCertificate',  label: '2. Yaşayış yerindən arayış' },
-    { key: 'xasiyyetname',          label: '3. Xasiyyətnamə' },
-    { key: 'idCopies',              label: '4. Valideyn/Şagird ŞV surəti' },
-    { key: 'tabel',                 label: '5. Qiymət cədvəli / Tabel' },
-    { key: 'forma027',              label: '6. Forma 027 (Tibb arayışı)' },
-];
-
-document.addEventListener("DOMContentLoaded", async () => {
-    const token = localStorage.getItem('ptpk_token');
-    if (!token) {
-        window.location.replace('/login');
-        return;
-    }
-    // Token var — cədvəli dərhal yüklə, arxa planda yoxla
-    loadCommissionTable();
-    try {
-        const res = await fetch('/api/auth/check-session', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({token})
-        });
-        const data = await res.json();
-        if (data.status !== 'valid') {
+    window.addEventListener('DOMContentLoaded', async () => {
+        const token = localStorage.getItem('ptpk_token');
+        if (token) {
+            try {
+                const res = await fetch('/api/auth/check-session', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({token})
+                });
+                const data = await res.json();
+                if (data.status === 'valid') {
+                    doRedirect(localStorage.getItem('ptpk_role'));
+                    return;
+                }
+            } catch(e) {}
             localStorage.removeItem('ptpk_token');
             localStorage.removeItem('ptpk_role');
             localStorage.removeItem('ptpk_email');
-            window.location.replace('/login');
         }
-    } catch(e) {
-        // Server çatışmırsa — mövcud token ilə içəridə qal
-        console.warn('Session yoxlanması zamanı xəta:', e);
-    }
-});
-
-// ──────────────────────────────────────────────
-//  LOGOUT
-// ──────────────────────────────────────────────
-function openLogoutModal() {
-    document.getElementById('logoutModal').classList.add('open');
-}
-
-function closeLogoutModal() {
-    document.getElementById('logoutModal').classList.remove('open');
-}
-
-function confirmLogout() {
-    localStorage.removeItem('ptpk_token');
-    localStorage.removeItem('ptpk_role');
-    localStorage.removeItem('ptpk_email');
-    window.location.replace('/login');
-}
-
-// ──────────────────────────────────────────────
-//  KÖMƏKÇI
-// ──────────────────────────────────────────────
-function getStatusPillClass(status) {
-    if (status === "Qüvvədədir") return "quvvede";
-    if (status === "Qüvvədən düşüb") return "dusub";
-    return "gozleme";
-}
-
-// ──────────────────────────────────────────────
-//  SƏNƏDLƏR MODALI
-// ──────────────────────────────────────────────
-async function openDocsModal(appId, event) {
-    if (event) event.stopPropagation();
-
-    let app = null;
-    try {
-        const res = await fetch('/api/komissiya/get-applications');
-        const data = await res.json();
-        app = data.find(d => d.id === appId);
-    } catch(e) {
-        alert("⚠️ Serverə qoşulmaq mümkün olmadı!");
-        return;
-    }
-    if (!app) { alert("⚠️ Məlumat tapılmadı!"); return; }
-
-    currentModalApp = app;
-    mergedPdfBytes = null;
-
-    document.getElementById('modal-student-name').textContent = app.name + ' (' + app.fin + ')';
-    document.getElementById('modal-student-school').textContent = app.schoolText;
-
-    const list = document.getElementById('doc-list');
-    list.innerHTML = '';
-
-    DOC_FIELDS.forEach(field => {
-        const fname = app[field.key];
-        const hasFile = fname && fname.length > 3;
-
-        const item = document.createElement('div');
-        item.className = 'doc-item';
-        item.innerHTML = `
-            <div class="doc-item-left">
-                <i class="fa-solid ${hasFile ? 'fa-file-lines' : 'fa-file-circle-xmark'}" 
-                   style="color:${hasFile ? 'var(--brand-blue)' : '#cbd5e1'}"></i>
-                <div>
-                    <div class="doc-item-name">${field.label}</div>
-                    <div class="doc-item-status ${hasFile ? 'ok' : 'missing'}">
-                        ${hasFile ? fname : 'Fayl yoxdur'}
-                    </div>
-                </div>
-            </div>
-            <button class="btn-open-doc" 
-                    onclick="openSingleDoc('${fname}')"
-                    ${!hasFile ? 'disabled' : ''}>
-                <i class="fa-solid fa-eye"></i> Aç
-            </button>
-        `;
-        list.appendChild(item);
+        document.getElementById('email-input').addEventListener('keydown', e => {
+            if (e.key === 'Enter') sendOTP();
+        });
     });
 
-    if (app.hasManualFile && app.manualFileName) {
-        const item = document.createElement('div');
-        item.className = 'doc-item';
-        item.style.borderColor = 'var(--success-green)';
-        item.innerHTML = `
-            <div class="doc-item-left">
-                <i class="fa-solid fa-stamp" style="color:var(--success-green)"></i>
-                <div>
-                    <div class="doc-item-name">Komissiya Qərarı (Manual)</div>
-                    <div class="doc-item-status ok">${app.manualFileName}</div>
-                </div>
-            </div>
-            <button class="btn-open-doc" onclick="openManualDoc()">
-                <i class="fa-solid fa-eye"></i> Aç
-            </button>
-        `;
-        list.appendChild(item);
+    function showAlert(msg, type) {
+        const el = document.getElementById('alert-box');
+        el.className = 'alert ' + type;
+        const icons = {error: 'fa-circle-exclamation', success: 'fa-circle-check', info: 'fa-circle-info'};
+        el.innerHTML = `<i class="fa-solid ${icons[type] || 'fa-circle-info'}"></i> ${msg}`;
     }
 
-    showMergeStatus('', '');
-    document.getElementById('btn-merge').disabled = false;
-    document.getElementById('btn-save').disabled = false;
-
-    document.getElementById('docsModal').classList.add('open');
-}
-
-function closeDocsModal() {
-    document.getElementById('docsModal').classList.remove('open');
-    currentModalApp = null;
-    mergedPdfBytes = null;
-}
-
-function openSingleDoc(fname) {
-    if (!fname) return;
-    window.open('/files/' + fname, '_blank');
-}
-
-function openManualDoc() {
-    if (!currentModalApp || !currentModalApp.manualFileData) return;
-    const a = document.createElement('a');
-    a.href = currentModalApp.manualFileData;
-    a.target = '_blank';
-    a.click();
-}
-
-// ──────────────────────────────────────────────
-//  PDF BİRLƏŞDİRMƏ
-// ──────────────────────────────────────────────
-async function fetchDocBytes(fname) {
-    const res = await fetch('/files/' + fname);
-    if (!res.ok) return null;
-    return await res.arrayBuffer();
-}
-
-async function imageToPdfBytes(arrayBuf, mimeType) {
-    const { PDFDocument } = PDFLib;
-    const doc = await PDFDocument.create();
-    let img;
-    if (mimeType.includes('png')) {
-        img = await doc.embedPng(arrayBuf);
-    } else {
-        img = await doc.embedJpg(arrayBuf);
+    function hideAlert() {
+        document.getElementById('alert-box').className = 'alert';
     }
-    const page = doc.addPage([img.width, img.height]);
-    page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
-    return await doc.save();
-}
 
-async function buildMergedPdf() {
-    const { PDFDocument } = PDFLib;
-    const app = currentModalApp;
+    async function sendOTP() {
+        const email = document.getElementById('email-input').value.trim();
+        if (!email || !email.includes('@')) {
+            showAlert('Zəhmət olmasa düzgün e-poçt ünvanı daxil edin.', 'error');
+            return;
+        }
 
-    showMergeStatus('Sənədlər yüklənir...', 'info');
-    document.getElementById('btn-merge').disabled = true;
-    document.getElementById('btn-save').disabled = true;
-
-    const mergedDoc = await PDFDocument.create();
-    let addedCount = 0;
-
-    for (const field of DOC_FIELDS) {
-        const fname = app[field.key];
-        if (!fname || fname.length <= 3) continue;
+        const btn = document.getElementById('btn-send-otp');
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner"></div> Göndərilir...';
+        hideAlert();
 
         try {
-            const buf = await fetchDocBytes(fname);
-            if (!buf) continue;
-
-            const ext = fname.split('.').pop().toLowerCase();
-            let pdfBytes;
-
-            if (ext === 'pdf') {
-                pdfBytes = buf;
-            } else if (['jpg', 'jpeg', 'png'].includes(ext)) {
-                const mime = ext === 'png' ? 'image/png' : 'image/jpeg';
-                pdfBytes = await imageToPdfBytes(buf, mime);
-            } else {
-                const tmpDoc = await PDFDocument.create();
-                const page = tmpDoc.addPage();
-                const { rgb } = PDFLib;
-                page.drawText(`[${field.label}]\nFayl növü dəstəklənmir: ${fname}`, {
-                    x: 50, y: page.getHeight() - 80,
-                    size: 12, color: rgb(0.3, 0.3, 0.3),
-                    lineHeight: 20
-                });
-                pdfBytes = await tmpDoc.save();
-            }
-
-            const srcDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
-            const pages = await mergedDoc.copyPages(srcDoc, srcDoc.getPageIndices());
-            pages.forEach(p => mergedDoc.addPage(p));
-            addedCount++;
-        } catch(e) {
-            console.warn('Sənəd əlavə edilmədi:', fname, e);
-        }
-    }
-
-    if (addedCount === 0) {
-        showMergeStatus('⚠️ Heç bir sənəd yüklənə bilmədi. Fayllar serverdə mövcuddurmu?', 'error');
-        document.getElementById('btn-merge').disabled = false;
-        document.getElementById('btn-save').disabled = false;
-        return null;
-    }
-
-    const bytes = await mergedDoc.save();
-    mergedPdfBytes = bytes;
-    document.getElementById('btn-merge').disabled = false;
-    document.getElementById('btn-save').disabled = false;
-    return bytes;
-}
-
-async function mergeAndDownload() {
-    let bytes = mergedPdfBytes;
-    if (!bytes) bytes = await buildMergedPdf();
-    if (!bytes) return;
-
-    const blob = new Blob([bytes], { type: 'application/pdf' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${currentModalApp.fin}_Muraciet_Senedleri.pdf`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showMergeStatus('✅ PDF uğurla endirildi!', 'success');
-}
-
-async function mergeAndSave() {
-    let bytes = mergedPdfBytes;
-    if (!bytes) bytes = await buildMergedPdf();
-    if (!bytes) return;
-
-    showMergeStatus('Serverə yazılır...', 'info');
-    document.getElementById('btn-save').disabled = true;
-
-    const base64 = arrayBufferToBase64(bytes);
-    const dataUrl = 'data:application/pdf;base64,' + base64;
-    const fileName = currentModalApp.fin + '_Muraciet_Senedleri.pdf';
-
-    try {
-        const res = await fetch('/api/komissiya/update-decision', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: currentModalApp.id,
-                decisionStatus: currentModalApp.decisionStatus || 'Gözləmədə',
-                educationForm: currentModalApp.educationForm || '-',
-                notes: currentModalApp.notes || '',
-                expiryDate: currentModalApp.expiryDate || '-',
-                manualFileData: dataUrl,
-                manualFileName: fileName
-            })
-        });
-        if (res.ok) {
-            showMergeStatus('✅ Birləşdirilmiş PDF bazaya saxlandı: ' + fileName, 'success');
-            await loadCommissionTable();
-        } else {
-            showMergeStatus('⚠️ Server xətası. Fayl yazılmadı.', 'error');
-        }
-    } catch(e) {
-        showMergeStatus('⚠️ Serverə qoşulmaq mümkün olmadı!', 'error');
-    }
-    document.getElementById('btn-save').disabled = false;
-}
-
-function arrayBufferToBase64(buffer) {
-    let binary = '';
-    const bytes = new Uint8Array(buffer);
-    for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-    }
-    return window.btoa(binary);
-}
-
-function showMergeStatus(msg, type) {
-    const el = document.getElementById('merge-status');
-    el.className = 'merge-status';
-    if (type) el.classList.add(type);
-    el.textContent = msg;
-}
-
-// ──────────────────────────────────────────────
-//  CƏDVƏL YÜKLƏNMƏSI
-// ──────────────────────────────────────────────
-async function loadCommissionTable() {
-    const tableBody = document.getElementById('table-data-body');
-    if (!tableBody) return;
-    tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Yüklənir...</td></tr>';
-
-    let data = [];
-    try {
-        const res = await fetch('/api/komissiya/get-applications');
-        if (!res.ok) throw new Error('Server xətası: ' + res.status);
-        data = await res.json();
-        if (!Array.isArray(data)) throw new Error('Yanlış cavab formatı');
-    } catch(e) {
-        tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:red;">
-            &#9888; Serverə qoşulmaq mümkün olmadı: ${e.message}
-        </td></tr>`;
-        return;
-    }
-
-    if (data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-muted);">
-            Cədvəldə məlumat yoxdur.
-        </td></tr>`;
-        return;
-    }
-
-    let grouped = {};
-    data.forEach(app => {
-        if (!grouped[app.schoolText]) grouped[app.schoolText] = [];
-        grouped[app.schoolText].push(app);
-    });
-
-    tableBody.innerHTML = '';
-
-    for (let school in grouped) {
-        let schoolRow = document.createElement('tr');
-        schoolRow.className = "school-row";
-        schoolRow.innerHTML = `<td colspan="9"><i class="fa-solid fa-building"></i> ${school}</td>`;
-        tableBody.appendChild(schoolRow);
-
-        grouped[school].forEach(app => {
-            let tr = document.createElement('tr');
-            tr.className = "student-row";
-            if (selectedAppId === app.id) tr.classList.add('active');
-            tr.onclick = function() { selectStudent(app, tr); };
-
-            let statusClass = getStatusPillClass(app.decisionStatus);
-
-            const hasUploadedDocs = DOC_FIELDS.some(f => app[f.key] && app[f.key].length > 3);
-            const hasSavedPdf = app.hasManualFile && app.manualFileName && app.manualFileName.includes('_Muraciet_');
-            const docsLabel = hasSavedPdf
-                ? '<i class="fa-solid fa-check-circle"></i> Saxlanıb'
-                : (hasUploadedDocs ? '<i class="fa-solid fa-folder"></i> Sənədlər' : '<i class="fa-solid fa-folder-open" style="color:#cbd5e1"></i> Yoxdur');
-            const docsBtnClass = hasSavedPdf ? 'btn-docs has-docs' : 'btn-docs';
-
-            tr.innerHTML = `
-                <td><strong>${app.name} (${app.fin})</strong></td>
-                <td>${app.year}</td>
-                <td><span class="status-pill tam">${app.docStatus}</span></td>
-                <td><span class="status-pill ${statusClass}">${app.decisionStatus || 'Gözləmədə'}</span></td>
-                <td>${app.expiryDate || '-'}</td>
-                <td>${app.educationForm}</td>
-                <td style="text-align:center;">
-                    <button class="${docsBtnClass}" 
-                            onclick="openDocsModal('${app.id}', event)" 
-                            title="Müraciət sənədlərini göstər / PDF endir">
-                        ${docsLabel}
-                    </button>
-                </td>
-                <td style="text-align:center;">
-                    <button class="btn-download-cell" onclick="event.stopPropagation(); downloadDecisionPDF('${app.id}')" title="Qərar sənədini endir">
-                        <i class="fa-solid ${app.hasManualFile ? 'fa-file-lines' : 'fa-file-pdf'}" style="${app.hasManualFile ? 'color:var(--success-green);' : ''}"></i>
-                    </button>
-                </td>
-                <td style="text-align:center;">
-                    <button style="border:none;background:none;cursor:pointer;" onclick="event.stopPropagation(); deleteStudent('${app.id}')">
-                        <i class="fa-solid fa-trash-can" style="color:var(--danger-red);"></i>
-                    </button>
-                </td>
-            `;
-            tableBody.appendChild(tr);
-        });
-    }
-}
-
-// ──────────────────────────────────────────────
-//  DİGƏR FUNKSIYALAR
-// ──────────────────────────────────────────────
-async function addStudentManually() {
-    const name = document.getElementById('manual-name').value.trim();
-    const fin = document.getElementById('manual-fin').value.trim().toUpperCase();
-    const schoolSelect = document.getElementById('manual-school');
-    const schoolText = schoolSelect.options[schoolSelect.selectedIndex].text;
-    const year = document.getElementById('manual-year').value;
-    const decisionStatus = document.getElementById('manual-status').value;
-    const expiryInput = document.getElementById('manual-expiry').value;
-    const educationForm = document.getElementById('manual-form').value;
-
-    if (!name || !fin) { alert("Zəhmət olmasa şagirdin adını və FİN kodunu yazın!"); return; }
-
-    const expiryDate = expiryInput ? expiryInput.split('-').reverse().join('.') : "-";
-    const emptyBlob = new Blob([''], {type: 'application/octet-stream'});
-    const formData = new FormData();
-    formData.append('finCode', fin);
-    formData.append('studentName', name);
-    formData.append('schoolSelect', schoolText.trim());
-    formData.append('applicationType', 'Əllə Daxiletmə');
-    formData.append('academicYear', year);
-    formData.append('coverLetter', emptyBlob, 'bos.txt');
-    formData.append('residenceCertificate', emptyBlob, 'bos.txt');
-    formData.append('xasiyyetname', emptyBlob, 'bos.txt');
-    formData.append('idCopies', emptyBlob, 'bos.txt');
-    formData.append('tabel', emptyBlob, 'bos.txt');
-    formData.append('forma027', emptyBlob, 'bos.txt');
-
-    try {
-        const res = await fetch('/api/school/submit-student', {method: 'POST', body: formData});
-        if (res.ok) {
-            const result = await res.json();
-            await fetch('/api/komissiya/update-decision', {
+            const res = await fetch('/api/auth/send-otp', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({id: result.id, decisionStatus, educationForm, notes: "", expiryDate})
+                body: JSON.stringify({email})
             });
-            document.getElementById('manual-name').value = "";
-            document.getElementById('manual-fin').value = "";
-            document.getElementById('manual-expiry').value = "";
-            document.getElementById('manual-form').value = "-";
-            await loadCommissionTable();
-        } else { alert("⚠️ Server xətası."); }
-    } catch(e) { alert("⚠️ Serverə qoşulmaq mümkün olmadı!"); }
-}
+            const data = await res.json();
 
-function handleManualFile(input) {
-    const file = input.files[0];
-    if (!file) return;
-    uploadedFileName = file.name;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        const result = e.target.result;
-        const sizeKB = Math.round((result.length * 2) / 1024);
-        if (sizeKB > 3000) { alert("⚠️ Fayl həddən böyükdür (" + sizeKB + " KB)."); }
-        uploadedFileBase64 = result;
-        const infoLabel = document.getElementById('file-info-label');
-        infoLabel.innerText = "Yükləndi: " + file.name + " (" + sizeKB + " KB)";
-        infoLabel.style.display = "block";
-        document.getElementById('upload-status-text').style.display = "none";
-    };
-    reader.readAsDataURL(file);
-}
-
-function selectStudent(app, rowElement) {
-    selectedAppId = app.id;
-    document.querySelectorAll('.student-row').forEach(r => r.classList.remove('active'));
-    rowElement.classList.add('active');
-
-    document.getElementById('sidebar-default-msg').style.display = "none";
-    document.getElementById('sidebar-actual-content').style.display = "block";
-
-    document.getElementById('panel-name').innerText = app.name + " (" + app.fin + ")";
-    document.getElementById('panel-school').innerText = app.schoolText;
-    document.getElementById('text-notes').value = app.notes || "";
-    document.getElementById('select-status').value = app.decisionStatus || "Gözləmədə";
-    document.getElementById('select-form').value = app.educationForm !== "-" ? app.educationForm : "Evdə təhsil (Ümumi proqram)";
-    document.getElementById('decision-expiry-date').value = app.expiryDate && app.expiryDate !== "-" ? app.expiryDate.split('.').reverse().join('-') : "";
-
-    uploadedFileBase64 = app.manualFileData || null;
-    uploadedFileName = app.manualFileName || null;
-    document.getElementById('manual-file-upload').value = "";
-    
-    const infoLabel = document.getElementById('file-info-label');
-    if (app.hasManualFile) {
-        infoLabel.innerText = "Sistemdə fayl var: " + app.manualFileName;
-        infoLabel.style.display = "block";
-        document.getElementById('upload-status-text').style.display = "none";
-    } else {
-        infoLabel.style.display = "none";
-        document.getElementById('upload-status-text').style.display = "block";
-    }
-}
-
-async function saveCommissionDecision() {
-    if (!selectedAppId) return;
-    const notes = document.getElementById('text-notes').value;
-    const finalDecision = document.getElementById('select-form').value;
-    const status = document.getElementById('select-status').value;
-    const expiry = document.getElementById('decision-expiry-date').value;
-    const expiryDate = expiry ? expiry.split('-').reverse().join('.') : "-";
-
-    const payload = { id: selectedAppId, decisionStatus: status, educationForm: finalDecision, notes, expiryDate };
-    if (uploadedFileBase64) { payload.manualFileData = uploadedFileBase64; payload.manualFileName = uploadedFileName; }
-
-    try {
-        const res = await fetch('/api/komissiya/update-decision', {
-            method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
-        });
-        if (res.ok) { alert("✅ Komissiya qərarı uğurla bazaya yazıldı!"); await loadCommissionTable(); }
-        else { alert("⚠️ Server xətası."); }
-    } catch(e) { alert("⚠️ Serverə qoşulmaq mümkün olmadı!"); }
-}
-
-async function downloadDecisionPDF(id) {
-    let app = null;
-    try {
-        const res = await fetch('/api/komissiya/get-applications');
-        const data = await res.json();
-        app = data.find(item => item.id === id);
-    } catch(e) { alert("⚠️ Serverə qoşulmaq mümkün olmadı!"); return; }
-    if (!app) { alert("⚠️ Məlumat tapılmadı!"); return; }
-
-    if (app.hasManualFile && app.manualFileData) {
-        const link = document.createElement("a");
-        link.href = app.manualFileData;
-        link.download = "Qarar_" + (app.manualFileName || app.fin + ".pdf");
-        link.click();
-        return;
-    }
-
-    const txt = `PTPK QƏRAR HESABATI\n${'-'.repeat(50)}\nŞAGİRD: ${app.name} (${app.fin})\nMƏKTƏB: ${app.schoolText}\nTƏDRİS İLİ: ${app.year}\nSTATUS: ${app.decisionStatus || 'Gözləmədə'}\nTƏHSİL FORMASI: ${app.educationForm}\nMÜDDƏT: ${app.expiryDate || '-'}\nRƏY: ${app.notes || '-'}\n${'-'.repeat(50)}\nTarix: ${new Date().toLocaleDateString('az-AZ')}`;
-    const blob = new Blob([txt], {type: 'text/plain;charset=utf-8'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = app.fin + '_PTPK_Qarar.txt';
-    a.click();
-}
-
-async function deleteStudent(id) {
-    if (confirm("Məlumatı silmək istəyirsiniz?")) {
-        try { await fetch('/api/komissiya/delete-application?id=' + id, {method: 'DELETE'}); } catch(e) {}
-        if (selectedAppId === id) {
-            selectedAppId = null;
-            document.getElementById('sidebar-default-msg').style.display = "block";
-            document.getElementById('sidebar-actual-content').style.display = "none";
+            if (data.status === 'success') {
+                currentEmail = email;
+                document.getElementById('otp-sub-text').innerHTML =
+                    `E-poçtunuza göndərilən 6 rəqəmli kodu daxil edin.<br><strong>${email}</strong>`;
+                goToStep(2);
+                startTimer();
+                showAlert('Kod uğurla göndərildi! E-poçtunuzu yoxlayın.', 'success');
+            } else {
+                showAlert(data.message || 'Xəta baş verdi.', 'error');
+            }
+        } catch (e) {
+            showAlert('Serverə qoşulmaq mümkün olmadı!', 'error');
         }
-        await loadCommissionTable();
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kod Göndər';
     }
-}
 
-async function exportAllExcel() {
-    let data = [];
-    try {
-        const res = await fetch('/api/komissiya/get-applications');
-        if (!res.ok) throw new Error('Server xətası');
-        data = await res.json();
-    } catch(e) { alert("⚠️ Məlumat alınmadı: " + e.message); return; }
-    if (data.length === 0) { alert("Cədvəldə məlumat yoxdur!"); return; }
+    async function verifyOTP() {
+        const code = Array.from({length: 6}, (_, i) =>
+            document.getElementById('otp-' + i).value
+        ).join('');
 
-    const headers = ['Şagirdin S.A.A. (FİN)', 'Tədris İli', 'Sənəd Statusu', 'Qərar Statusu', 'Müddət', 'Təhsil Forması', 'Məktəb'];
-    let html = '<table border="1"><thead><tr>' +
-        headers.map(h => `<th style="background:#0f172a;color:#fff;font-weight:bold;padding:6px 10px;">${h}</th>`).join('') +
-        '</tr></thead><tbody>';
-    let grouped = {};
-    data.forEach(app => { if (!grouped[app.schoolText]) grouped[app.schoolText] = []; grouped[app.schoolText].push(app); });
-    for (let school in grouped) {
-        html += `<tr><td colspan="7" style="background:#e2e8f0;font-weight:bold;padding:6px 10px;">${school}</td></tr>`;
-        grouped[school].forEach(app => {
-            html += '<tr>' + [`${app.name} (${app.fin})`, app.year||'-', app.docStatus||'-', app.decisionStatus||'Gözləmədə', app.expiryDate||'-', app.educationForm||'-', app.schoolText||'-'].map(c => `<td style="padding:5px 10px;">${c}</td>`).join('') + '</tr>';
+        if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+            showAlert('Zəhmət olmasa 6 rəqəmli kodu tam daxil edin.', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('btn-verify');
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner"></div> Yoxlanılır...';
+        hideAlert();
+
+        try {
+            const res = await fetch('/api/auth/verify-otp', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email: currentEmail, code})
+            });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                clearInterval(timerInterval);
+                localStorage.setItem('ptpk_token', data.token);
+                localStorage.setItem('ptpk_role', data.role);
+                localStorage.setItem('ptpk_email', data.email);
+
+                goToStep(3);
+                document.getElementById('success-text').innerHTML =
+                    `Xoş gəldiniz, <strong>${data.full_name || data.email}</strong>!<br>Yönləndirilirsiniz...`;
+
+                setTimeout(() => doRedirect(data.role), 1800);
+            } else {
+                showAlert(data.message || 'Kod yanlışdır.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
+            }
+        } catch (e) {
+            showAlert('Serverə qoşulmaq mümkün olmadı!', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
+        }
+    }
+
+    function doRedirect(role) {
+        // redirect param varsa ona get
+        const target = urlParams.get('redirect');
+        if (target) {
+            window.location.href = '/' + target;
+            return;
+        }
+        // Rol əsasında default — .html yox, təmiz URL
+        if (role === 'admin') {
+            window.location.href = '/admin';
+        } else if (role === 'komissiya') {
+            window.location.href = '/komissiya';
+        } else if (role === 'mekteb') {
+            window.location.href = '/mekteb';
+        } else {
+            window.location.href = '/index';
+        }
+    }
+
+    function goToStep(n) {
+        [1, 2, 3].forEach(i => {
+            document.getElementById('panel-' + i).classList.toggle('active', i === n);
+            const si = document.getElementById('step-ind-' + i);
+            si.classList.remove('active', 'done');
+            if (i < n)  si.classList.add('done');
+            if (i === n) si.classList.add('active');
         });
+        if (n === 2) document.getElementById('line-1').classList.add('done');
+        if (n === 3) { document.getElementById('line-1').classList.add('done'); document.getElementById('line-2').classList.add('done'); }
+        hideAlert();
     }
-    html += '</tbody></table>';
-    const bom = '\uFEFF';
-    const blob = new Blob([bom + '<html><head><meta charset="UTF-8"></head><body>' + html + '</body></html>'], {type: 'application/vnd.ms-excel;charset=utf-8'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'PTPK_Komissiya_Siyahisi.xls';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-}
 
-function filterStudents() {
-    const filter = document.getElementById('studentSearch').value.toUpperCase();
-    document.querySelectorAll('.student-row').forEach(row => {
-        const text = row.cells[0].textContent || row.cells[0].innerText;
-        row.style.display = text.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+    function goBack() {
+        clearInterval(timerInterval);
+        goToStep(1);
+        for (let i = 0; i < 6; i++) {
+            document.getElementById('otp-' + i).value = '';
+            document.getElementById('otp-' + i).classList.remove('filled');
+        }
+    }
+
+    function startTimer() {
+        timerSeconds = 600;
+        clearInterval(timerInterval);
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+            timerSeconds--;
+            updateTimerDisplay();
+            if (timerSeconds <= 0) {
+                clearInterval(timerInterval);
+                showAlert('Kodun müddəti bitdi. Yenidən göndərin.', 'error');
+                goBack();
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+        const s = (timerSeconds % 60).toString().padStart(2, '0');
+        document.getElementById('timer-count').textContent = `${m}:${s}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        for (let i = 0; i < 6; i++) {
+            const cell = document.getElementById('otp-' + i);
+            cell.addEventListener('input', function() {
+                const val = this.value.replace(/\D/g, '');
+                this.value = val.slice(0, 1);
+                this.classList.toggle('filled', this.value.length > 0);
+                if (val && i < 5) document.getElementById('otp-' + (i + 1)).focus();
+                if (i === 5 && val) {
+                    const fullCode = Array.from({length: 6}, (_, j) =>
+                        document.getElementById('otp-' + j).value).join('');
+                    if (fullCode.length === 6) verifyOTP();
+                }
+            });
+            cell.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && !this.value && i > 0) {
+                    document.getElementById('otp-' + (i - 1)).focus();
+                }
+                if (e.key === 'Enter') verifyOTP();
+            });
+            cell.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+                for (let j = 0; j < 6 && j < paste.length; j++) {
+                    const c = document.getElementById('otp-' + j);
+                    c.value = paste[j];
+                    c.classList.add('filled');
+                }
+                if (paste.length >= 6) verifyOTP();
+            });
+        }
     });
-}
 </script>
 </body>
 </html>
