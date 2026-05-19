@@ -477,7 +477,15 @@ const DOC_FIELDS = [
     { key: 'forma027',              label: '6. Forma 027 (Tibb arayışı)' },
 ];
 
-document.addEventListener("DOMContentLoaded", loadCommissionTable);
+document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem('ptpk_token');
+    if (!token) {
+        window.location.replace('/login');
+        return;
+    }
+    loadCommissionTable();
+
+});
 
 // ──────────────────────────────────────────────
 //  LOGOUT
@@ -491,15 +499,10 @@ function closeLogoutModal() {
 }
 
 function confirmLogout() {
-    // Bütün cookie-ləri sil
-    document.cookie.split(";").forEach(function(c) {
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
-    // sessionStorage və localStorage təmizlə
-    sessionStorage.clear();
-    localStorage.clear();
-    // Login səhifəsinə yönləndir
-    window.location.replace("/");
+    localStorage.removeItem('ptpk_token');
+    localStorage.removeItem('ptpk_role');
+    localStorage.removeItem('ptpk_email');
+    window.location.replace('/login');
 }
 
 // ──────────────────────────────────────────────
