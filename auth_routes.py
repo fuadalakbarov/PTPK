@@ -87,7 +87,7 @@ async def send_otp(req: SendOTPRequest):
 
     async with httpx.AsyncClient() as client:
         r = await client.get(
-            f"{SUPABASE_URL}/allowed_users?email=eq.{email}&active=eq.true",
+            f"{SUPABASE_URL}/allowed_emails?email=eq.{email}",
             headers=HEADERS
         )
     users = r.json()
@@ -118,7 +118,7 @@ async def send_otp(req: SendOTPRequest):
         "status": "success",
         "message": "Kod göndərildi",
         "role": user.get("role", "user"),
-        "full_name": user.get("full_name", "")
+        "full_name": user.get("name", "")
     }
 
 @router.post("/api/auth/verify-otp")
@@ -145,7 +145,7 @@ async def verify_otp(req: VerifyOTPRequest):
             headers=HEADERS
         )
         r2 = await client.get(
-            f"{SUPABASE_URL}/allowed_users?email=eq.{email}&active=eq.true",
+            f"{SUPABASE_URL}/allowed_emails?email=eq.{email}",
             headers=HEADERS
         )
 
@@ -155,7 +155,7 @@ async def verify_otp(req: VerifyOTPRequest):
 
     user = users[0]
     role = user.get("role", "user")
-    full_name = user.get("full_name", "")
+    full_name = user.get("name", "")
     token = generate_token()
     expires_at = (datetime.utcnow() + timedelta(hours=8)).isoformat()
 
