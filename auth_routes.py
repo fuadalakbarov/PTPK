@@ -1,10 +1,7 @@
 import os
 import random
 import string
-import smtplib
 import httpx
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -20,8 +17,9 @@ HEADERS = {
     "Prefer": "return=representation"
 }
 
-SMTP_EMAIL    = os.environ.get("PTPK_SMTP_EMAIL", "")
-SMTP_PASSWORD = os.environ.get("PTPK_SMTP_PASSWORD", "")
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
+SENDER_EMAIL  = "fuad.pennsl@gmail.com"
+SENDER_NAME   = "PTPK"
 
 class SendOTPRequest(BaseModel):
     email: str
@@ -40,11 +38,6 @@ def generate_token():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=64))
 
 async def send_otp_email(to_email: str, code: str):
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = f"PTPK Giriş Kodu: {code}"
-    msg["From"]    = SMTP_EMAIL
-    msg["To"]      = to_email
-
     html = f"""
     <html><body style="font-family: Arial, sans-serif; background: #f1f5f9; padding: 30px;">
     <div style="max-width: 420px; margin: auto; background: #ffffff; border-radius: 12px;
@@ -72,11 +65,25 @@ async def send_otp_email(to_email: str, code: str):
     </div>
     </body></html>
     """
-    msg.attach(MIMEText(html, "html"))
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(SMTP_EMAIL, SMTP_PASSWORD)
-        server.sendmail(SMTP_EMAIL, to_email, msg.as_string())
+    payload = {
+        "sender": {"name": SENDER_NAME, "email": SENDER_EMAIL},
+        "to": [{"email": to_email}],
+        "subject": f"PTPK Giriş Kodu: {code}",
+        "htmlContent": html
+    }
+
+    async with httpx.AsyncClient() as client:
+        r = await client.post(
+            "https://api.brevo.com/v3/smtp/email",
+            json=payload,
+            headers={
+                "api-key": BREVO_API_KEY,
+                "Content-Type": "application/json"
+            }
+        )
+        if r.status_code >= 400:
+            raise Exception(f"Brevo xətası: {r.status_code} - {r.text}")
 
 @router.post("/api/auth/send-otp")
 async def send_otp(req: SendOTPRequest):
@@ -150,10 +157,10 @@ async def verify_otp(req: VerifyOTPRequest):
     if not users:
         return {"status": "error", "message": "İstifadəçi tapılmadı."}
 
-    user     = users[0]
-    role     = user.get("role", "user")
+    user      = users[0]
+    role      = user.get("role", "user")
     full_name = user.get("name", "")
-    token    = generate_token()
+    token     = generate_token()
     expires_at = (datetime.utcnow() + timedelta(hours=8)).isoformat()
 
     async with httpx.AsyncClient() as client:
