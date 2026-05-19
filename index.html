@@ -1,5 +1,22 @@
 <!DOCTYPE html>
 <html lang="az">
+    <script>
+(async function authGuard() {
+    const token = localStorage.getItem('ptpk_token');
+    if (!token) { window.location.href = '/login.html?redirect=index'; return; }
+    try {
+        const res = await fetch('/api/auth/check-session', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({token})
+        });
+        const data = await res.json();
+        if (data.status !== 'valid') {
+            localStorage.removeItem('ptpk_token');
+            window.location.href = '/login.html?redirect=index';
+        }
+    } catch { window.location.href = '/login.html?redirect=index'; }
+})();
+</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
