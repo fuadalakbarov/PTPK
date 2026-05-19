@@ -9,7 +9,7 @@ from pydantic import BaseModel
 router = APIRouter()
 
 SUPABASE_URL = "https://vlyuxgtwvfgbwaysbymv.supabase.co/rest/v1"
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "").strip()
 HEADERS = {
     "apikey": SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
@@ -17,7 +17,7 @@ HEADERS = {
     "Prefer": "return=representation"
 }
 
-BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "").strip()
 SENDER_EMAIL  = "fuad.pennsl@gmail.com"
 SENDER_NAME   = "PTPK"
 
