@@ -480,9 +480,11 @@ const DOC_FIELDS = [
 document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem('ptpk_token');
     if (!token) {
-        window.location.replace('/login.html');
+        window.location.replace('/login');
         return;
     }
+    // Token var — cədvəli dərhal yüklə, arxa planda yoxla
+    loadCommissionTable();
     try {
         const res = await fetch('/api/auth/check-session', {
             method: 'POST',
@@ -494,14 +496,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             localStorage.removeItem('ptpk_token');
             localStorage.removeItem('ptpk_role');
             localStorage.removeItem('ptpk_email');
-            window.location.replace('/login.html');
-            return;
+            window.location.replace('/login');
         }
     } catch(e) {
-        window.location.replace('/login.html');
-        return;
+        // Server çatışmırsa — mövcud token ilə içəridə qal
+        console.warn('Session yoxlanması zamanı xəta:', e);
     }
-    loadCommissionTable();
 });
 
 // ──────────────────────────────────────────────
@@ -519,7 +519,7 @@ function confirmLogout() {
     localStorage.removeItem('ptpk_token');
     localStorage.removeItem('ptpk_role');
     localStorage.removeItem('ptpk_email');
-    window.location.replace('/login.html');
+    window.location.replace('/login');
 }
 
 // ──────────────────────────────────────────────
