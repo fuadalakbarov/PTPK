@@ -21,7 +21,6 @@ BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "").strip()
 SENDER_EMAIL  = "fuad.pennsl@gmail.com"
 SENDER_NAME   = "PTPK"
 
-
 class SendOTPRequest(BaseModel):
     email: str
 
@@ -32,15 +31,14 @@ class VerifyOTPRequest(BaseModel):
 class CheckSessionRequest(BaseModel):
     token: str
 
-
 def generate_otp():
     return ''.join(random.choices(string.digits, k=6))
 
 def generate_token():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=64))
 
-def build_email_html(code: str) -> str:
-    return f"""
+async def send_otp_email(to_email: str, code: str):
+    html = f"""
     <html><body style="font-family: Arial, sans-serif; background: #f1f5f9; padding: 30px;">
     <div style="max-width: 420px; margin: auto; background: #ffffff; border-radius: 12px;
                 border: 2px solid #0f172a; overflow: hidden;">
@@ -68,58 +66,57 @@ def build_email_html(code: str) -> str:
     </body></html>
     """
 
+    payload = {
+        "sender": {"name": SENDER_NAME, "email": SENDER_EMAIL},
+        "to": [{"email": to_email}],
+        "subject": f"PTPK Giriş Kodu: {code}",
+        "htmlContent": html
+    }
+
+    async with httpx.AsyncClient() as client:
+        r = await client.post(
+            "https://api.brevo.com/v3/smtp/email",
+            json=payload,
+            headers={
+                "api-key": BREVO_API_KEY,
+                "Content-Type": "application/json"
+            }
+        )
+        if r.status_code >= 400:
+            raise Exception(f"Brevo xətası: {r.status_code} - {r.text}")
 
 @router.post("/api/auth/send-otp")
 async def send_otp(req: SendOTPRequest):
     email = req.email.strip().lower()
 
+    async with httpx.AsyncClient() as client:
+        r = await client.get(
+            f"{SUPABASE_URL}/allowed_emails?email=eq.{email}",
+            headers=HEADERS
+        )
+    users = r.json()
+    if not users or len(users) == 0:
+        return {"status": "error", "message": "Bu e-poçt ünvanı sistemdə qeydiyyatlı deyil."}
+
+    user = users[0]
+    code = generate_otp()
+    expires_at = (datetime.utcnow() + timedelta(minutes=10)).isoformat()
+
+    async with httpx.AsyncClient() as client:
+        await client.delete(
+            f"{SUPABASE_URL}/otp_codes?email=eq.{email}",
+            headers=HEADERS
+        )
+        await client.post(
+            f"{SUPABASE_URL}/otp_codes",
+            json={"email": email, "code": code, "expires_at": expires_at, "used": False},
+            headers=HEADERS
+        )
+
     try:
-        async with httpx.AsyncClient(timeout=8.0) as client:
-            # 1. İstifadəçi mövcuddurmu?
-            r = await client.get(
-                f"{SUPABASE_URL}/allowed_emails?email=eq.{email}",
-                headers=HEADERS
-            )
-            users = r.json()
-            if not users or len(users) == 0:
-                return {"status": "error", "message": "Bu e-poçt ünvanı sistemdə qeydiyyatlı deyil."}
-
-            user = users[0]
-            code = generate_otp()
-            expires_at = (datetime.utcnow() + timedelta(minutes=10)).isoformat()
-
-            # 2. Köhnə OTP-ni sil, yenisini yaz
-            await client.delete(
-                f"{SUPABASE_URL}/otp_codes?email=eq.{email}",
-                headers=HEADERS
-            )
-            await client.post(
-                f"{SUPABASE_URL}/otp_codes",
-                json={"email": email, "code": code, "expires_at": expires_at, "used": False},
-                headers=HEADERS
-            )
-
-            # 3. Brevo ilə email göndər
-            r2 = await client.post(
-                "https://api.brevo.com/v3/smtp/email",
-                json={
-                    "sender": {"name": SENDER_NAME, "email": SENDER_EMAIL},
-                    "to": [{"email": email}],
-                    "subject": f"PTPK Giriş Kodu: {code}",
-                    "htmlContent": build_email_html(code)
-                },
-                headers={
-                    "api-key": BREVO_API_KEY,
-                    "Content-Type": "application/json"
-                }
-            )
-            if r2.status_code >= 400:
-                return {"status": "error", "message": f"Email göndərilmədi: {r2.text}"}
-
-    except httpx.TimeoutException:
-        return {"status": "error", "message": "Server cavab vermədi. Bir az sonra yenidən cəhd edin."}
+        await send_otp_email(email, code)
     except Exception as e:
-        return {"status": "error", "message": f"Xəta baş verdi: {str(e)}"}
+        return {"status": "error", "message": f"Email göndərilmədi: {str(e)}"}
 
     return {
         "status": "success",
@@ -128,57 +125,50 @@ async def send_otp(req: SendOTPRequest):
         "full_name": user.get("name", "")
     }
 
-
 @router.post("/api/auth/verify-otp")
 async def verify_otp(req: VerifyOTPRequest):
     email = req.email.strip().lower()
     code  = req.code.strip()
     now   = datetime.utcnow().isoformat()
 
-    try:
-        async with httpx.AsyncClient(timeout=8.0) as client:
-            # 1. OTP yoxla
-            r = await client.get(
-                f"{SUPABASE_URL}/otp_codes?email=eq.{email}&code=eq.{code}&used=eq.false&expires_at=gt.{now}",
-                headers=HEADERS
-            )
-            records = r.json()
-            if not records or len(records) == 0:
-                return {"status": "error", "message": "Kod yanlışdır və ya müddəti bitib."}
+    async with httpx.AsyncClient() as client:
+        r = await client.get(
+            f"{SUPABASE_URL}/otp_codes?email=eq.{email}&code=eq.{code}&used=eq.false&expires_at=gt.{now}",
+            headers=HEADERS
+        )
+    records = r.json()
+    if not records or len(records) == 0:
+        return {"status": "error", "message": "Kod yanlışdır və ya müddəti bitib."}
 
-            otp_id = records[0]["id"]
+    otp_id = records[0]["id"]
 
-            # 2. OTP-ni istifadə edilmiş işarələ + istifadəçini al
-            await client.patch(
-                f"{SUPABASE_URL}/otp_codes?id=eq.{otp_id}",
-                json={"used": True},
-                headers=HEADERS
-            )
-            r2 = await client.get(
-                f"{SUPABASE_URL}/allowed_emails?email=eq.{email}",
-                headers=HEADERS
-            )
-            users = r2.json()
-            if not users:
-                return {"status": "error", "message": "İstifadəçi tapılmadı."}
+    async with httpx.AsyncClient() as client:
+        await client.patch(
+            f"{SUPABASE_URL}/otp_codes?id=eq.{otp_id}",
+            json={"used": True},
+            headers=HEADERS
+        )
+        r2 = await client.get(
+            f"{SUPABASE_URL}/allowed_emails?email=eq.{email}",
+            headers=HEADERS
+        )
 
-            user      = users[0]
-            role      = user.get("role", "user")
-            full_name = user.get("name", "")
-            token     = generate_token()
-            expires_at = (datetime.utcnow() + timedelta(hours=8)).isoformat()
+    users = r2.json()
+    if not users:
+        return {"status": "error", "message": "İstifadəçi tapılmadı."}
 
-            # 3. Session yaz
-            await client.post(
-                f"{SUPABASE_URL}/sessions",
-                json={"token": token, "email": email, "role": role, "expires_at": expires_at},
-                headers=HEADERS
-            )
+    user      = users[0]
+    role      = user.get("role", "user")
+    full_name = user.get("name", "")
+    token     = generate_token()
+    expires_at = (datetime.utcnow() + timedelta(hours=8)).isoformat()
 
-    except httpx.TimeoutException:
-        return {"status": "error", "message": "Server cavab vermədi. Bir az sonra yenidən cəhd edin."}
-    except Exception as e:
-        return {"status": "error", "message": f"Xəta baş verdi: {str(e)}"}
+    async with httpx.AsyncClient() as client:
+        await client.post(
+            f"{SUPABASE_URL}/sessions",
+            json={"token": token, "email": email, "role": role, "expires_at": expires_at},
+            headers=HEADERS
+        )
 
     return {
         "status": "success",
@@ -188,42 +178,33 @@ async def verify_otp(req: VerifyOTPRequest):
         "email": email
     }
 
-
 @router.post("/api/auth/check-session")
 async def check_session(req: CheckSessionRequest):
     token = req.token.strip()
     now   = datetime.utcnow().isoformat()
 
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            r = await client.get(
-                f"{SUPABASE_URL}/sessions?token=eq.{token}&expires_at=gt.{now}",
-                headers=HEADERS
-            )
-        sessions = r.json()
-        if not sessions or len(sessions) == 0:
-            return {"status": "invalid"}
-
-        s = sessions[0]
-        return {
-            "status": "valid",
-            "email": s["email"],
-            "role":  s["role"]
-        }
-
-    except Exception:
+    async with httpx.AsyncClient() as client:
+        r = await client.get(
+            f"{SUPABASE_URL}/sessions?token=eq.{token}&expires_at=gt.{now}",
+            headers=HEADERS
+        )
+    sessions = r.json()
+    if not sessions or len(sessions) == 0:
         return {"status": "invalid"}
 
+    s = sessions[0]
+    return {
+        "status": "valid",
+        "email": s["email"],
+        "role":  s["role"]
+    }
 
 @router.post("/api/auth/logout")
 async def logout(req: CheckSessionRequest):
     token = req.token.strip()
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            await client.delete(
-                f"{SUPABASE_URL}/sessions?token=eq.{token}",
-                headers=HEADERS
-            )
-    except Exception:
-        pass
+    async with httpx.AsyncClient() as client:
+        await client.delete(
+            f"{SUPABASE_URL}/sessions?token=eq.{token}",
+            headers=HEADERS
+        )
     return {"status": "ok"}
