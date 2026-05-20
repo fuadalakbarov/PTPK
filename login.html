@@ -59,6 +59,7 @@
         }
         .login-side {
             flex: 0 0 440px;
+            background: transparent;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -73,13 +74,13 @@
             .login-side { flex: 0 0 auto; width: 100%; }
         }
         .login-card {
-            background: #fff;
+            background: #ffffff;
             border-radius: 18px;
             border: 2px solid var(--navy);
-            box-shadow: 0 24px 60px rgba(15,23,42,0.35);
+            box-shadow: 0 24px 60px rgba(15,23,42,0.5);
             width: 100%;
             max-width: 420px;
-            overflow: visible;
+            overflow: hidden;
             animation: slideUp 0.4s ease;
         }
         @keyframes slideUp {
@@ -87,8 +88,6 @@
             to   { opacity: 1; transform: translateY(0); }
         }
         .card-header {
-            border-radius: 16px 16px 0 0;
-            overflow: hidden;
             background: var(--navy);
             padding: 28px 32px 24px;
             text-align: center;
@@ -192,8 +191,8 @@
 <div class="video-side">
     <div class="video-wrapper">
         <iframe
-            src="https://www.youtube.com/embed/YYJml3FOQVg?autoplay=1&loop=1&playlist=YYJml3FOQVg&mute=0&controls=0&disablekb=1&fs=0&modestbranding=1&rel=0&iv_load_policy=3&start=0"
-            allow="autoplay; encrypted-media"
+            src="https://www.youtube.com/embed/YYJml3FOQVg?autoplay=1&loop=1&playlist=YYJml3FOQVg&mute=1&controls=0&disablekb=1&fs=0&modestbranding=1&rel=0&iv_load_policy=3"
+            allow="autoplay; encrypted-media; fullscreen"
             allowfullscreen="false"
             title="Background video">
         </iframe>
