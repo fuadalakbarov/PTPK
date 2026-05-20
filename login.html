@@ -180,6 +180,9 @@
         .other-login-link a { color: var(--blue); font-weight: 700; text-decoration: none; }
         .other-login-link a:hover { text-decoration: underline; }
 
+
+        #yt-player { width: 100%; height: 100%; }
+        #yt-player iframe { width: 100%; height: 100%; border: none; }
         .step-panel { display: none; }
         .step-panel.active { display: block; }
     </style>
@@ -190,13 +193,38 @@
 
 <div class="video-side">
     <div class="video-wrapper">
-        <iframe
-            src="https://www.youtube.com/embed/YYJml3FOQVg?autoplay=1&loop=1&playlist=YYJml3FOQVg&mute=1&controls=0&disablekb=1&fs=0&modestbranding=1&rel=0&iv_load_policy=3"
-            allow="autoplay; encrypted-media; fullscreen"
-            allowfullscreen="false"
-            title="Background video">
-        </iframe>
+        <div id="yt-player"></div>
     </div>
+    <script>
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+        var ytPlayer;
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('yt-player', {
+                videoId: 'YYJml3FOQVg',
+                playerVars: {
+                    autoplay: 1,
+                    loop: 1,
+                    playlist: 'YYJml3FOQVg',
+                    mute: 1,
+                    controls: 0,
+                    disablekb: 1,
+                    fs: 0,
+                    modestbranding: 1,
+                    rel: 0,
+                    iv_load_policy: 3,
+                    playsinline: 1
+                },
+                events: {
+                    onReady: function(e) { e.target.mute(); e.target.playVideo(); },
+                    onStateChange: function(e) {
+                        if (e.data === YT.PlayerState.ENDED) e.target.playVideo();
+                    }
+                }
+            });
+        }
+    </script>
 </div>
 
 <div class="login-side">
