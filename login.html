@@ -18,9 +18,7 @@
             --success: #16a34a;
             --danger: #dc2626;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-
         body {
             min-height: 100vh;
             background: linear-gradient(135deg, #0284c7 0%, #0f172a 100%);
@@ -31,9 +29,8 @@
             justify-content: center;
             padding: 20px;
         }
-
         .login-card {
-            background: #ffffff;
+            background: #fff;
             border-radius: 18px;
             border: 2px solid var(--navy);
             box-shadow: 0 24px 60px rgba(15,23,42,0.35);
@@ -42,264 +39,103 @@
             overflow: hidden;
             animation: slideUp 0.4s ease;
         }
-
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(24px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-
         .card-header {
             background: var(--navy);
             padding: 28px 32px 24px;
             text-align: center;
         }
+        .card-header img { height: 52px; margin-bottom: 14px; }
+        .card-header h1 { color: #fff; font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+        .card-header p  { color: #94a3b8; font-size: 12px; margin-top: 4px; font-weight: 500; }
+        .card-body { padding: 28px 32px 32px; }
 
-        .card-header img {
-            height: 52px;
-            margin-bottom: 14px;
-        }
-
-        .card-header h1 {
-            color: #ffffff;
-            font-size: 18px;
-            font-weight: 800;
-            letter-spacing: -0.3px;
-        }
-
-        .card-header p {
-            color: #94a3b8;
-            font-size: 12px;
-            margin-top: 4px;
-            font-weight: 500;
-        }
-
-        .card-body {
-            padding: 28px 32px 32px;
-        }
-
-        /* STEP göstəricisi */
-        .steps {
-            display: flex;
-            align-items: center;
-            gap: 0;
-            margin-bottom: 26px;
-        }
-
-        .step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            flex: 1;
-        }
-
+        /* Steps */
+        .steps { display: flex; align-items: center; margin-bottom: 26px; }
+        .step  { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
         .step-dot {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: 2px solid var(--border);
-            background: #f8fafc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--muted);
-            transition: all 0.3s ease;
+            width: 32px; height: 32px; border-radius: 50%;
+            border: 2px solid var(--border); background: #f8fafc;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; color: var(--muted); transition: all 0.3s;
         }
-
-        .step.active .step-dot {
-            background: var(--blue);
-            border-color: var(--blue);
-            color: #fff;
-        }
-
-        .step.done .step-dot {
-            background: var(--success);
-            border-color: var(--success);
-            color: #fff;
-        }
-
-        .step-label {
-            font-size: 10px;
-            font-weight: 600;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-        }
-
+        .step.active .step-dot { background: var(--blue); border-color: var(--blue); color: #fff; }
+        .step.done   .step-dot { background: var(--success); border-color: var(--success); color: #fff; }
+        .step-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
         .step.active .step-label { color: var(--blue); }
-        .step.done .step-label   { color: var(--success); }
-
-        .step-line {
-            flex: 0 0 40px;
-            height: 2px;
-            background: var(--border);
-            margin-bottom: 20px;
-            transition: background 0.3s;
-        }
-
+        .step.done   .step-label { color: var(--success); }
+        .step-line { flex: 0 0 40px; height: 2px; background: var(--border); margin-bottom: 20px; transition: background 0.3s; }
         .step-line.done { background: var(--success); }
 
-        /* Form elementləri */
-        .form-group {
-            margin-bottom: 18px;
-        }
-
+        /* Form */
+        .form-group { margin-bottom: 18px; }
         .form-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--navy);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 6px;
+            display: block; font-size: 12px; font-weight: 700; color: var(--navy);
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
         }
-
         .form-group input {
-            width: 100%;
-            padding: 11px 14px;
-            font-size: 14px;
-            font-weight: 500;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            outline: none;
-            color: var(--navy);
-            transition: border-color 0.2s;
-            background: #ffffff;
+            width: 100%; padding: 11px 14px; font-size: 14px; font-weight: 500;
+            border: 2px solid var(--border); border-radius: 8px; outline: none;
+            color: var(--navy); transition: border-color 0.2s; background: #fff;
         }
+        .form-group input:focus { border-color: var(--blue); }
 
-        .form-group input:focus {
-            border-color: var(--blue);
-        }
-
-        /* OTP hüceyrələri */
-        .otp-wrapper {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            margin: 4px 0;
-        }
-
+        /* OTP */
+        .otp-wrapper { display: flex; gap: 8px; justify-content: center; margin: 4px 0; }
         .otp-cell {
-            width: 48px;
-            height: 56px;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            font-size: 24px;
-            font-weight: 800;
-            text-align: center;
-            color: var(--navy);
-            outline: none;
-            transition: all 0.2s;
-            background: #f8fafc;
+            width: 48px; height: 56px; border: 2px solid var(--border); border-radius: 10px;
+            font-size: 24px; font-weight: 800; text-align: center; color: var(--navy);
+            outline: none; transition: all 0.2s; background: #f8fafc;
         }
+        .otp-cell:focus  { border-color: var(--blue); background: var(--blue-light); }
+        .otp-cell.filled { border-color: var(--navy); background: #fff; }
 
-        .otp-cell:focus {
-            border-color: var(--blue);
-            background: var(--blue-light);
-        }
-
-        .otp-cell.filled {
-            border-color: var(--navy);
-            background: #fff;
-        }
-
+        /* Buttons */
         .btn-main {
-            width: 100%;
-            background: var(--navy);
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            padding: 13px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: background 0.2s;
-            margin-top: 4px;
+            width: 100%; background: var(--navy); color: #fff; border: none;
+            border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            gap: 8px; transition: background 0.2s; margin-top: 4px;
         }
-
-        .btn-main:hover { background: var(--blue); }
+        .btn-main:hover    { background: var(--blue); }
         .btn-main:disabled { background: #94a3b8; cursor: not-allowed; }
-
         .btn-back {
-            background: none;
-            border: none;
-            color: var(--muted);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 10px 0 0;
-            text-decoration: underline;
+            background: none; border: none; color: var(--muted); font-size: 13px;
+            font-weight: 600; cursor: pointer; display: flex; align-items: center;
+            gap: 6px; padding: 10px 0 0; text-decoration: underline;
         }
-
         .btn-back:hover { color: var(--navy); }
 
-        .alert {
-            padding: 10px 14px;
-            border-radius: 7px;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            display: none;
-        }
-
+        /* Alert */
+        .alert { padding: 10px 14px; border-radius: 7px; font-size: 13px; font-weight: 600; margin-bottom: 16px; display: none; }
         .alert.error   { background: #fee2e2; color: var(--danger);  border: 1px solid #fca5a5; display: flex; gap: 8px; align-items: center; }
         .alert.success { background: #dcfce7; color: var(--success); border: 1px solid #86efac; display: flex; gap: 8px; align-items: center; }
         .alert.info    { background: var(--blue-light); color: #0369a1; border: 1px solid #bae6fd; display: flex; gap: 8px; align-items: center; }
 
-        .timer-text {
-            font-size: 12px;
-            color: var(--muted);
-            text-align: center;
-            margin-top: 10px;
-            font-weight: 500;
-        }
-
+        .timer-text { font-size: 12px; color: var(--muted); text-align: center; margin-top: 10px; font-weight: 500; }
         .timer-text span { color: var(--blue); font-weight: 700; }
-
-        .section-title {
-            font-size: 17px;
-            font-weight: 800;
-            color: var(--navy);
-            margin-bottom: 6px;
-        }
-
-        .section-sub {
-            font-size: 13px;
-            color: var(--muted);
-            margin-bottom: 22px;
-            line-height: 1.5;
-        }
-
+        .section-title { font-size: 17px; font-weight: 800; color: var(--navy); margin-bottom: 6px; }
+        .section-sub   { font-size: 13px; color: var(--muted); margin-bottom: 22px; line-height: 1.5; }
         .section-sub strong { color: var(--navy); }
 
         .spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.4);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+            border-radius: 50%; animation: spin 0.7s linear infinite;
         }
-
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .copyright {
-            color: rgba(255,255,255,0.65);
-            font-size: 12px;
-            margin-top: 20px;
-            font-weight: 500;
-        }
+        .copyright { color: rgba(255,255,255,0.65); font-size: 12px; margin-top: 20px; font-weight: 500; }
 
-        /* Step panel-ləri */
+        .other-login-link {
+            text-align: center; margin-top: 18px; font-size: 12px; color: var(--muted);
+        }
+        .other-login-link a { color: var(--blue); font-weight: 700; text-decoration: none; }
+        .other-login-link a:hover { text-decoration: underline; }
+
         .step-panel { display: none; }
         .step-panel.active { display: block; }
     </style>
@@ -314,7 +150,6 @@
     </div>
 
     <div class="card-body">
-        <!-- STEP göstəricisi -->
         <div class="steps">
             <div class="step active" id="step-ind-1">
                 <div class="step-dot">1</div>
@@ -334,49 +169,49 @@
 
         <div id="alert-box" class="alert"></div>
 
-        <!-- STEP 1: Email -->
+        <!-- STEP 1 -->
         <div class="step-panel active" id="panel-1">
             <div class="section-title">Gmail ilə daxil olun</div>
-            <div class="section-sub">Sistemə giriş üçün qeydiyyatda olan Gmail ünvanınızı daxil edin. E-poçtunuza 6 rəqəmli doğrulama kodu göndəriləcək.</div>
-
+            <div class="section-sub">
+                Sistemə giriş üçün qeydiyyatda olan Gmail ünvanınızı daxil edin.
+                E-poçtunuza 6 rəqəmli doğrulama kodu göndəriləcək.
+            </div>
             <div class="form-group">
                 <label><i class="fa-brands fa-google"></i> &nbsp;Gmail ünvanı</label>
                 <input type="email" id="email-input" placeholder="nümunə@gmail.com" autocomplete="email">
             </div>
-
             <button class="btn-main" id="btn-send-otp" onclick="sendOTP()">
                 <i class="fa-solid fa-paper-plane"></i> Kod Göndər
             </button>
+            <div class="other-login-link">
+                Komissiya üzvüsünüz? <a href="login-komissiya.html">Komissiya girişi →</a>
+            </div>
         </div>
 
-        <!-- STEP 2: OTP -->
+        <!-- STEP 2 -->
         <div class="step-panel" id="panel-2">
             <div class="section-title">Kodu daxil edin</div>
             <div class="section-sub" id="otp-sub-text">
                 E-poçtunuza göndərilən 6 rəqəmli kodu daxil edin.
             </div>
-
             <div class="otp-wrapper">
-                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-0">
-                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-1">
-                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-2">
-                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-3">
-                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-4">
-                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" pattern="[0-9]" id="otp-5">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" id="otp-0">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" id="otp-1">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" id="otp-2">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" id="otp-3">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" id="otp-4">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" id="otp-5">
             </div>
-
-            <div class="timer-text" id="timer-text">Kodun müddəti: <span id="timer-count">10:00</span></div>
-
+            <div class="timer-text">Kodun müddəti: <span id="timer-count">10:00</span></div>
             <button class="btn-main" id="btn-verify" onclick="verifyOTP()" style="margin-top:16px;">
                 <i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol
             </button>
-
             <button class="btn-back" onclick="goBack()">
                 <i class="fa-solid fa-arrow-left"></i> Geri qayıt
             </button>
         </div>
 
-        <!-- STEP 3: Success -->
+        <!-- STEP 3 -->
         <div class="step-panel" id="panel-3" style="text-align:center;">
             <div style="font-size:54px; margin-bottom:14px;">✅</div>
             <div class="section-title" style="text-align:center;">Uğurla daxil oldunuz!</div>
@@ -391,28 +226,25 @@
 <div class="copyright">© 2026 Psixoloji-Tibbi-Pedaqoji Komissiya · by F.Alakbarov</div>
 
 <script>
-    // URL-dən hədəf səhifəni al
-    const urlParams = new URLSearchParams(window.location.search);
-    const redirectTo = urlParams.get('redirect') || 'index';
+    // ── Bu login yalnız "user" rollu emaillər üçündür → index.html ──
+    const THIS_ROLE    = 'user';
+    const REDIRECT_URL = 'index.html';
 
     let timerInterval = null;
-    let timerSeconds = 600;
-    let currentEmail = '';
+    let timerSeconds  = 600;
+    let currentEmail  = '';
 
-    // Əgər artıq token varsa yönləndir
     window.addEventListener('DOMContentLoaded', async () => {
         const token = localStorage.getItem('ptpk_token');
-        if (token) {
+        const role  = localStorage.getItem('ptpk_role');
+        if (token && role === THIS_ROLE) {
             const valid = await checkToken(token);
-            if (valid) {
-                doRedirect(localStorage.getItem('ptpk_role'));
-                return;
-            } else {
-                localStorage.removeItem('ptpk_token');
-                localStorage.removeItem('ptpk_role');
-                localStorage.removeItem('ptpk_email');
-            }
+            if (valid) { window.location.href = REDIRECT_URL; return; }
         }
+        localStorage.removeItem('ptpk_token');
+        localStorage.removeItem('ptpk_role');
+        localStorage.removeItem('ptpk_email');
+
         document.getElementById('email-input').addEventListener('keydown', e => {
             if (e.key === 'Enter') sendOTP();
         });
@@ -420,32 +252,27 @@
 
     async function checkToken(token) {
         try {
-            const res = await fetch('/api/auth/check-session', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+            const res  = await fetch('/api/auth/check-session', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
                 body: JSON.stringify({token})
             });
             const data = await res.json();
-            return data.status === 'valid';
+            return data.status === 'valid' && data.role === THIS_ROLE;
         } catch { return false; }
     }
 
     function showAlert(msg, type) {
         const el = document.getElementById('alert-box');
         el.className = 'alert ' + type;
-        const icons = {error: 'fa-circle-exclamation', success: 'fa-circle-check', info: 'fa-circle-info'};
-        el.innerHTML = `<i class="fa-solid ${icons[type] || 'fa-circle-info'}"></i> ${msg}`;
+        const icons = { error:'fa-circle-exclamation', success:'fa-circle-check', info:'fa-circle-info' };
+        el.innerHTML = `<i class="fa-solid ${icons[type]}"></i> ${msg}`;
     }
-
-    function hideAlert() {
-        document.getElementById('alert-box').className = 'alert';
-    }
+    function hideAlert() { document.getElementById('alert-box').className = 'alert'; }
 
     async function sendOTP() {
-        const email = document.getElementById('email-input').value.trim();
+        const email = document.getElementById('email-input').value.trim().toLowerCase();
         if (!email || !email.includes('@')) {
-            showAlert('Zəhmət olmasa düzgün e-poçt ünvanı daxil edin.', 'error');
-            return;
+            showAlert('Zəhmət olmasa düzgün e-poçt ünvanı daxil edin.', 'error'); return;
         }
 
         const btn = document.getElementById('btn-send-otp');
@@ -454,14 +281,23 @@
         hideAlert();
 
         try {
-            const res = await fetch('/api/auth/send-otp', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+            const res  = await fetch('/api/auth/send-otp', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
                 body: JSON.stringify({email})
             });
             const data = await res.json();
 
             if (data.status === 'success') {
+                // ── Rol yoxlaması: yalnız "user" rollu emaillər bu loginə girə bilər ──
+                if (data.role !== THIS_ROLE) {
+                    showAlert(
+                        'Bu e-poçt bu giriş üçün nəzərdə tutulmayıb. Komissiya girişindən istifadə edin.',
+                        'error'
+                    );
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kod Göndər';
+                    return;
+                }
                 currentEmail = email;
                 document.getElementById('otp-sub-text').innerHTML =
                     `E-poçtunuza göndərilən 6 rəqəmli kodu daxil edin.<br><strong>${email}</strong>`;
@@ -471,7 +307,7 @@
             } else {
                 showAlert(data.message || 'Xəta baş verdi.', 'error');
             }
-        } catch (e) {
+        } catch {
             showAlert('Serverə qoşulmaq mümkün olmadı!', 'error');
         }
 
@@ -480,13 +316,11 @@
     }
 
     async function verifyOTP() {
-        const code = Array.from({length: 6}, (_, i) =>
-            document.getElementById('otp-' + i).value
-        ).join('');
+        const code = Array.from({length:6}, (_, i) =>
+            document.getElementById('otp-'+i).value).join('');
 
-        if (code.length !== 6 || !/^\d{6}$/.test(code)) {
-            showAlert('Zəhmət olmasa 6 rəqəmli kodu tam daxil edin.', 'error');
-            return;
+        if (!/^\d{6}$/.test(code)) {
+            showAlert('Zəhmət olmasa 6 rəqəmli kodu tam daxil edin.', 'error'); return;
         }
 
         const btn = document.getElementById('btn-verify');
@@ -495,80 +329,70 @@
         hideAlert();
 
         try {
-            const res = await fetch('/api/auth/verify-otp', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
+            const res  = await fetch('/api/auth/verify-otp', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
                 body: JSON.stringify({email: currentEmail, code})
             });
             const data = await res.json();
 
             if (data.status === 'success') {
+                // ── İkinci mərhələ rol yoxlaması ──
+                if (data.role !== THIS_ROLE) {
+                    showAlert('Giriş rədd edildi. Bu giriş yalnız məktəb istifadəçiləri üçündür.', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
+                    return;
+                }
                 clearInterval(timerInterval);
                 localStorage.setItem('ptpk_token', data.token);
-                localStorage.setItem('ptpk_role', data.role);
+                localStorage.setItem('ptpk_role',  data.role);
                 localStorage.setItem('ptpk_email', data.email);
 
                 goToStep(3);
                 document.getElementById('success-text').innerHTML =
                     `Xoş gəldiniz, <strong>${data.full_name || data.email}</strong>!<br>Yönləndirilirsiniz...`;
-
-                setTimeout(() => doRedirect(data.role), 1800);
+                setTimeout(() => { window.location.href = REDIRECT_URL; }, 1800);
             } else {
                 showAlert(data.message || 'Kod yanlışdır.', 'error');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
             }
-        } catch (e) {
+        } catch {
             showAlert('Serverə qoşulmaq mümkün olmadı!', 'error');
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
         }
     }
 
-    function doRedirect(role) {
-        // redirect param varsa ona get
-        const target = urlParams.get('redirect');
-        if (target) {
-            window.location.href = '/' + target + '.html';
-            return;
-        }
-        // Rol əsasında default
-        if (role === 'admin' || role === 'komissiya') {
-            window.location.href = '/komissiya.html';
-        } else {
-            window.location.href = '/index.html';
-        }
-    }
-
     function goToStep(n) {
-        [1, 2, 3].forEach(i => {
-            document.getElementById('panel-' + i).classList.toggle('active', i === n);
-            const si = document.getElementById('step-ind-' + i);
-            si.classList.remove('active', 'done');
-            if (i < n)  si.classList.add('done');
-            if (i === n) si.classList.add('active');
+        [1,2,3].forEach(i => {
+            document.getElementById('panel-'+i).classList.toggle('active', i===n);
+            const s = document.getElementById('step-ind-'+i);
+            s.classList.remove('active','done');
+            if (i < n)  s.classList.add('done');
+            if (i === n) s.classList.add('active');
         });
-        if (n === 2) document.getElementById('line-1').classList.add('done');
-        if (n === 3) { document.getElementById('line-1').classList.add('done'); document.getElementById('line-2').classList.add('done'); }
+        if (n >= 2) document.getElementById('line-1').classList.add('done');
+        if (n >= 3) document.getElementById('line-2').classList.add('done');
         hideAlert();
     }
 
     function goBack() {
         clearInterval(timerInterval);
         goToStep(1);
-        for (let i = 0; i < 6; i++) {
-            document.getElementById('otp-' + i).value = '';
-            document.getElementById('otp-' + i).classList.remove('filled');
+        for (let i=0; i<6; i++) {
+            const c = document.getElementById('otp-'+i);
+            c.value = ''; c.classList.remove('filled');
         }
     }
 
     function startTimer() {
         timerSeconds = 600;
         clearInterval(timerInterval);
-        updateTimerDisplay();
+        updateTimer();
         timerInterval = setInterval(() => {
             timerSeconds--;
-            updateTimerDisplay();
+            updateTimer();
             if (timerSeconds <= 0) {
                 clearInterval(timerInterval);
                 showAlert('Kodun müddəti bitdi. Yenidən göndərin.', 'error');
@@ -577,42 +401,38 @@
         }, 1000);
     }
 
-    function updateTimerDisplay() {
-        const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
-        const s = (timerSeconds % 60).toString().padStart(2, '0');
+    function updateTimer() {
+        const m = String(Math.floor(timerSeconds/60)).padStart(2,'0');
+        const s = String(timerSeconds%60).padStart(2,'0');
         document.getElementById('timer-count').textContent = `${m}:${s}`;
     }
 
-    // OTP cell keyboard navigasiyası
+    // OTP cell navigasiya
     document.addEventListener('DOMContentLoaded', () => {
-        for (let i = 0; i < 6; i++) {
-            const cell = document.getElementById('otp-' + i);
+        for (let i=0; i<6; i++) {
+            const cell = document.getElementById('otp-'+i);
             cell.addEventListener('input', function() {
-                const val = this.value.replace(/\D/g, '');
-                this.value = val.slice(0, 1);
+                this.value = this.value.replace(/\D/g,'').slice(0,1);
                 this.classList.toggle('filled', this.value.length > 0);
-                if (val && i < 5) document.getElementById('otp-' + (i + 1)).focus();
-                if (i === 5 && val) {
-                    const fullCode = Array.from({length: 6}, (_, j) =>
-                        document.getElementById('otp-' + j).value).join('');
-                    if (fullCode.length === 6) verifyOTP();
+                if (this.value && i < 5) document.getElementById('otp-'+(i+1)).focus();
+                if (i === 5 && this.value) {
+                    const full = Array.from({length:6},(_,j)=>document.getElementById('otp-'+j).value).join('');
+                    if (full.length===6) verifyOTP();
                 }
             });
             cell.addEventListener('keydown', function(e) {
-                if (e.key === 'Backspace' && !this.value && i > 0) {
-                    document.getElementById('otp-' + (i - 1)).focus();
-                }
-                if (e.key === 'Enter') verifyOTP();
+                if (e.key==='Backspace' && !this.value && i>0)
+                    document.getElementById('otp-'+(i-1)).focus();
+                if (e.key==='Enter') verifyOTP();
             });
             cell.addEventListener('paste', function(e) {
                 e.preventDefault();
-                const paste = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
-                for (let j = 0; j < 6 && j < paste.length; j++) {
-                    const c = document.getElementById('otp-' + j);
-                    c.value = paste[j];
-                    c.classList.add('filled');
+                const p = (e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'');
+                for (let j=0; j<6&&j<p.length; j++) {
+                    const c = document.getElementById('otp-'+j);
+                    c.value = p[j]; c.classList.add('filled');
                 }
-                if (paste.length >= 6) verifyOTP();
+                if (p.length>=6) verifyOTP();
             });
         }
     });
