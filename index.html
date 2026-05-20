@@ -3,7 +3,7 @@
     <script>
 (async function authGuard() {
     const token = localStorage.getItem('ptpk_token');
-    if (!token) { window.location.href = '/login.html?redirect=index'; return; }
+    if (!token) { window.location.href = '/login.html'; return; }
     try {
         const res = await fetch('/api/auth/check-session', {
             method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -12,10 +12,32 @@
         const data = await res.json();
         if (data.status !== 'valid') {
             localStorage.removeItem('ptpk_token');
-            window.location.href = '/login.html?redirect=index';
+            localStorage.removeItem('ptpk_role');
+            localStorage.removeItem('ptpk_email');
+            window.location.href = '/login.html';
         }
-    } catch { window.location.href = '/login.html?redirect=index'; }
+    } catch { window.location.href = '/login.html'; }
 })();
+
+async function logout() {
+    const token = localStorage.getItem('ptpk_token');
+    try {
+        await fetch('/api/auth/logout', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({token})
+        });
+    } catch {}
+    localStorage.removeItem('ptpk_token');
+    localStorage.removeItem('ptpk_role');
+    localStorage.removeItem('ptpk_email');
+    window.location.href = '/login.html';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const email = localStorage.getItem('ptpk_email') || '';
+    const el = document.getElementById('user-name-display');
+    if (el && email) el.textContent = email;
+});
 </script>
 <head>
     <meta charset="UTF-8">
@@ -83,6 +105,40 @@
             padding-bottom: 20px;
             border-bottom: 2px solid #e2e8f0;
             margin-bottom: 25px;
+        }
+
+        .brand-header-right {
+            margin-left: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        .user-name-tag {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 7px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover {
+            background: #fee2e2;
+            border-color: #fca5a5;
+            color: #dc2626;
         }
 
         .brand-logo {
@@ -261,6 +317,12 @@
             <div class="brand-text">
                 <h1>Rəqəmsal Sənəd Qəbulu Sistemi</h1>
                 <p>Psixoloji-Tibbi-Pedaqoji Komissiya Portalı</p>
+            </div>
+            <div class="brand-header-right">
+                <span class="user-name-tag" id="user-name-display"></span>
+                <button class="btn-logout" onclick="logout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Çıxış
+                </button>
             </div>
         </div>
 
