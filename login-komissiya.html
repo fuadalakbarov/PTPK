@@ -3,255 +3,461 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PTPK | Regional Komissiya Girişi</title>
+    <title>PTPK | Komissiya Girişi</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
     <style>
         :root {
-            --primary-navy: #0f172a;     /* Komissiya paneli üçün korporativ tünd rəng */
-            --brand-blue: #0284c7;       
-            --bg-light: #f8fafc;
-            --text-dark: #0f172a;
+            --navy: #0f172a;
+            --navy2: #1e293b;
+            --blue: #0284c7;
+            --gold: #d97706;
+            --gold-light: #fef3c7;
+            --muted: #475569;
+            --border: #cbd5e1;
+            --success: #16a34a;
+            --danger: #dc2626;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-        
-        body { 
-            background: var(--bg-light); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body {
             min-height: 100vh;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
-        
         .login-card {
-            background: white; 
-            padding: 40px; 
-            border-radius: 14px; 
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-            width: 100%; 
-            max-width: 420px; 
-            border-top: 5px solid var(--primary-navy);
+            background: #fff;
+            border-radius: 18px;
+            border: 2px solid var(--navy);
+            box-shadow: 0 24px 60px rgba(15,23,42,0.5);
+            width: 100%;
+            max-width: 420px;
+            overflow: hidden;
+            animation: slideUp 0.4s ease;
         }
-
-        .header { 
-            text-align: center; 
-            margin-bottom: 35px; 
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-
-        .header i { 
-            font-size: 45px; 
-            color: var(--primary-navy); 
-            margin-bottom: 12px; 
-        }
-
-        .header h2 { 
-            font-size: 24px; 
-            color: var(--primary-navy); 
-            font-weight: 700; 
-            letter-spacing: -0.5px;
-        }
-
-        .header p { 
-            font-size: 14px; 
-            color: #64748b; 
-            margin-top: 6px; 
-        }
-
-        .form-group { 
-            margin-bottom: 22px; 
-            position: relative; 
-        }
-
-        .form-group label { 
-            display: block; 
-            font-size: 13px; 
-            font-weight: 600; 
-            color: #475569; 
-            margin-bottom: 8px; 
-        }
-
-        .form-group input {
-            width: 100%; 
-            padding: 12px 42px 12px 14px; 
-            border: 1px solid #cbd5e1; 
-            border-radius: 8px;
-            font-size: 14px; 
-            transition: all 0.2s ease;
-            color: var(--text-dark);
-        }
-
-        .form-group input:focus { 
-            outline: none; 
-            border-color: var(--brand-blue); 
-            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1); 
-        }
-
-        .form-group i.input-icon { 
-            position: absolute; 
-            right: 14px; 
-            top: 40px; 
-            color: #94a3b8; 
-            font-size: 16px;
-        }
-
-        .btn {
-            width: 100%; 
-            padding: 13px; 
-            background: var(--primary-navy); 
-            color: white; 
-            border: none;
-            border-radius: 8px; 
-            font-size: 15px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: all 0.2s ease;
-        }
-
-        .btn:hover { 
-            background: #1e293b; 
-        }
-        
-        .alert { 
-            padding: 12px; 
-            border-radius: 8px; 
-            font-size: 13px; 
-            margin-bottom: 20px; 
-            display: none; 
-            text-align: center; 
-            font-weight: 500;
-        }
-
-        .alert-error { 
-            background: #fef2f2; 
-            color: #991b1b; 
-            border: 1px solid #fca5a5; 
-        }
-
-        .alert-success { 
-            background: #f0fdf4; 
-            color: #166534; 
-            border: 1px solid #86efac; 
-        }
-
-        .back-link {
-            display: block;
+        .card-header {
+            background: var(--navy);
+            padding: 28px 32px 24px;
             text-align: center;
-            margin-top: 20px;
-            font-size: 13px;
-            color: var(--brand-blue);
-            text-decoration: none;
-            font-weight: 500;
+            border-bottom: 3px solid var(--gold);
         }
-        .back-link:hover {
-            text-decoration: underline;
+        .card-header img { height: 52px; margin-bottom: 12px; }
+        .card-header h1 { color: #fff; font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+        .card-header p  { color: #94a3b8; font-size: 12px; margin-top: 4px; font-weight: 500; }
+        .card-header .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(217,119,6,0.2); border: 1px solid rgba(251,191,36,0.4);
+            color: #fbbf24; font-size: 10px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
+            padding: 4px 10px; border-radius: 20px; margin-top: 10px;
         }
+        .card-body { padding: 28px 32px 32px; }
+
+        /* Steps */
+        .steps { display: flex; align-items: center; margin-bottom: 26px; }
+        .step  { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+        .step-dot {
+            width: 32px; height: 32px; border-radius: 50%;
+            border: 2px solid var(--border); background: #f8fafc;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; color: var(--muted); transition: all 0.3s;
+        }
+        .step.active .step-dot { background: var(--navy); border-color: var(--navy); color: #fff; }
+        .step.done   .step-dot { background: var(--success); border-color: var(--success); color: #fff; }
+        .step-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
+        .step.active .step-label { color: var(--navy); }
+        .step.done   .step-label { color: var(--success); }
+        .step-line { flex: 0 0 40px; height: 2px; background: var(--border); margin-bottom: 20px; transition: background 0.3s; }
+        .step-line.done { background: var(--success); }
+
+        /* Form */
+        .form-group { margin-bottom: 18px; }
+        .form-group label {
+            display: block; font-size: 12px; font-weight: 700; color: var(--navy);
+            text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+        }
+        .form-group input {
+            width: 100%; padding: 11px 14px; font-size: 14px; font-weight: 500;
+            border: 2px solid var(--border); border-radius: 8px; outline: none;
+            color: var(--navy); transition: border-color 0.2s; background: #fff;
+        }
+        .form-group input:focus { border-color: var(--navy); box-shadow: 0 0 0 3px rgba(15,23,42,0.08); }
+
+        /* OTP */
+        .otp-wrapper { display: flex; gap: 8px; justify-content: center; margin: 4px 0; }
+        .otp-cell {
+            width: 48px; height: 56px; border: 2px solid var(--border); border-radius: 10px;
+            font-size: 24px; font-weight: 800; text-align: center; color: var(--navy);
+            outline: none; transition: all 0.2s; background: #f8fafc;
+        }
+        .otp-cell:focus  { border-color: var(--navy); background: var(--gold-light); }
+        .otp-cell.filled { border-color: var(--navy); background: #fff; }
+
+        /* Buttons */
+        .btn-main {
+            width: 100%; background: var(--navy); color: #fff; border: none;
+            border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            gap: 8px; transition: background 0.2s; margin-top: 4px;
+        }
+        .btn-main:hover    { background: var(--navy2); }
+        .btn-main:disabled { background: #94a3b8; cursor: not-allowed; }
+        .btn-back {
+            background: none; border: none; color: var(--muted); font-size: 13px;
+            font-weight: 600; cursor: pointer; display: flex; align-items: center;
+            gap: 6px; padding: 10px 0 0; text-decoration: underline;
+        }
+        .btn-back:hover { color: var(--navy); }
+
+        /* Alert */
+        .alert { padding: 10px 14px; border-radius: 7px; font-size: 13px; font-weight: 600; margin-bottom: 16px; display: none; }
+        .alert.error   { background: #fee2e2; color: var(--danger);  border: 1px solid #fca5a5; display: flex; gap: 8px; align-items: center; }
+        .alert.success { background: #dcfce7; color: var(--success); border: 1px solid #86efac; display: flex; gap: 8px; align-items: center; }
+        .alert.info    { background: var(--gold-light); color: var(--gold); border: 1px solid #fde68a; display: flex; gap: 8px; align-items: center; }
+
+        .timer-text { font-size: 12px; color: var(--muted); text-align: center; margin-top: 10px; font-weight: 500; }
+        .timer-text span { color: var(--navy); font-weight: 700; }
+        .section-title { font-size: 17px; font-weight: 800; color: var(--navy); margin-bottom: 6px; }
+        .section-sub   { font-size: 13px; color: var(--muted); margin-bottom: 22px; line-height: 1.5; }
+        .section-sub strong { color: var(--navy); }
+
+        .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+            border-radius: 50%; animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .copyright { color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 20px; font-weight: 500; }
+
+        .security-box {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--gold-light); border: 1px solid #fde68a;
+            border-radius: 8px; padding: 10px 13px;
+            font-size: 12px; color: var(--gold); font-weight: 600; margin-bottom: 18px;
+        }
+
+        .other-login-link {
+            text-align: center; margin-top: 18px; font-size: 12px; color: var(--muted);
+        }
+        .other-login-link a { color: var(--blue); font-weight: 700; text-decoration: none; }
+        .other-login-link a:hover { text-decoration: underline; }
+
+        .step-panel { display: none; }
+        .step-panel.active { display: block; }
     </style>
 </head>
 <body>
 
 <div class="login-card">
-    <div class="header">
-        <i class="fa-solid fa-building-shield"></i>
-        <h2>PTPK Komissiya</h2>
-        <p>Ekspertlər və komissiya üzvləri üçün rəsmi giriş</p>
+    <div class="card-header">
+        <img src="image.png" alt="PTPK Logo">
+        <h1>Komissiya Girişi</h1>
+        <p>Psixoloji-Tibbi-Pedaqoji Komissiya Portalı</p>
+        <div class="badge"><i class="fa-solid fa-lock"></i> Yalnız Komissiya Üzvləri</div>
     </div>
 
-    <div id="alertBox" class="alert"></div>
-
-    <div id="stepEmail">
-        <div class="form-group">
-            <label>Komissiya E-maili</label>
-            <input type="email" id="email" placeholder="komissiya@rto.az">
-            <i class="fa-solid fa-envelope input-icon"></i>
+    <div class="card-body">
+        <div class="steps">
+            <div class="step active" id="step-ind-1">
+                <div class="step-dot">1</div>
+                <div class="step-label">E-poçt</div>
+            </div>
+            <div class="step-line" id="line-1"></div>
+            <div class="step" id="step-ind-2">
+                <div class="step-dot">2</div>
+                <div class="step-label">Kod</div>
+            </div>
+            <div class="step-line" id="line-2"></div>
+            <div class="step" id="step-ind-3">
+                <div class="step-dot"><i class="fa-solid fa-check" style="font-size:12px;"></i></div>
+                <div class="step-label">Giriş</div>
+            </div>
         </div>
-        <button class="btn" onclick="sendOTP()">Birdəfəlik Şifrə Göndər</button>
-        <a href="/login" class="back-link"><i class="fa-solid fa-arrow-left"></i> Məktəb Girişinə Keç</a>
-    </div>
 
-    <div id="stepOTP" style="display: none;">
-        <div class="form-group">
-            <label>E-mailinizə göndərilən 6 rəqəmli OTP kod</label>
-            <input type="text" id="otpCode" placeholder="000000" maxlength="6" style="letter-spacing: 6px; text-align: center; font-size: 18px; font-weight: bold;">
-            <i class="fa-solid fa-key input-icon"></i>
+        <div id="alert-box" class="alert"></div>
+
+        <!-- STEP 1 -->
+        <div class="step-panel active" id="panel-1">
+            <div class="security-box">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                Bu giriş yalnız komissiya üzvləri üçün nəzərdə tutulub
+            </div>
+            <div class="section-title">Komissiya e-poçtu ilə daxil olun</div>
+            <div class="section-sub">
+                Komissiya üzvü kimi qeydiyyatda olan e-poçt ünvanınızı daxil edin.
+                Doğrulama kodu göndəriləcək.
+            </div>
+            <div class="form-group">
+                <label><i class="fa-solid fa-envelope"></i> &nbsp;E-poçt ünvanı</label>
+                <input type="email" id="email-input" placeholder="komissiya@rto.az" autocomplete="email">
+            </div>
+            <button class="btn-main" id="btn-send-otp" onclick="sendOTP()">
+                <i class="fa-solid fa-paper-plane"></i> Kod Göndər
+            </button>
+            <div class="other-login-link">
+                Məktəb istifadəçisisiniz? <a href="login.html">← Məktəb girişinə keçin</a>
+            </div>
         </div>
-        <button class="btn" onclick="verifyOTP()">Doğrula və Daxil Ol</button>
+
+        <!-- STEP 2 -->
+        <div class="step-panel" id="panel-2">
+            <div class="section-title">Kodu daxil edin</div>
+            <div class="section-sub" id="otp-sub-text">
+                E-poçtunuza göndərilən 6 rəqəmli kodu daxil edin.
+            </div>
+            <div class="otp-wrapper">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" id="otp-0">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" id="otp-1">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" id="otp-2">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" id="otp-3">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" id="otp-4">
+                <input type="text" class="otp-cell" maxlength="1" inputmode="numeric" id="otp-5">
+            </div>
+            <div class="timer-text">Kodun müddəti: <span id="timer-count">10:00</span></div>
+            <button class="btn-main" id="btn-verify" onclick="verifyOTP()" style="margin-top:16px;">
+                <i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol
+            </button>
+            <button class="btn-back" onclick="goBack()">
+                <i class="fa-solid fa-arrow-left"></i> Geri qayıt
+            </button>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="step-panel" id="panel-3" style="text-align:center;">
+            <div style="font-size:54px; margin-bottom:14px;">✅</div>
+            <div class="section-title" style="text-align:center;">Uğurla daxil oldunuz!</div>
+            <div class="section-sub" style="text-align:center; margin-top:8px;" id="success-text">Yönləndirilirsiniz...</div>
+            <div style="margin-top:20px;">
+                <div class="spinner" style="margin:auto; border-color:rgba(15,23,42,0.2); border-top-color:var(--navy);"></div>
+            </div>
+        </div>
     </div>
 </div>
 
+<div class="copyright">© 2026 Psixoloji-Tibbi-Pedaqoji Komissiya · by F.Alakbarov</div>
+
 <script>
-    const alertBox = document.getElementById('alertBox');
-    const stepEmail = document.getElementById('stepEmail');
-    const stepOTP = document.getElementById('stepOTP');
+    // ── Bu login yalnız "komissiya" rollu emaillər üçündür → komissiya.html ──
+    const THIS_ROLE    = 'komissiya';
+    const REDIRECT_URL = 'komissiya.html';
 
-    function showAlert(msg, type='error') {
-        alertBox.innerText = msg;
-        alertBox.className = `alert alert-${type}`;
-        alertBox.style.display = 'block';
-    }
+    let timerInterval = null;
+    let timerSeconds  = 600;
+    let currentEmail  = '';
 
-    async function sendOTP() {
-        const email = document.getElementById('email').value.trim();
-        if(!email) return showAlert("Zəhmət olmasa email ünvanınızı daxil edin.");
+    window.addEventListener('DOMContentLoaded', async () => {
+        const token = localStorage.getItem('ptpk_token');
+        const role  = localStorage.getItem('ptpk_role');
+        if (token && role === THIS_ROLE) {
+            const valid = await checkToken(token);
+            if (valid) { window.location.href = REDIRECT_URL; return; }
+        }
+        localStorage.removeItem('ptpk_token');
+        localStorage.removeItem('ptpk_role');
+        localStorage.removeItem('ptpk_email');
 
+        document.getElementById('email-input').addEventListener('keydown', e => {
+            if (e.key === 'Enter') sendOTP();
+        });
+    });
+
+    async function checkToken(token) {
         try {
-            const res = await fetch('/api/auth/send-otp', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ email })
+            const res  = await fetch('/api/auth/check-session', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({token})
             });
             const data = await res.json();
-            
-            if(data.status === 'success') {
-                showAlert("Birdəfəlik kod emailinizə göndərildi.", "success");
-                stepEmail.style.display = 'none';
-                stepOTP.style.display = 'block';
-            } else {
-                showAlert(data.message || "Giriş icazəsi yoxdur və ya xəta baş verdi.");
-            }
-        } catch(e) {
-            showAlert("Serverlə əlaqə kəsildi.");
+            return data.status === 'valid' && data.role === THIS_ROLE;
+        } catch { return false; }
+    }
+
+    function showAlert(msg, type) {
+        const el = document.getElementById('alert-box');
+        el.className = 'alert ' + type;
+        const icons = { error:'fa-circle-exclamation', success:'fa-circle-check', info:'fa-circle-info' };
+        el.innerHTML = `<i class="fa-solid ${icons[type]}"></i> ${msg}`;
+    }
+    function hideAlert() { document.getElementById('alert-box').className = 'alert'; }
+
+    async function sendOTP() {
+        const email = document.getElementById('email-input').value.trim().toLowerCase();
+        if (!email || !email.includes('@')) {
+            showAlert('Zəhmət olmasa düzgün e-poçt ünvanı daxil edin.', 'error'); return;
         }
+
+        const btn = document.getElementById('btn-send-otp');
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner"></div> Göndərilir...';
+        hideAlert();
+
+        try {
+            const res  = await fetch('/api/auth/send-otp', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({email})
+            });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                // ── Rol yoxlaması: yalnız "komissiya" rollu emaillər bu loginə girə bilər ──
+                if (data.role !== THIS_ROLE) {
+                    showAlert(
+                        'Bu e-poçt komissiya üzvü üçün deyil. Məktəb girişindən istifadə edin.',
+                        'error'
+                    );
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kod Göndər';
+                    return;
+                }
+                currentEmail = email;
+                document.getElementById('otp-sub-text').innerHTML =
+                    `E-poçtunuza göndərilən 6 rəqəmli kodu daxil edin.<br><strong>${email}</strong>`;
+                goToStep(2);
+                startTimer();
+                showAlert('Kod uğurla göndərildi! E-poçtunuzu yoxlayın.', 'success');
+            } else {
+                showAlert(data.message || 'Xəta baş verdi.', 'error');
+            }
+        } catch {
+            showAlert('Serverə qoşulmaq mümkün olmadı!', 'error');
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kod Göndər';
     }
 
     async function verifyOTP() {
-        const email = document.getElementById('email').value.trim();
-        const code = document.getElementById('otpCode').value.trim();
-        if(!code) return showAlert("Zəhmət olmasa 6 rəqəmli kodu daxil edin.");
+        const code = Array.from({length:6}, (_, i) =>
+            document.getElementById('otp-'+i).value).join('');
+
+        if (!/^\d{6}$/.test(code)) {
+            showAlert('Zəhmət olmasa 6 rəqəmli kodu tam daxil edin.', 'error'); return;
+        }
+
+        const btn = document.getElementById('btn-verify');
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner"></div> Yoxlanılır...';
+        hideAlert();
 
         try {
-            const res = await fetch('/api/auth/verify-otp', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ email, code })
+            const res  = await fetch('/api/auth/verify-otp', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({email: currentEmail, code})
             });
             const data = await res.json();
 
-            if(data.status === 'success') {
-                // TƏHLÜKƏSİZLİK SÜZGƏCİ: Əgər bu adam komissiya deyilsə səhifəyə buraxmırıq
-                if(data.role !== 'komissiya') {
-                    showAlert("Giriş rədd edildi: Bu giriş yalnız komissiya üzvləri üçündür.");
+            if (data.status === 'success') {
+                // ── İkinci mərhələ rol yoxlaması ──
+                if (data.role !== THIS_ROLE) {
+                    showAlert('Giriş rədd edildi. Bu giriş yalnız komissiya üzvləri üçündür.', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
                     return;
                 }
-
+                clearInterval(timerInterval);
                 localStorage.setItem('ptpk_token', data.token);
-                localStorage.setItem('ptpk_role', data.role);
-                localStorage.setItem('ptpk_name', data.full_name);
-                
-                showAlert("Giriş uğurludur! Yönləndirilirsiniz...", "success");
-                setTimeout(() => {
-                    window.location.href = '/komissiya';
-                }, 1000);
+                localStorage.setItem('ptpk_role',  data.role);
+                localStorage.setItem('ptpk_email', data.email);
+
+                goToStep(3);
+                document.getElementById('success-text').innerHTML =
+                    `Xoş gəldiniz, <strong>${data.full_name || data.email}</strong>!<br>Yönləndirilirsiniz...`;
+                setTimeout(() => { window.location.href = REDIRECT_URL; }, 1800);
             } else {
-                showAlert(data.message || "Daxil edilən kod səhvdir.");
+                showAlert(data.message || 'Kod yanlışdır.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
             }
-        } catch(e) {
-            showAlert("Xəta baş verdi.");
+        } catch {
+            showAlert('Serverə qoşulmaq mümkün olmadı!', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
         }
     }
+
+    function goToStep(n) {
+        [1,2,3].forEach(i => {
+            document.getElementById('panel-'+i).classList.toggle('active', i===n);
+            const s = document.getElementById('step-ind-'+i);
+            s.classList.remove('active','done');
+            if (i < n)  s.classList.add('done');
+            if (i === n) s.classList.add('active');
+        });
+        if (n >= 2) document.getElementById('line-1').classList.add('done');
+        if (n >= 3) document.getElementById('line-2').classList.add('done');
+        hideAlert();
+    }
+
+    function goBack() {
+        clearInterval(timerInterval);
+        goToStep(1);
+        for (let i=0; i<6; i++) {
+            const c = document.getElementById('otp-'+i);
+            c.value = ''; c.classList.remove('filled');
+        }
+    }
+
+    function startTimer() {
+        timerSeconds = 600;
+        clearInterval(timerInterval);
+        updateTimer();
+        timerInterval = setInterval(() => {
+            timerSeconds--;
+            updateTimer();
+            if (timerSeconds <= 0) {
+                clearInterval(timerInterval);
+                showAlert('Kodun müddəti bitdi. Yenidən göndərin.', 'error');
+                goBack();
+            }
+        }, 1000);
+    }
+
+    function updateTimer() {
+        const m = String(Math.floor(timerSeconds/60)).padStart(2,'0');
+        const s = String(timerSeconds%60).padStart(2,'0');
+        document.getElementById('timer-count').textContent = `${m}:${s}`;
+    }
+
+    // OTP cell navigasiya
+    document.addEventListener('DOMContentLoaded', () => {
+        for (let i=0; i<6; i++) {
+            const cell = document.getElementById('otp-'+i);
+            cell.addEventListener('input', function() {
+                this.value = this.value.replace(/\D/g,'').slice(0,1);
+                this.classList.toggle('filled', this.value.length > 0);
+                if (this.value && i < 5) document.getElementById('otp-'+(i+1)).focus();
+                if (i === 5 && this.value) {
+                    const full = Array.from({length:6},(_,j)=>document.getElementById('otp-'+j).value).join('');
+                    if (full.length===6) verifyOTP();
+                }
+            });
+            cell.addEventListener('keydown', function(e) {
+                if (e.key==='Backspace' && !this.value && i>0)
+                    document.getElementById('otp-'+(i-1)).focus();
+                if (e.key==='Enter') verifyOTP();
+            });
+            cell.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const p = (e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'');
+                for (let j=0; j<6&&j<p.length; j++) {
+                    const c = document.getElementById('otp-'+j);
+                    c.value = p[j]; c.classList.add('filled');
+                }
+                if (p.length>=6) verifyOTP();
+            });
+        }
+    });
 </script>
 </body>
 </html>
