@@ -193,58 +193,11 @@
 
 <div class="video-side">
     <div class="video-wrapper">
-        <div id="yt-player"></div>
+        <video autoplay muted loop playsinline id="bg-video"
+            style="width:100%;height:100%;object-fit:cover;display:block;">
+        <source src="_İnklüziv təhsil_ - sosial çarx.mp4" type="video/mp4">
+    </video>
     </div>
-    <script>
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
-        var ytPlayer;
-        function onYouTubeIframeAPIReady() {
-            ytPlayer = new YT.Player('yt-player', {
-                videoId: 'YYJml3FOQVg',
-                playerVars: {
-                    autoplay: 1,
-                    loop: 1,
-                    playlist: 'YYJml3FOQVg',
-                    mute: 1,
-                    controls: 0,
-                    disablekb: 1,
-                    fs: 0,
-                    modestbranding: 1,
-                    rel: 0,
-                    iv_load_policy: 3,
-                    playsinline: 1
-                },
-                events: {
-                    onReady: function(e) {
-                        e.target.mute();
-                        e.target.playVideo();
-                        // Unmute on first user interaction
-                        var unlocked = false;
-                        function unlock() {
-                            if (unlocked) return;
-                            unlocked = true;
-                            e.target.unMute();
-                            e.target.setVolume(50);
-                            document.removeEventListener('click', unlock);
-                            document.removeEventListener('keydown', unlock);
-                            document.removeEventListener('touchstart', unlock);
-                            document.removeEventListener('scroll', unlock);
-                        }
-                        document.addEventListener('click', unlock);
-                        document.addEventListener('keydown', unlock);
-                        document.addEventListener('touchstart', unlock);
-                        document.addEventListener('scroll', unlock);
-                    },
-                    onStateChange: function(e) {
-                        if (e.data === YT.PlayerState.ENDED) e.target.playVideo();
-                    }
-                }
-            });
-        }
-    </script>
-</div>
 
 <div class="login-side">
 <div class="login-card">
@@ -545,5 +498,24 @@
         }
     });
 </script>
+
+    <script>
+        (function() {
+            var vid = document.getElementById('bg-video');
+            var unlocked = false;
+            function unlock() {
+                if (unlocked || !vid) return;
+                unlocked = true;
+                vid.muted = false;
+                vid.volume = 0.5;
+                ['click','keydown','touchstart','scroll'].forEach(function(e) {
+                    document.removeEventListener(e, unlock);
+                });
+            }
+            ['click','keydown','touchstart','scroll'].forEach(function(e) {
+                document.addEventListener(e, unlock);
+            });
+        })();
+    </script>
 </body>
 </html>
