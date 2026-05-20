@@ -30,35 +30,36 @@
         .page-layout {
             display: flex;
             flex-direction: row;
-            width: 100%;
+            align-items: center;
             min-height: 100vh;
             padding: 40px;
             gap: 40px;
             box-sizing: border-box;
-            align-items: stretch;
         }
         .video-side {
             flex: 1 1 0;
             min-width: 0;
-            position: relative;
-            min-height: 500px;
+            align-self: stretch;
+        }
+        .video-wrapper {
+            width: 100%;
+            height: 100%;
+            min-height: 480px;
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-        }
-        .video-wrapper {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
             pointer-events: none;
         }
-        .video-wrapper video {
+        .video-wrapper iframe {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            min-height: 480px;
+            border: none;
             display: block;
         }
         .login-side {
             flex: 0 0 440px;
+            background: transparent;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -67,9 +68,6 @@
         }
         @media (max-width: 900px) {
             .page-layout { flex-direction: column; padding: 20px; gap: 20px; }
-            .video-side { min-height: 240px; flex: 0 0 240px; }
-            .login-side { flex: 0 0 auto; width: 100%; }
-        }
             .video-side { width: 100%; min-height: 240px; align-self: auto; }
             .video-wrapper { min-height: 240px; }
             .video-wrapper iframe { min-height: 240px; }
@@ -195,21 +193,58 @@
 
 <div class="video-side">
     <div class="video-wrapper">
-        <iframe id="yt-iframe"
-            src="https://www.youtube.com/embed/YYJml3FOQVg?autoplay=1&mute=1&loop=1&playlist=YYJml3FOQVg&controls=0&disablekb=1&fs=0&modestbranding=1&rel=0&iv_load_policy=3&playsinline=1&enablejsapi=1"
-            allow="autoplay; encrypted-media"
-            style="width:100%;height:100%;border:none;display:block;"
-            allowfullscreen="false">
-        </iframe>
-        <button id="sound-btn" onclick="toggleSound()" style="
-            position:absolute; bottom:16px; left:16px; z-index:10;
-            background:rgba(0,0,0,0.65); color:#fff; border:none;
-            border-radius:24px; padding:8px 16px; font-size:13px;
-            font-weight:600; cursor:pointer; display:flex;
-            align-items:center; gap:6px; font-family:Inter,sans-serif;
-            pointer-events:all; transition:background 0.2s;
-        ">🔇 Səsi aç</button>
+        <div id="yt-player"></div>
     </div>
+    <script>
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+        var ytPlayer;
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('yt-player', {
+                videoId: 'YYJml3FOQVg',
+                playerVars: {
+                    autoplay: 1,
+                    loop: 1,
+                    playlist: 'YYJml3FOQVg',
+                    mute: 1,
+                    controls: 0,
+                    disablekb: 1,
+                    fs: 0,
+                    modestbranding: 1,
+                    rel: 0,
+                    iv_load_policy: 3,
+                    playsinline: 1
+                },
+                events: {
+                    onReady: function(e) {
+                        e.target.mute();
+                        e.target.playVideo();
+                        // Unmute on first user interaction
+                        var unlocked = false;
+                        function unlock() {
+                            if (unlocked) return;
+                            unlocked = true;
+                            e.target.unMute();
+                            e.target.setVolume(50);
+                            document.removeEventListener('click', unlock);
+                            document.removeEventListener('keydown', unlock);
+                            document.removeEventListener('touchstart', unlock);
+                            document.removeEventListener('scroll', unlock);
+                        }
+                        document.addEventListener('click', unlock);
+                        document.addEventListener('keydown', unlock);
+                        document.addEventListener('touchstart', unlock);
+                        document.addEventListener('scroll', unlock);
+                    },
+                    onStateChange: function(e) {
+                        if (e.data === YT.PlayerState.ENDED) e.target.playVideo();
+                    }
+                }
+            });
+        }
+    </script>
+</div>
 
 <div class="login-side">
 <div class="login-card">
@@ -510,33 +545,5 @@
         }
     });
 </script>
-
-
-
-    <script>
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
-        var ytPlayer, isMuted = true;
-        function onYouTubeIframeAPIReady() {
-            ytPlayer = new YT.Player('yt-iframe', {
-                events: {
-                    onReady: function(e) { e.target.mute(); e.target.playVideo(); }
-                }
-            });
-        }
-        function toggleSound() {
-            if (!ytPlayer) return;
-            if (isMuted) {
-                ytPlayer.unMute();
-                ytPlayer.setVolume(60);
-                document.getElementById('sound-btn').innerHTML = '🔊 Səsi bağla';
-            } else {
-                ytPlayer.mute();
-                document.getElementById('sound-btn').innerHTML = '🔇 Səsi aç';
-            }
-            isMuted = !isMuted;
-        }
-    </script>
 </body>
 </html>
