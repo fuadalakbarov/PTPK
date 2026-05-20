@@ -217,7 +217,26 @@
                     playsinline: 1
                 },
                 events: {
-                    onReady: function(e) { e.target.mute(); e.target.playVideo(); },
+                    onReady: function(e) {
+                        e.target.mute();
+                        e.target.playVideo();
+                        // Unmute on first user interaction
+                        var unlocked = false;
+                        function unlock() {
+                            if (unlocked) return;
+                            unlocked = true;
+                            e.target.unMute();
+                            e.target.setVolume(50);
+                            document.removeEventListener('click', unlock);
+                            document.removeEventListener('keydown', unlock);
+                            document.removeEventListener('touchstart', unlock);
+                            document.removeEventListener('scroll', unlock);
+                        }
+                        document.addEventListener('click', unlock);
+                        document.addEventListener('keydown', unlock);
+                        document.addEventListener('touchstart', unlock);
+                        document.addEventListener('scroll', unlock);
+                    },
                     onStateChange: function(e) {
                         if (e.data === YT.PlayerState.ENDED) e.target.playVideo();
                     }
