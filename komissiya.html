@@ -524,10 +524,10 @@ function closeDocsModal() {
     mergedPdfBytes = null;
 }
 
-// Tək sənədi server /files/ endpoint-indən aç
+// Tək sənədi Supabase Storage-dan aç
 function openSingleDoc(fname) {
-    if (!fname) return;
-    window.open('/files/' + fname, '_blank');
+    if (!fname || fname.length <= 3) return;
+    window.open(filePublicUrl(fname), '_blank');
 }
 
 // Manuel faylı base64-dən aç
@@ -543,11 +543,25 @@ function openManualDoc() {
 //  PDF BİRLƏŞDİRMƏ (pdf-lib)
 // ──────────────────────────────────────────────
 
-// Sənədi server-dən ArrayBuffer kimi yüklə
+const SUPABASE_STORAGE_BASE = 'https://vlyuxgtwvfgbwaysbymv.supabase.co/storage/v1/object/public/ptpk-files';
+
+function filePublicUrl(fname) {
+    return `${SUPABASE_STORAGE_BASE}/${fname}`;
+}
+
+// Sənədi Supabase Storage-dan ArrayBuffer kimi yüklə
 async function fetchDocBytes(fname) {
-    const res = await fetch('/files/' + fname);
-    if (!res.ok) return null;
-    return await res.arrayBuffer();
+    // Əvvəl birbaşa Supabase Storage-dan cəhd et
+    try {
+        const res = await fetch(filePublicUrl(fname));
+        if (res.ok) return await res.arrayBuffer();
+    } catch(e) {}
+    // Köhnə server proxy vasitəsilə cəhd et (fallback)
+    try {
+        const res2 = await fetch('/files/' + fname);
+        if (res2.ok) return await res2.arrayBuffer();
+    } catch(e) {}
+    return null;
 }
 
 // Şəkil faylını PDF-ə çevir (pdf-lib ilə)
