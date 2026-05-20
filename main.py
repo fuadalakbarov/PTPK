@@ -57,10 +57,6 @@ async def login_page():
 async def get_image():
     return FileResponse("image.png")
 
-@app.get("/video.mp4")
-async def get_video():
-    return FileResponse("_İnklüziv təhsil_ - sosial çarx.mp4", media_type="video/mp4")
-
 @app.post("/api/school/submit-student")
 async def submit_student(
     finCode: str = Form(...),
