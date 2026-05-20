@@ -5,7 +5,7 @@ import httpx
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 from auth_routes import router as auth_router
@@ -20,21 +20,50 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Auth router-i qoş
 app.include_router(auth_router)
 
-UPLOAD_DIR = "uploads"
+UPLOAD_DIR       = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# Supabase konfiqurasiyası
-SUPABASE_URL = "https://vlyuxgtwvfgbwaysbymv.supabase.co/rest/v1"
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
+SUPABASE_URL     = "https://vlyuxgtwvfgbwaysbymv.supabase.co/rest/v1"
+SUPABASE_STORAGE = "https://vlyuxgtwvfgbwaysbymv.supabase.co/storage/v1"
+SUPABASE_KEY     = os.environ.get("SUPABASE_KEY", "")
+STORAGE_BUCKET   = "ptpk-files"
+
 HEADERS = {
     "apikey": SUPABASE_KEY,
     "Authorization": f"Bearer {SUPABASE_KEY}",
     "Content-Type": "application/json",
     "Prefer": "return=representation"
 }
+
+CONTENT_TYPES = {
+    "pdf":  "application/pdf",
+    "jpg":  "image/jpeg",
+    "jpeg": "image/jpeg",
+    "png":  "image/png",
+    "doc":  "application/msword",
+    "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "txt":  "text/plain",
+}
+
+async def upload_to_storage(fname: str, data: bytes, ext: str) -> bool:
+    """Faylı Supabase Storage-a yüklə."""
+    ct = CONTENT_TYPES.get(ext.lower(), "application/octet-stream")
+    url = f"{SUPABASE_STORAGE}/object/{STORAGE_BUCKET}/{fname}"
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": ct,
+        "x-upsert": "true",
+    }
+    async with httpx.AsyncClient(timeout=60) as client:
+        r = await client.post(url, content=data, headers=headers)
+    return r.status_code in (200, 201)
+
+def storage_public_url(fname: str) -> str:
+    return f"{SUPABASE_STORAGE}/object/public/{STORAGE_BUCKET}/{fname}"
+
 
 class DecisionUpdate(BaseModel):
     id: str
@@ -44,6 +73,7 @@ class DecisionUpdate(BaseModel):
     expiryDate: str
     manualFileData: Optional[str] = None
     manualFileName: Optional[str] = None
+
 
 @app.get("/")
 async def root():
@@ -56,6 +86,7 @@ async def login_page():
 @app.get("/image.png")
 async def get_image():
     return FileResponse("image.png")
+
 
 @app.post("/api/school/submit-student")
 async def submit_student(
@@ -73,22 +104,21 @@ async def submit_student(
 ):
     app_id = f"PTPK_{int(time.time() * 1000)}"
 
-    def save_file(upload: UploadFile, prefix: str) -> str:
+    async def save_file(upload: UploadFile, prefix: str) -> str:
         if not upload.filename:
             return ""
-        ext = os.path.splitext(upload.filename)[1]
-        fname = f"{app_id}_{prefix}{ext}"
-        fpath = os.path.join(UPLOAD_DIR, fname)
-        with open(fpath, "wb") as f:
-            shutil.copyfileobj(upload.file, f)
-        return fname
+        ext = os.path.splitext(upload.filename)[1].lstrip(".")
+        fname = f"{app_id}_{prefix}.{ext}"
+        data = await upload.read()
+        ok = await upload_to_storage(fname, data, ext)
+        return fname if ok else ""
 
-    f_cover = save_file(coverLetter, "mushayiet")
-    f_res   = save_file(residenceCertificate, "yasayis")
-    f_xas   = save_file(xasiyyetname, "xasiyyetname")
-    f_id    = save_file(idCopies, "sv_sureti")
-    f_tab   = save_file(tabel, "tabel")
-    f_027   = save_file(forma027, "forma027")
+    f_cover = await save_file(coverLetter, "mushayiet")
+    f_res   = await save_file(residenceCertificate, "yasayis")
+    f_xas   = await save_file(xasiyyetname, "xasiyyetname")
+    f_id    = await save_file(idCopies, "sv_sureti")
+    f_tab   = await save_file(tabel, "tabel")
+    f_027   = await save_file(forma027, "forma027")
 
     payload = {
         "id": app_id,
@@ -119,6 +149,7 @@ async def submit_student(
 
     return {"status": "success", "id": app_id}
 
+
 @app.get("/api/komissiya/get-applications")
 async def get_applications():
     async with httpx.AsyncClient() as client:
@@ -127,6 +158,7 @@ async def get_applications():
             headers=HEADERS
         )
     return r.json()
+
 
 @app.post("/api/komissiya/update-decision")
 async def update_decision(data: DecisionUpdate):
@@ -149,6 +181,7 @@ async def update_decision(data: DecisionUpdate):
         )
     return {"status": "success"}
 
+
 @app.delete("/api/komissiya/delete-application")
 async def delete_application(id: str):
     async with httpx.AsyncClient() as client:
@@ -158,14 +191,25 @@ async def delete_application(id: str):
         )
     return {"status": "deleted"}
 
-try:
-    app.mount("/files", StaticFiles(directory=UPLOAD_DIR), name="files")
-except Exception:
-    pass
+
+# Storage fayllarını proxy et (köhnə /files/ URL-ləri üçün geriyə uyğunluq)
+@app.get("/files/{fname}")
+async def proxy_file(fname: str):
+    url = storage_public_url(fname)
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await client.get(url)
+    if r.status_code == 200:
+        ct = r.headers.get("content-type", "application/octet-stream")
+        return JSONResponse(content=None, status_code=200,
+                            headers={"Content-Type": ct}) if False else \
+               __import__("fastapi").Response(content=r.content,
+                                              media_type=ct)
+    return JSONResponse({"error": "not found"}, status_code=404)
+
 
 @app.get("/{page}.html")
 async def get_html(page: str):
     file_path = f"{page}.html"
     if os.path.exists(file_path):
         return FileResponse(file_path)
-    return {"detail": "Not Found"}
+    return JSONResponse({"error": "not found"}, status_code=404)
