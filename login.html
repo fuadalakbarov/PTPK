@@ -23,11 +23,57 @@
             min-height: 100vh;
             background: linear-gradient(135deg, #0284c7 0%, #0f172a 100%);
             background-attachment: fixed;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Video + layout */
+        .page-layout {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            width: 100%;
+            min-height: 100vh;
+            padding: 32px;
+            gap: 32px;
+            box-sizing: border-box;
+        }
+        .video-side {
+            flex: 1 1 0;
+            min-width: 0;
+            min-height: 500px;
+        }
+        .video-wrapper {
+            width: 100%;
+            height: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            pointer-events: none;
+        }
+        .video-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        .login-side {
+            flex: 0 0 auto;
+            width: 460px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 40px 20px;
+        }
+
+        @media (max-width: 900px) {
+            .page-layout { flex-direction: column; padding: 16px; gap: 16px; }
+            .video-side { min-height: 220px; }
+            .login-side { width: 100%; padding: 20px 16px; }
+        }
+            .video-side { min-height: 220px; position: relative; }
+            .video-wrapper { position: absolute; }
         }
         .login-card {
             background: #fff;
@@ -36,7 +82,7 @@
             box-shadow: 0 24px 60px rgba(15,23,42,0.35);
             width: 100%;
             max-width: 420px;
-            overflow: hidden;
+            overflow: visible;
             animation: slideUp 0.4s ease;
         }
         @keyframes slideUp {
@@ -142,6 +188,20 @@
 </head>
 <body>
 
+<div class="page-layout">
+
+<div class="video-side">
+    <div class="video-wrapper">
+        <iframe
+            src="https://www.youtube.com/embed/YYJml3FOQVg?autoplay=1&loop=1&playlist=YYJml3FOQVg&mute=0&controls=0&disablekb=1&fs=0&modestbranding=1&rel=0&iv_load_policy=3&start=0"
+            allow="autoplay; encrypted-media"
+            allowfullscreen="false"
+            title="Background video">
+        </iframe>
+    </div>
+</div>
+
+<div class="login-side">
 <div class="login-card">
     <div class="card-header">
         <img src="image.png" alt="PTPK Logo">
@@ -221,9 +281,12 @@
             </div>
         </div>
     </div>
-</div>
+</div><!-- login-card -->
 
 <div class="copyright">© 2026 Psixoloji-Tibbi-Pedaqoji Komissiya · by F.Alakbarov</div>
+</div><!-- login-side -->
+
+</div><!-- page-layout -->
 
 <script>
     // ── Bu login yalnız "user" rollu emaillər üçündür → index.html ──
