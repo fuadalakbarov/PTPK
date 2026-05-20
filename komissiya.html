@@ -41,6 +41,10 @@
         .brand-header { display: flex; align-items: center; gap: 20px; padding-bottom: 15px; border-bottom: 2px solid #e2e8f0; flex-shrink: 0; }
         .brand-logo { height: 45px; width: auto; }
         .brand-text h1 { font-size: 20px; font-weight: 700; color: var(--primary-navy); }
+        .brand-header-right { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+        .user-name-tag { font-size: 12px; font-weight: 600; color: #475569; }
+        .btn-logout { display: flex; align-items: center; gap: 6px; background: none; border: 1.5px solid #e2e8f0; border-radius: 7px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: #475569; cursor: pointer; transition: all 0.2s; }
+        .btn-logout:hover { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
 
         .manual-entry-bar {
             display: flex; flex-wrap: wrap; gap: 8px; background: #f1f5f9; padding: 12px 15px; margin-top: 15px; border-radius: 8px; border: 2px solid var(--primary-navy); align-items: center; flex-shrink: 0;
@@ -225,6 +229,12 @@
             <img src="image.png" alt="PTPK Logo" class="brand-logo">
             <div class="brand-text">
                 <h1>PTPK Komissiya Ekspertiza Paneli (Excel Magistral)</h1>
+            </div>
+            <div class="brand-header-right">
+                <span class="user-name-tag" id="user-name-display"></span>
+                <button class="btn-logout" onclick="logout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Çıxış
+                </button>
             </div>
         </div>
 
@@ -974,6 +984,48 @@ function filterStudents() {
         row.style.display = text.toUpperCase().indexOf(filter) > -1 ? "" : "none";
     });
 }
+
+// ── Auth Guard ──
+(async function authGuard() {
+    const token = localStorage.getItem('ptpk_token');
+    const role  = localStorage.getItem('ptpk_role');
+    if (!token || role !== 'komissiya') {
+        window.location.href = '/login-komissiya.html'; return;
+    }
+    try {
+        const res  = await fetch('/api/auth/check-session', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({token})
+        });
+        const data = await res.json();
+        if (data.status !== 'valid' || data.role !== 'komissiya') {
+            localStorage.removeItem('ptpk_token');
+            localStorage.removeItem('ptpk_role');
+            localStorage.removeItem('ptpk_email');
+            window.location.href = '/login-komissiya.html';
+        }
+    } catch { window.location.href = '/login-komissiya.html'; }
+})();
+
+async function logout() {
+    const token = localStorage.getItem('ptpk_token');
+    try {
+        await fetch('/api/auth/logout', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({token})
+        });
+    } catch {}
+    localStorage.removeItem('ptpk_token');
+    localStorage.removeItem('ptpk_role');
+    localStorage.removeItem('ptpk_email');
+    window.location.href = '/login-komissiya.html';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const email = localStorage.getItem('ptpk_email') || '';
+    const el = document.getElementById('user-name-display');
+    if (el && email) el.textContent = email;
+});
 </script>
 </body>
 </html>
