@@ -153,11 +153,134 @@
         .other-login-link a { color: var(--blue); font-weight: 700; text-decoration: none; }
         .other-login-link a:hover { text-decoration: underline; }
 
+        /* Video layout — login.html ilə eyni */
+        body {
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 40px !important;
+            gap: 40px !important;
+        }
+        .video-side {
+            flex: 1 1 0;
+            min-width: 0;
+            align-self: stretch;
+        }
+        .video-wrapper {
+            width: 100%;
+            height: 100%;
+            min-height: 480px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            pointer-events: none;
+        }
+        .video-wrapper iframe {
+            width: 100%;
+            height: 100%;
+            min-height: 480px;
+            border: none;
+            display: block;
+        }
+        .login-side {
+            flex: 0 0 440px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+        @media (max-width: 900px) {
+            body { flex-direction: column !important; padding: 20px !important; gap: 20px !important; }
+            .video-side { width: 100%; min-height: 240px; align-self: auto; }
+            .video-wrapper { min-height: 240px; }
+            .video-wrapper iframe { min-height: 240px; }
+            .login-side { flex: 0 0 auto; width: 100%; }
+        }
+
         .step-panel { display: none; }
         .step-panel.active { display: block; }
     </style>
+
+    <!-- Səs effektləri -->
+    <script>
+        const SFX = (() => {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            function resume() { if (ctx.state === 'suspended') ctx.resume(); }
+            function beep({ freq = 880, type = 'sine', vol = 0.18, dur = 0.08, delay = 0 } = {}) {
+                resume();
+                const osc  = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+                gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+                gain.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+                osc.start(ctx.currentTime + delay);
+                osc.stop(ctx.currentTime + delay + dur + 0.02);
+            }
+            return {
+                otpKey()  { beep({ freq: 660, type: 'sine',     vol: 0.12, dur: 0.06 }); },
+                send()    { beep({ freq: 440, type: 'triangle', vol: 0.15, dur: 0.12 }); },
+                success() { [523,659,784].forEach((f,i) => beep({ freq:f, type:'sine', vol:0.18, dur:0.15, delay:i*0.12 })); },
+                error()   { [440,330].forEach((f,i)     => beep({ freq:f, type:'sawtooth', vol:0.14, dur:0.14, delay:i*0.14 })); },
+                back()    { beep({ freq: 330, type: 'triangle', vol: 0.10, dur: 0.09 }); }
+            };
+        })();
+    </script>
 </head>
 <body>
+
+<!-- Video tərəfi -->
+<div class="video-side">
+    <div class="video-wrapper">
+        <div id="yt-player"></div>
+    </div>
+    <script>
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+        var ytPlayer;
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('yt-player', {
+                videoId: 'YYJml3FOQVg',
+                playerVars: {
+                    autoplay: 1, loop: 1, playlist: 'YYJml3FOQVg',
+                    mute: 1, controls: 0, disablekb: 1, fs: 0,
+                    modestbranding: 1, rel: 0, iv_load_policy: 3, playsinline: 1
+                },
+                events: {
+                    onReady: function(e) {
+                        e.target.mute();
+                        e.target.playVideo();
+                        var unlocked = false;
+                        function unlock() {
+                            if (unlocked) return;
+                            unlocked = true;
+                            e.target.unMute();
+                            e.target.setVolume(50);
+                            document.removeEventListener('click', unlock);
+                            document.removeEventListener('keydown', unlock);
+                            document.removeEventListener('touchstart', unlock);
+                            document.removeEventListener('scroll', unlock);
+                        }
+                        document.addEventListener('click', unlock);
+                        document.addEventListener('keydown', unlock);
+                        document.addEventListener('touchstart', unlock);
+                        document.addEventListener('scroll', unlock);
+                    },
+                    onStateChange: function(e) {
+                        if (e.data === YT.PlayerState.ENDED) e.target.playVideo();
+                    }
+                }
+            });
+        }
+    </script>
+</div>
+
+<!-- Login tərəfi -->
+<div class="login-side">
 
 <div class="login-card">
     <div class="card-header">
@@ -247,6 +370,8 @@
 
 <div class="copyright">© 2026 Psixoloji-Tibbi-Pedaqoji Komissiya · by F.Alakbarov</div>
 
+</div><!-- login-side -->
+
 <script>
     // ── Bu login yalnız "komissiya" rollu emaillər üçündür → komissiya.html ──
     const THIS_ROLE    = 'komissiya';
@@ -294,9 +419,11 @@
     async function sendOTP() {
         const email = document.getElementById('email-input').value.trim().toLowerCase();
         if (!email || !email.includes('@')) {
+            SFX.error();
             showAlert('Zəhmət olmasa düzgün e-poçt ünvanı daxil edin.', 'error'); return;
         }
 
+        SFX.send();
         const btn = document.getElementById('btn-send-otp');
         btn.disabled = true;
         btn.innerHTML = '<div class="spinner"></div> Göndərilir...';
@@ -312,6 +439,7 @@
             if (data.status === 'success') {
                 // ── Rol yoxlaması: yalnız "komissiya" rollu emaillər bu loginə girə bilər ──
                 if (data.role !== THIS_ROLE) {
+                    SFX.error();
                     showAlert(
                         'Bu e-poçt komissiya üzvü üçün deyil. Məktəb girişindən istifadə edin.',
                         'error'
@@ -327,9 +455,11 @@
                 startTimer();
                 showAlert('Kod uğurla göndərildi! E-poçtunuzu yoxlayın.', 'success');
             } else {
+                SFX.error();
                 showAlert(data.message || 'Xəta baş verdi.', 'error');
             }
         } catch {
+            SFX.error();
             showAlert('Serverə qoşulmaq mümkün olmadı!', 'error');
         }
 
@@ -342,6 +472,7 @@
             document.getElementById('otp-'+i).value).join('');
 
         if (!/^\d{6}$/.test(code)) {
+            SFX.error();
             showAlert('Zəhmət olmasa 6 rəqəmli kodu tam daxil edin.', 'error'); return;
         }
 
@@ -360,6 +491,7 @@
             if (data.status === 'success') {
                 // ── İkinci mərhələ rol yoxlaması ──
                 if (data.role !== THIS_ROLE) {
+                    SFX.error();
                     showAlert('Giriş rədd edildi. Bu giriş yalnız komissiya üzvləri üçündür.', 'error');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
@@ -370,16 +502,19 @@
                 localStorage.setItem('ptpk_role',  data.role);
                 localStorage.setItem('ptpk_email', data.email);
 
+                SFX.success();
                 goToStep(3);
                 document.getElementById('success-text').innerHTML =
                     `Xoş gəldiniz, <strong>${data.full_name || data.email}</strong>!<br>Yönləndirilirsiniz...`;
                 setTimeout(() => { window.location.href = REDIRECT_URL; }, 1800);
             } else {
+                SFX.error();
                 showAlert(data.message || 'Kod yanlışdır.', 'error');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
             }
         } catch {
+            SFX.error();
             showAlert('Serverə qoşulmaq mümkün olmadı!', 'error');
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
@@ -400,6 +535,7 @@
     }
 
     function goBack() {
+        SFX.back();
         clearInterval(timerInterval);
         goToStep(1);
         for (let i=0; i<6; i++) {
@@ -436,6 +572,7 @@
             cell.addEventListener('input', function() {
                 this.value = this.value.replace(/\D/g,'').slice(0,1);
                 this.classList.toggle('filled', this.value.length > 0);
+                if (this.value) SFX.otpKey();
                 if (this.value && i < 5) document.getElementById('otp-'+(i+1)).focus();
                 if (i === 5 && this.value) {
                     const full = Array.from({length:6},(_,j)=>document.getElementById('otp-'+j).value).join('');
