@@ -170,16 +170,17 @@ async def submit_student(
 
 @app.get("/api/komissiya/get-applications")
 async def get_applications():
-    # manualFileData-nı siyahıdan çıxar — böyük base64 fayllar RAM-ı doldurmaqdan qorumaq üçün
     async with httpx.AsyncClient() as client:
         r = await client.get(
             f"{SUPABASE_URL}/applications?order=schoolText.asc,name.asc",
             headers=HEADERS
         )
+    print(f"[DEBUG] Supabase status: {r.status_code}", flush=True)
+    print(f"[DEBUG] Supabase cavab (ilk 300 simvol): {r.text[:300]}", flush=True)
     data = r.json()
     if not isinstance(data, list):
-        return data
-    # manualFileData-nı siyahıdan çıxar — RAM qənaəti üçün
+        print(f"[DEBUG] Supabase array deyil: {data}", flush=True)
+        raise HTTPException(status_code=502, detail=f"Supabase xetasi: {data}")
     for item in data:
         item.pop("manualFileData", None)
     return data
