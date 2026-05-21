@@ -953,14 +953,15 @@
             const res = await fetch('/api/school/resubmit-docs', { method:'POST', body:formData });
             if (res.ok) {
                 statusEl.className = 'resubmit-status ok';
-                statusEl.textContent = '✅ Sənədlər uğurla göndərildi!';
-                // Refresh data
+                statusEl.textContent = '✅ Sənədlər uğurla göndərildi! Komissiya yoxlayacaq.';
+                btn.textContent = 'Göndərildi ✅';
+                // Refresh data and close modal
                 setTimeout(async () => {
                     const r = await fetch('/api/komissiya/get-applications');
                     allApplications = await r.json();
                     renderMuracietTab();
                     closeResubmitModal();
-                }, 1500);
+                }, 3000);
             } else {
                 statusEl.className = 'resubmit-status err';
                 statusEl.textContent = '⚠️ Server xətası baş verdi.';
