@@ -48,7 +48,16 @@ CONTENT_TYPES = {
 }
 
 async def upload_to_storage(fname: str, data: bytes, ext: str) -> bool:
-    """Faylı Supabase Storage-a yüklə."""
+    """Faylı Supabase Storage-a yüklə. Uğursuz olsa lokal uploads/ qovluğuna saxla."""
+    # Lokal qovluğa həmişə saxla (backup + fallback)
+    local_path = os.path.join(UPLOAD_DIR, fname)
+    with open(local_path, "wb") as f:
+        f.write(data)
+
+    # Supabase KEY yoxdursa, lokal saxlamaqla kifayətlən
+    if not SUPABASE_KEY:
+        return True
+
     ct = CONTENT_TYPES.get(ext.lower(), "application/octet-stream")
     url = f"{SUPABASE_STORAGE}/object/{STORAGE_BUCKET}/{fname}"
     headers = {
@@ -57,9 +66,13 @@ async def upload_to_storage(fname: str, data: bytes, ext: str) -> bool:
         "Content-Type": ct,
         "x-upsert": "true",
     }
-    async with httpx.AsyncClient(timeout=60) as client:
-        r = await client.post(url, content=data, headers=headers)
-    return r.status_code in (200, 201)
+    try:
+        async with httpx.AsyncClient(timeout=60) as client:
+            r = await client.post(url, content=data, headers=headers)
+        return r.status_code in (200, 201)
+    except Exception:
+        # Supabase uğursuz oldusa lokal fayl var, yenə də uğurlu sayırıq
+        return True
 
 def storage_public_url(fname: str) -> str:
     return f"{SUPABASE_STORAGE}/object/public/{STORAGE_BUCKET}/{fname}"
@@ -105,11 +118,13 @@ async def submit_student(
     app_id = f"PTPK_{int(time.time() * 1000)}"
 
     async def save_file(upload: UploadFile, prefix: str) -> str:
-        if not upload.filename:
+        if not upload.filename or upload.filename in ("", "bos.txt"):
+            return ""
+        data = await upload.read()
+        if len(data) == 0:
             return ""
         ext = os.path.splitext(upload.filename)[1].lstrip(".")
         fname = f"{app_id}_{prefix}.{ext}"
-        data = await upload.read()
         ok = await upload_to_storage(fname, data, ext)
         return fname if ok else ""
 
@@ -195,16 +210,27 @@ async def delete_application(id: str):
 # Storage fayllarını proxy et (köhnə /files/ URL-ləri üçün geriyə uyğunluq)
 @app.get("/files/{fname}")
 async def proxy_file(fname: str):
-    url = storage_public_url(fname)
-    async with httpx.AsyncClient(timeout=30) as client:
-        r = await client.get(url)
-    if r.status_code == 200:
-        ct = r.headers.get("content-type", "application/octet-stream")
-        return JSONResponse(content=None, status_code=200,
-                            headers={"Content-Type": ct}) if False else \
-               __import__("fastapi").Response(content=r.content,
-                                              media_type=ct)
-    return JSONResponse({"error": "not found"}, status_code=404)
+    # Əvvəlcə lokal uploads/ qovluğunu yoxla
+    local_path = os.path.join(UPLOAD_DIR, fname)
+    if os.path.exists(local_path):
+        ext = os.path.splitext(fname)[1].lstrip(".").lower()
+        ct = CONTENT_TYPES.get(ext, "application/octet-stream")
+        return FileResponse(local_path, media_type=ct,
+                            headers={"Content-Disposition": f"inline; filename=\"{fname}\""})
+
+    # Lokal yoxdursa Supabase Storage-dan cəhd et
+    if SUPABASE_KEY:
+        url = storage_public_url(fname)
+        try:
+            async with httpx.AsyncClient(timeout=30) as client:
+                r = await client.get(url)
+            if r.status_code == 200:
+                ct = r.headers.get("content-type", "application/octet-stream")
+                return __import__("fastapi").Response(content=r.content, media_type=ct)
+        except Exception:
+            pass
+
+    return JSONResponse({"error": "Fayl tapılmadı"}, status_code=404)
 
 
 @app.get("/{page}.html")
