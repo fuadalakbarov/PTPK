@@ -187,6 +187,99 @@
         .btn-download-pdf:hover { background: #0369a1; }
         .btn-download-pdf:disabled { background: #cbd5e1; cursor: not-allowed; }
 
+
+        /* Tab switcher */
+        .tab-bar { display:flex; gap:0; margin-top:12px; flex-shrink:0; border-bottom:2px solid var(--primary-navy); }
+        .tab-btn {
+            padding:8px 18px; font-size:12px; font-weight:700; cursor:pointer;
+            border:none; background:#f1f5f9; color:var(--text-muted);
+            border-radius:6px 6px 0 0; margin-right:4px;
+            border:2px solid #e2e8f0; border-bottom:none;
+        }
+        .tab-btn.active { background:var(--primary-navy); color:#fff; border-color:var(--primary-navy); }
+        .tab-content { display:none; flex:1; overflow:hidden; flex-direction:column; }
+        .tab-content.active { display:flex; }
+
+        /* Muraciet tracking */
+        .doc-status-row { display:flex; flex-direction:column; gap:0; }
+        .muraciet-card {
+            border:1px solid #e2e8f0; border-radius:8px; margin-bottom:10px;
+            overflow:hidden; background:#fff;
+        }
+        .muraciet-card-header {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:10px 14px; background:#f8fafc; cursor:pointer;
+            border-bottom:1px solid #e2e8f0;
+        }
+        .muraciet-card-header:hover { background:#f1f5f9; }
+        .muraciet-card-body { padding:14px; display:none; }
+        .muraciet-card-body.open { display:block; }
+        .doc-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+        .doc-chip {
+            display:flex; align-items:center; gap:8px; padding:8px 10px;
+            border-radius:6px; font-size:12px; font-weight:600;
+            border:1px solid #e2e8f0;
+        }
+        .doc-chip.ok { background:#f0fdf4; border-color:#bbf7d0; color:#15803d; }
+        .doc-chip.missing { background:#fef2f2; border-color:#fecaca; color:#dc2626; }
+        .error-note-box {
+            background:#fff7ed; border:1px solid #fed7aa; border-radius:6px;
+            padding:10px 14px; margin-top:8px;
+        }
+        .error-note-box .error-label {
+            font-size:10px; font-weight:700; color:#c2410c;
+            text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;
+        }
+        .error-note-box p { font-size:13px; color:#7c2d12; font-weight:500; line-height:1.5; }
+
+        /* Resubmit modal */
+        .modal-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.5);
+            display:flex; align-items:center; justify-content:center;
+            z-index:1000; display:none;
+        }
+        .modal-overlay.open { display:flex; }
+        .modal-box {
+            background:#fff; border-radius:12px; padding:24px;
+            width:520px; max-width:95vw; max-height:90vh; overflow-y:auto;
+            border:2px solid var(--primary-navy);
+        }
+        .modal-box h3 { font-size:15px; font-weight:700; color:var(--primary-navy); margin-bottom:4px; }
+        .modal-box .modal-sub { font-size:12px; color:var(--text-muted); margin-bottom:16px; }
+        .resubmit-field { margin-bottom:14px; }
+        .resubmit-field label {
+            display:block; font-size:11px; font-weight:700;
+            color:var(--text-muted); text-transform:uppercase;
+            letter-spacing:0.4px; margin-bottom:6px;
+        }
+        .resubmit-field .file-wrap {
+            border:2px dashed #cbd5e1; border-radius:6px; padding:10px;
+            text-align:center; background:#f8fafc; cursor:pointer; position:relative;
+        }
+        .resubmit-field .file-wrap:hover { border-color:var(--brand-blue); }
+        .resubmit-field .file-wrap input[type=file] {
+            position:absolute; inset:0; opacity:0; cursor:pointer;
+        }
+        .resubmit-field .file-wrap .fw-label { font-size:12px; font-weight:600; color:var(--text-muted); }
+        .resubmit-field .file-wrap .fw-chosen { font-size:11px; color:var(--success-green); font-weight:700; margin-top:4px; }
+        .btn-resubmit-send {
+            width:100%; background:var(--brand-blue); color:#fff;
+            border:none; border-radius:6px; height:42px;
+            font-size:14px; font-weight:700; cursor:pointer; margin-top:8px;
+        }
+        .btn-resubmit-send:hover { background:#0369a1; }
+        .btn-resubmit-send:disabled { background:#94a3b8; cursor:wait; }
+        .btn-modal-close {
+            background:none; border:1px solid #e2e8f0; border-radius:6px;
+            padding:6px 14px; font-size:12px; font-weight:600;
+            cursor:pointer; color:var(--text-muted); margin-top:8px; width:100%;
+        }
+        .resubmit-status { font-size:12px; font-weight:700; margin-top:8px; text-align:center; display:none; }
+        .resubmit-status.ok { color:var(--success-green); }
+        .resubmit-status.err { color:var(--danger-red); }
+        .stat-chip.pending { background:#fef3c7; color:#d97706; border-color:#fcd34d; }
+        .stat-chip.error { background:#fee2e2; color:#dc2626; border-color:#fca5a5; }
+
         /* Gizli Çap Sahəsi */
         #printable-blank { display: none; }
         @media print {
@@ -228,7 +321,9 @@
                 </div>
             </div>
             <div class="school-stats">
-                <div class="stat-chip total">Qüvvədə olan Qərarlar: <span id="stat-ok" style="color:var(--brand-blue); font-weight:700; margin-left:3px;">0</span></div>
+                <div class="stat-chip total">Qüvvədə: <span id="stat-ok" style="color:var(--brand-blue); font-weight:700; margin-left:3px;">0</span></div>
+                <div class="stat-chip pending">Gözləmədə: <span id="stat-pending" style="margin-left:3px;">0</span></div>
+                <div class="stat-chip error">Düzəliş lazım: <span id="stat-error" style="margin-left:3px;">0</span></div>
             </div>
         </div>
 
@@ -432,6 +527,16 @@
             </button>
         </div>
 
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('tab-qerarlar', this)">
+                <i class="fa-solid fa-list-check"></i> Qərar Reyestri
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-muraciet', this)">
+                <i class="fa-solid fa-folder-open"></i> Müraciət İzləmə
+            </button>
+        </div>
+
+        <div id="tab-qerarlar" class="tab-content active">
         <div class="panel-layout">
 
             <div class="panel-col">
@@ -524,6 +629,37 @@
     </div>
 </div>
 
+        </div><!-- /panel-layout -->
+        </div><!-- /tab-qerarlar -->
+
+        <div id="tab-muraciet" class="tab-content">
+            <div style="display:flex; gap:16px; flex:1; overflow:hidden; margin-top:12px;">
+                <!-- Left: list -->
+                <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+                    <div class="section-title"><i class="fa-solid fa-folder-open"></i> Göndərilmiş Müraciətlər</div>
+                    <div class="table-container" style="flex:1; overflow-y:auto; padding:12px;" id="muraciet-list-container">
+                        <div style="color:var(--text-muted); font-size:13px; font-weight:600; text-align:center; padding:40px;">
+                            Yuxarıdan məktəbinizi seçin.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /tab-muraciet -->
+
+    </div><!-- /viewport -->
+</div><!-- /app-window -->
+
+<!-- Resubmit Modal -->
+<div class="modal-overlay" id="resubmitModal">
+    <div class="modal-box">
+        <h3><i class="fa-solid fa-upload"></i> Sənədi Yenidən Göndər</h3>
+        <div class="modal-sub" id="resubmit-modal-sub">Şagird adı</div>
+        <div id="resubmit-fields"></div>
+        <div class="resubmit-status" id="resubmit-status"></div>
+        <button class="btn-resubmit-send" id="resubmit-send-btn" onclick="sendResubmit()">
+            <i class="fa-solid fa-paper-plane"></i> Göndər
+        </button>
+        <button class="btn-modal-close" onclick="closeResubmitModal()">Bağla</button>
 <div id="printable-blank">
     <div class="p-header">
         <h2 style="font-size:18px; letter-spacing:0.5px;">AZƏRBAYCAN RESPUBLİKASI ELM VƏ TƏHSİL NAZİRLİYİ</h2>
@@ -551,7 +687,245 @@
     let allApplications = [];
     let selectedApp = null;
 
-    async function onSchoolChange() {
+    // ── TAB SWITCHER ──
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+        if (tabId === 'tab-muraciet') renderMuracietTab();
+    }
+
+    // ── MURACIET TAB ──
+    const DOC_FIELDS = [
+        { key: 'coverLetter',          label: '1. Məktəbin müşayiət məktubu' },
+        { key: 'residenceCertificate', label: '2. Yaşayış yerindən arayış' },
+        { key: 'xasiyyetname',         label: '3. Xasiyyətnamə' },
+        { key: 'idCopies',             label: '4. Valideyn/Şagird ŞV surəti' },
+        { key: 'tabel',                label: '5. Qiymət cədvəli / Tabel' },
+        { key: 'forma027',             label: '6. Forma 027 (Tibb arayışı)' },
+    ];
+
+    function renderMuracietTab() {
+        const selectedSchool = document.getElementById('schoolFilter').value;
+        const container = document.getElementById('muraciet-list-container');
+        if (!selectedSchool) {
+            container.innerHTML = '<div style="color:var(--text-muted);font-size:13px;font-weight:600;text-align:center;padding:40px;">Yuxarıdan məktəbinizi seçin.</div>';
+            return;
+        }
+
+        const schoolApps = allApplications.filter(a => (a.schoolText||'').trim() === selectedSchool.trim());
+        if (schoolApps.length === 0) {
+            container.innerHTML = '<div style="color:var(--text-muted);font-size:13px;font-weight:600;text-align:center;padding:40px;"><i class="fa-solid fa-inbox" style="font-size:32px;display:block;margin-bottom:8px;color:#cbd5e1;"></i>Bu məktəbdən müraciət yoxdur.</div>';
+            updateStats([], schoolApps);
+            return;
+        }
+
+        updateStats(schoolApps.filter(a => {
+            const s = a.decisionStatus||'';
+            return s==='Qüvvədədir'||s==='Təsdiqləndi'||s==='Aktiv'||s.indexOf('vv')!==-1;
+        }), schoolApps);
+
+        container.innerHTML = '';
+        schoolApps.forEach(app => {
+            const card = buildMuracietCard(app);
+            container.appendChild(card);
+        });
+    }
+
+    function updateStats(approved, all) {
+        const errorApps = all.filter(a => a.docError && a.docError.trim());
+        const pending = all.filter(a => {
+            const s = a.decisionStatus||'';
+            return s==='Gözləmədə'||s==='';
+        });
+        document.getElementById('stat-ok').textContent = approved.length;
+        document.getElementById('stat-pending').textContent = pending.length;
+        document.getElementById('stat-error').textContent = errorApps.length;
+    }
+
+    function buildMuracietCard(app) {
+        const hasError = app.docError && app.docError.trim();
+        const st = app.decisionStatus || 'Gözləmədə';
+        const isApproved = st==='Qüvvədədir'||st==='Təsdiqləndi'||st==='Aktiv'||st.indexOf('vv')!==-1;
+
+        let statusColor = '#d97706'; let statusBg = '#fef3c7';
+        if (isApproved) { statusColor = '#15803d'; statusBg = '#dcfce7'; }
+        if (hasError)   { statusColor = '#dc2626'; statusBg = '#fee2e2'; }
+
+        const missingDocs = DOC_FIELDS.filter(f => !app[f.key] || app[f.key].length <= 3);
+        const allDocsOk = missingDocs.length === 0;
+
+        const card = document.createElement('div');
+        card.className = 'muraciet-card';
+
+        let headerHtml = `
+            <div class="muraciet-card-header" onclick="toggleCard(this)">
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:var(--primary-navy);">${app.name} <span style="font-family:monospace;font-weight:500;font-size:11px;color:var(--text-muted);">(${app.fin})</span></div>
+                    <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${app.year||'-'} · ${app.type||'-'}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    ${hasError ? '<span style="font-size:11px;font-weight:700;background:#fee2e2;color:#dc2626;padding:3px 8px;border-radius:4px;"><i class="fa-solid fa-triangle-exclamation"></i> Düzəliş lazım</span>' : ''}
+                    <span style="font-size:11px;font-weight:700;background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:4px;">${isApproved ? 'Qüvvədədir' : hasError ? 'Xəta var' : 'Gözləmədə'}</span>
+                    <i class="fa-solid fa-chevron-down" style="color:var(--text-muted);font-size:11px;"></i>
+                </div>
+            </div>`;
+
+        let docGridHtml = '<div class="doc-grid">';
+        DOC_FIELDS.forEach(f => {
+            const has = app[f.key] && app[f.key].length > 3;
+            docGridHtml += `<div class="doc-chip ${has?'ok':'missing'}">
+                <i class="fa-solid ${has?'fa-circle-check':'fa-circle-xmark'}"></i>
+                <span>${f.label}</span>
+            </div>`;
+        });
+        docGridHtml += '</div>';
+
+        let errorHtml = '';
+        if (hasError) {
+            errorHtml = `<div class="error-note-box">
+                <div class="error-label"><i class="fa-solid fa-triangle-exclamation"></i> Komissiya Xəta Qeydi</div>
+                <p>${app.docError}</p>
+            </div>`;
+        }
+
+        let resubmitBtn = '';
+        if (hasError || !allDocsOk) {
+            resubmitBtn = `<button onclick="openResubmitModal('${app.id}')" style="margin-top:12px;background:var(--brand-blue);color:#fff;border:none;border-radius:6px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;width:100%;">
+                <i class="fa-solid fa-upload"></i> Sənədi Yenidən Göndər
+            </button>`;
+        }
+
+        card.innerHTML = headerHtml + `<div class="muraciet-card-body">${docGridHtml}${errorHtml}${resubmitBtn}</div>`;
+        return card;
+    }
+
+    function toggleCard(header) {
+        const body = header.nextElementSibling;
+        const icon = header.querySelector('.fa-chevron-down, .fa-chevron-up');
+        body.classList.toggle('open');
+        if (icon) icon.className = body.classList.contains('open') ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
+    }
+
+    // ── RESUBMIT MODAL ──
+    let resubmitAppId = null;
+    let resubmitApp = null;
+
+    function openResubmitModal(appId) {
+        resubmitApp = allApplications.find(a => a.id === appId);
+        if (!resubmitApp) return;
+        resubmitAppId = appId;
+
+        document.getElementById('resubmit-modal-sub').textContent = resubmitApp.name + ' (' + resubmitApp.fin + ')';
+        document.getElementById('resubmit-status').style.display = 'none';
+
+        // Build fields for missing or all docs
+        const fields = document.getElementById('resubmit-fields');
+        fields.innerHTML = '';
+
+        DOC_FIELDS.forEach(f => {
+            const hasMissing = !resubmitApp[f.key] || resubmitApp[f.key].length <= 3;
+            const hasError = resubmitApp.docError && resubmitApp.docError.trim();
+            if (!hasMissing && !hasError) return; // only show missing or if error (show all)
+
+            const div = document.createElement('div');
+            div.className = 'resubmit-field';
+            div.innerHTML = `
+                <label>${f.label} ${hasMissing ? '<span style="color:#dc2626;">✗ Yoxdur</span>' : ''}</label>
+                <div class="file-wrap">
+                    <div class="fw-label"><i class="fa-solid fa-upload"></i> Faylı seçin</div>
+                    <div class="fw-chosen" id="chosen-${f.key}"></div>
+                    <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        onchange="markChosen(this, '${f.key}')">
+                </div>`;
+            fields.appendChild(div);
+        });
+
+        // If error present, show all fields
+        if (resubmitApp.docError) {
+            fields.innerHTML = '';
+            DOC_FIELDS.forEach(f => {
+                const div = document.createElement('div');
+                div.className = 'resubmit-field';
+                div.innerHTML = `
+                    <label>${f.label}</label>
+                    <div class="file-wrap">
+                        <div class="fw-label"><i class="fa-solid fa-upload"></i> Faylı seçin (dəyişdirilməyəcəksə boş buraxın)</div>
+                        <div class="fw-chosen" id="chosen-${f.key}"></div>
+                        <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                            onchange="markChosen(this, '${f.key}')">
+                    </div>`;
+                fields.appendChild(div);
+            });
+        }
+
+        document.getElementById('resubmitModal').classList.add('open');
+    }
+
+    function closeResubmitModal() {
+        document.getElementById('resubmitModal').classList.remove('open');
+        resubmitAppId = null;
+        resubmitApp = null;
+    }
+
+    function markChosen(input, key) {
+        const el = document.getElementById('chosen-' + key);
+        el.textContent = input.files[0] ? '✓ ' + input.files[0].name : '';
+    }
+
+    async function sendResubmit() {
+        if (!resubmitAppId) return;
+        const btn = document.getElementById('resubmit-send-btn');
+        const statusEl = document.getElementById('resubmit-status');
+        btn.disabled = true;
+        statusEl.style.display = 'block';
+        statusEl.className = 'resubmit-status';
+        statusEl.textContent = 'Göndərilir...';
+
+        const formData = new FormData();
+        formData.append('appId', resubmitAppId);
+
+        let anyFile = false;
+        DOC_FIELDS.forEach(f => {
+            const input = document.querySelector(`#resubmit-fields input[onchange*="${f.key}"]`);
+            if (input && input.files[0]) {
+                formData.append(f.key, input.files[0]);
+                anyFile = true;
+            }
+        });
+
+        if (!anyFile) {
+            statusEl.className = 'resubmit-status err';
+            statusEl.textContent = '⚠️ Heç bir fayl seçilmədi!';
+            btn.disabled = false;
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/school/resubmit-docs', { method:'POST', body:formData });
+            if (res.ok) {
+                statusEl.className = 'resubmit-status ok';
+                statusEl.textContent = '✅ Sənədlər uğurla göndərildi!';
+                // Refresh data
+                setTimeout(async () => {
+                    const r = await fetch('/api/komissiya/get-applications');
+                    allApplications = await r.json();
+                    renderMuracietTab();
+                    closeResubmitModal();
+                }, 1500);
+            } else {
+                statusEl.className = 'resubmit-status err';
+                statusEl.textContent = '⚠️ Server xətası baş verdi.';
+            }
+        } catch(e) {
+            statusEl.className = 'resubmit-status err';
+            statusEl.textContent = '⚠️ Bağlantı xətası!';
+        }
+        btn.disabled = false;
+    }
+
+        async function onSchoolChange() {
         const schoolValue = document.getElementById('schoolFilter').value;
         const searchInput = document.getElementById('studentSearch');
         const excelBtn = document.getElementById('excelBtn');
@@ -581,6 +955,9 @@
         searchInput.disabled = false;
         excelBtn.disabled = false;
         renderTable();
+        // Also refresh muraciet tab if active
+        const muracietTab = document.getElementById('tab-muraciet');
+        if (muracietTab && muracietTab.classList.contains('active')) renderMuracietTab();
     }
 
     function renderTable() {
