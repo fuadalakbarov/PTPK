@@ -524,9 +524,18 @@ function closeDocsModal() {
     mergedPdfBytes = null;
 }
 
-// Tək sənədi Supabase Storage-dan aç
-function openSingleDoc(fname) {
+// Tək sənədi aç - əvvəl lokal proxy, sonra Supabase Storage
+async function openSingleDoc(fname) {
     if (!fname || fname.length <= 3) return;
+    // Əvvəl lokal /files/ proxy-dən yoxla
+    try {
+        const res = await fetch('/files/' + fname, { method: 'HEAD' });
+        if (res.ok) {
+            window.open('/files/' + fname, '_blank');
+            return;
+        }
+    } catch(e) {}
+    // Fallback: birbaşa Supabase Storage
     window.open(filePublicUrl(fname), '_blank');
 }
 
@@ -549,17 +558,17 @@ function filePublicUrl(fname) {
     return `${SUPABASE_STORAGE_BASE}/${fname}`;
 }
 
-// Sənədi Supabase Storage-dan ArrayBuffer kimi yüklə
+// Sənədi yüklə - əvvəl lokal proxy, sonra Supabase Storage
 async function fetchDocBytes(fname) {
-    // Əvvəl birbaşa Supabase Storage-dan cəhd et
+    // Əvvəl lokal server proxy-dən cəhd et (uploads/ qovluğu)
+    try {
+        const res = await fetch('/files/' + fname);
+        if (res.ok) return await res.arrayBuffer();
+    } catch(e) {}
+    // Sonra birbaşa Supabase Storage-dan cəhd et
     try {
         const res = await fetch(filePublicUrl(fname));
         if (res.ok) return await res.arrayBuffer();
-    } catch(e) {}
-    // Köhnə server proxy vasitəsilə cəhd et (fallback)
-    try {
-        const res2 = await fetch('/files/' + fname);
-        if (res2.ok) return await res2.arrayBuffer();
     } catch(e) {}
     return null;
 }
