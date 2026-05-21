@@ -733,10 +733,13 @@
             return;
         }
 
-        const schoolApps = allApplications.filter(a => (a.schoolText||'').trim() === selectedSchool.trim());
+        // Məktəb adını normallaşdır
+        const normSchool = selectedSchool.trim().toLowerCase();
+        const schoolApps = allApplications.filter(a => (a.schoolText||'').trim().toLowerCase() === normSchool);
+        console.log('[Müraciət tab] Seçilmiş məktəb:', selectedSchool, '| Tapılan:', schoolApps.length, '| Ümumi:', allApplications.length);
         if (schoolApps.length === 0) {
             container.innerHTML = '<div style="color:var(--text-muted);font-size:13px;font-weight:600;text-align:center;padding:40px;"><i class="fa-solid fa-inbox" style="font-size:32px;display:block;margin-bottom:8px;color:#cbd5e1;"></i>Bu məktəbdən müraciət yoxdur.</div>';
-            updateStats([], schoolApps);
+            updateStats([], []);
             return;
         }
 
@@ -963,7 +966,7 @@
 
         try {
             const r = await fetch('/api/komissiya/get-applications');
-            allApplications = await r.json();
+            allApplications = await r.json(); // bütün müraciətlər saxlanır
         } catch(e) {
             allApplications = [];
             alert('Serverə qoşulmaq mümkün olmadı!');
