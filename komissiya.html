@@ -185,6 +185,15 @@
         .btn-download-cell { border: none; background: none; cursor: pointer; color: var(--brand-blue); font-size: 14px; }
         .btn-download-cell:hover { color: var(--primary-navy); }
 
+        /* ── TOAST BİLDİRİŞ ── */
+        #toast-msg {
+            position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+            padding: 11px 24px; border-radius: 8px; font-size: 13px; font-weight: 700;
+            color: #fff; z-index: 9999; opacity: 0; transition: all .3s; pointer-events: none;
+            box-shadow: 0 4px 16px rgba(0,0,0,.2);
+        }
+        #toast-msg.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
         /* ── TAB NAVİGASİYASI ── */
         .main-tabs { display: flex; gap: 4px; margin-top: 12px; flex-shrink: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 0; }
         .main-tab-btn { padding: 8px 18px; font-size: 12px; font-weight: 700; border: 2px solid #e2e8f0; border-bottom: none; border-radius: 8px 8px 0 0; background: #f8fafc; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all .15s; margin-bottom: -2px; }
@@ -261,6 +270,9 @@
         </div>
     </div>
 </div>
+
+<!-- ══ TOAST BİLDİRİŞ ══ -->
+<div id="toast-msg"></div>
 
 <div class="app-window">
     <div class="nav-sidebar">
@@ -723,6 +735,17 @@ const DOC_FIELDS = [
 
 document.addEventListener("DOMContentLoaded", loadCommissionTable);
 
+let _toastTimer = null;
+function showToast(msg, type) {
+    const el = document.getElementById('toast-msg');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.background = type === 'success' ? '#16a34a' : type === 'error' ? '#dc2626' : '#0284c7';
+    el.classList.add('show');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
 function onDocErrCheck() {
     // Hər hansı checkbox seçilsə → statusu avtomatik "Düzəliş lazım" et
     const errKeys = ['coverLetter','residenceCertificate','xasiyyetname','idCopies','tabel','forma027'];
@@ -1097,6 +1120,9 @@ async function loadCommissionTable() {
             tr.onclick = function() { selectStudent(app, tr); };
 
             let statusClass = getStatusPillClass(app.decisionStatus);
+            const statusLabel = app.decisionStatus === 'Düzəliş lazım'
+                ? '⚠️ Düzəliş lazım'
+                : (app.decisionStatus || 'Gözləmədə');
 
             // Yüklənmiş sənəd varmı?
             const hasUploadedDocs = DOC_FIELDS.some(f => app[f.key] && app[f.key].length > 3);
@@ -1110,7 +1136,7 @@ async function loadCommissionTable() {
                 <td><strong>${app.name} (${app.fin})</strong></td>
                 <td>${app.year}</td>
                 <td><span class="status-pill tam">${app.docStatus}</span></td>
-                <td><span class="status-pill ${statusClass}">${app.decisionStatus || 'Gözləmədə'}</span></td>
+                <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
                 <td>${app.expiryDate || '-'}</td>
                 <td>${app.educationForm}</td>
                 <td style="text-align:center;">
@@ -1289,9 +1315,13 @@ async function saveCommissionDecision() {
         const res = await fetch('/api/komissiya/update-decision', {
             method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
         });
-        if (res.ok) { alert("✅ Komissiya qərarı uğurla bazaya yazıldı!"); await loadCommissionTable(); }
-        else { alert("⚠️ Server xətası."); }
-    } catch(e) { alert("⚠️ Serverə qoşulmaq mümkün olmadı!"); }
+        if (res.ok) {
+            showToast('✅ Komissiya qərarı saxlandı!', 'success');
+            await loadCommissionTable();
+        } else {
+            showToast('⚠️ Server xətası.', 'error');
+        }
+    } catch(e) { showToast('⚠️ Serverə qoşulmaq mümkün olmadı!', 'error'); }
 }
 
 async function downloadDecisionPDF(id) {
