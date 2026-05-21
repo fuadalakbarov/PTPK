@@ -183,6 +183,50 @@
         .btn-approve:hover { background: #15803d; }
         .btn-download-cell { border: none; background: none; cursor: pointer; color: var(--brand-blue); font-size: 14px; }
         .btn-download-cell:hover { color: var(--primary-navy); }
+
+        /* ── TAB NAVİGASİYASI ── */
+        .main-tabs { display: flex; gap: 4px; margin-top: 12px; flex-shrink: 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 0; }
+        .main-tab-btn { padding: 8px 18px; font-size: 12px; font-weight: 700; border: 2px solid #e2e8f0; border-bottom: none; border-radius: 8px 8px 0 0; background: #f8fafc; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all .15s; margin-bottom: -2px; }
+        .main-tab-btn.active { background: #fff; color: var(--primary-navy); border-color: var(--primary-navy); border-bottom-color: #fff; }
+        .main-tab-btn:hover:not(.active) { background: #f1f5f9; color: var(--primary-navy); }
+        .main-tab-content { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+        .main-tab-content.active { display: flex; }
+
+        /* ── STATİSTİKA PANELİ ── */
+        .stat-panel { flex: 1; overflow-y: auto; padding: 16px 0; }
+        .stat-summary-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; text-align: center; }
+        .stat-card.blue  { border-color: var(--brand-blue);  background: #f0f9ff; }
+        .stat-card.green { border-color: #16a34a; background: #f0fdf4; }
+        .stat-card.red   { border-color: #dc2626; background: #fff1f1; }
+        .stat-card.amber { border-color: #d97706; background: #fffbeb; }
+        .stat-card .sc-num  { font-size: 28px; font-weight: 800; line-height: 1; }
+        .stat-card.blue  .sc-num { color: var(--brand-blue); }
+        .stat-card.green .sc-num { color: #16a34a; }
+        .stat-card.red   .sc-num { color: #dc2626; }
+        .stat-card.amber .sc-num { color: #d97706; }
+        .stat-card .sc-label { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-top: 4px; }
+
+        .school-stat-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .school-stat-table th { background: var(--primary-navy); color: #fff; font-weight: 700; padding: 10px 12px; text-align: left; position: sticky; top: 0; z-index: 5; }
+        .school-stat-table th.center { text-align: center; }
+        .school-stat-table td { padding: 9px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        .school-stat-table tr:hover td { background: #f0f9ff; }
+        .school-stat-table tr.warn-row td { background: #fff7ed; }
+        .school-stat-table tr.err-row  td { background: #fff1f1; }
+        .doc-bar-wrap { display: flex; align-items: center; gap: 8px; }
+        .doc-bar { height: 8px; border-radius: 4px; background: #e2e8f0; flex: 1; overflow: hidden; }
+        .doc-bar-fill { height: 100%; border-radius: 4px; background: #16a34a; transition: width .3s; }
+        .doc-bar-fill.warn { background: #d97706; }
+        .doc-bar-fill.danger { background: #dc2626; }
+        .missing-pill { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: #fee2e2; color: #dc2626; white-space: nowrap; }
+        .ok-pill { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; background: #dcfce7; color: #16a34a; white-space: nowrap; }
+        .stat-filter-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+        .stat-filter-btn { padding: 5px 12px; font-size: 11px; font-weight: 700; border: 1.5px solid #e2e8f0; border-radius: 6px; background: #f8fafc; color: var(--text-muted); cursor: pointer; }
+        .stat-filter-btn.active { background: var(--primary-navy); color: #fff; border-color: var(--primary-navy); }
+        .stat-school-detail { margin-top: 6px; font-size: 11px; color: var(--text-muted); }
+        .missing-doc-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+        .missing-tag { font-size: 10px; font-weight: 600; background: #fee2e2; color: #dc2626; border-radius: 3px; padding: 1px 5px; }
     </style>
 </head>
 <body>
@@ -331,6 +375,18 @@
             </button>
         </div>
 
+        <!-- ── TAB NAVİGASİYASI ── -->
+        <div class="main-tabs">
+            <button class="main-tab-btn active" onclick="switchMainTab('tab-excel', this)">
+                <i class="fa-solid fa-table"></i> Müraciətlər Cədvəli
+            </button>
+            <button class="main-tab-btn" onclick="switchMainTab('tab-stats', this)">
+                <i class="fa-solid fa-chart-bar"></i> Məktəb Statistikası
+            </button>
+        </div>
+
+        <!-- ══ TAB 1: Excel Cədvəli ══ -->
+        <div id="tab-excel" class="main-tab-content active">
         <div class="panel-layout">
             <div class="panel-column">
                 <div class="section-title"><i class="fa-solid fa-table"></i> Dinamik Excel Verilənlər Bazası</div>
@@ -390,9 +446,44 @@
                             <textarea id="text-notes" placeholder="Rəsmi protokolu daxil edin..."></textarea>
 
                             <label style="margin-top:8px; color:#dc2626;">
-                                <i class="fa-solid fa-triangle-exclamation"></i> Sənəd Xəta Qeydi (məktəbə göstərilir):
+                                <i class="fa-solid fa-triangle-exclamation"></i> Sənəd Nöqsanı Qeydi (məktəbə göstərilir):
                             </label>
-                            <textarea id="text-doc-error" placeholder="Hansı sənəd səhvdir, nə düzəldilməli — məktəb görəcək..." style="border-color:#fca5a5; background:#fff7f7; min-height:60px;"></textarea>
+
+                            <!-- Çatışmayan / səhv sənədlər üçün checkbox siyahısı -->
+                            <div id="doc-error-checks" style="background:#fff7f7; border:2px solid #fca5a5; border-radius:7px; padding:10px 12px; margin-bottom:6px;">
+                                <div style="font-size:11px; font-weight:700; color:#dc2626; margin-bottom:7px; text-transform:uppercase; letter-spacing:.4px;">
+                                    <i class="fa-solid fa-list-check"></i> Çatışmayan / Düzəliş Lazım Olan Sənədlər:
+                                </div>
+                                <div id="doc-error-checkboxes" style="display:flex; flex-direction:column; gap:5px;">
+                                    <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
+                                        <input type="checkbox" id="err-coverLetter" style="width:14px;height:14px;accent-color:#dc2626;">
+                                        1. Məktəbin müşayiət məktubu
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
+                                        <input type="checkbox" id="err-residenceCertificate" style="width:14px;height:14px;accent-color:#dc2626;">
+                                        2. Yaşayış yerindən arayış
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
+                                        <input type="checkbox" id="err-xasiyyetname" style="width:14px;height:14px;accent-color:#dc2626;">
+                                        3. Xasiyyətnamə
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
+                                        <input type="checkbox" id="err-idCopies" style="width:14px;height:14px;accent-color:#dc2626;">
+                                        4. Valideyn / Şagird ŞV surəti
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
+                                        <input type="checkbox" id="err-tabel" style="width:14px;height:14px;accent-color:#dc2626;">
+                                        5. Qiymət cədvəli / Tabel
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
+                                        <input type="checkbox" id="err-forma027" style="width:14px;height:14px;accent-color:#dc2626;">
+                                        6. Forma 027 (Tibb arayışı)
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Əlavə qeyd (ixtiyari) -->
+                            <textarea id="text-doc-error" placeholder="Əlavə izahat: səhvliyin detalları, konkret tələblər və s. (ixtiyari)..." style="border-color:#fca5a5; background:#fff7f7; min-height:50px; font-size:12px;"></textarea>
                             
                             <label>Rəsmi Sənədi Əllə Yüklə (Skan/PDF):</label>
                             <div class="file-upload-wrapper">
@@ -410,13 +501,208 @@
                 </div>
             </div>
         </div>
-    </div>
+        </div><!-- /tab-excel -->
+
+        <!-- ══ TAB 2: Məktəb Statistikası ══ -->
+        <div id="tab-stats" class="main-tab-content" style="padding-top: 14px;">
+            <div class="stat-summary-cards" id="stat-summary-cards">
+                <div class="stat-card blue">
+                    <div class="sc-num" id="st-total">—</div>
+                    <div class="sc-label"><i class="fa-solid fa-users"></i> Ümumi Müraciət</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="sc-num" id="st-full">—</div>
+                    <div class="sc-label"><i class="fa-solid fa-circle-check"></i> Tam Sənəd</div>
+                </div>
+                <div class="stat-card red">
+                    <div class="sc-num" id="st-missing">—</div>
+                    <div class="sc-label"><i class="fa-solid fa-circle-xmark"></i> Çatışmayan Sənəd</div>
+                </div>
+                <div class="stat-card amber">
+                    <div class="sc-num" id="st-error">—</div>
+                    <div class="sc-label"><i class="fa-solid fa-triangle-exclamation"></i> Xəta Qeydi Var</div>
+                </div>
+            </div>
+
+            <div class="stat-filter-bar">
+                <span style="font-size:12px;font-weight:700;color:var(--primary-navy);">Filtr:</span>
+                <button class="stat-filter-btn active" onclick="filterStatTable('all', this)">Hamısı</button>
+                <button class="stat-filter-btn" onclick="filterStatTable('missing', this)"><i class="fa-solid fa-circle-xmark"></i> Çatışmayan var</button>
+                <button class="stat-filter-btn" onclick="filterStatTable('error', this)"><i class="fa-solid fa-triangle-exclamation"></i> Xəta var</button>
+                <button class="stat-filter-btn" onclick="filterStatTable('full', this)"><i class="fa-solid fa-circle-check"></i> Tam sənəd</button>
+                <input type="text" id="stat-school-search" placeholder="Məktəb axtar..." oninput="filterStatTable('search', null)"
+                    style="margin-left:auto;padding:5px 10px;font-size:12px;font-weight:600;border:1.5px solid #e2e8f0;border-radius:6px;outline:none;width:220px;">
+            </div>
+
+            <div style="flex:1; overflow:auto; border:2px solid var(--border-window); border-radius:8px;">
+                <table class="school-stat-table" id="school-stat-table">
+                    <thead>
+                        <tr>
+                            <th style="width:35%">Məktəb</th>
+                            <th class="center" style="width:7%">Müraciət</th>
+                            <th class="center" style="width:7%">Tam</th>
+                            <th class="center" style="width:7%">Çatışmır</th>
+                            <th class="center" style="width:7%">Xəta</th>
+                            <th style="width:37%">Sənəd Dolulluğu &amp; Çatışmayan Növlər</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stat-table-body">
+                        <tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8;">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Yüklənir...
+                        </td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div><!-- /tab-stats -->
+
+    </div><!-- /viewport -->
 </div>
 
 <script>
 let selectedAppId = null;
 let uploadedFileBase64 = null;
 let uploadedFileName = null;
+
+// ── TAB SWITCHER ──
+function switchMainTab(tabId, btn) {
+    document.querySelectorAll('.main-tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+    if (tabId === 'tab-stats') renderStatsTable();
+}
+
+// ── STATİSTİKA ──
+const DOC_FIELDS_STAT = [
+    { key: 'coverLetter',          short: 'Müşayiət məktubu' },
+    { key: 'residenceCertificate', short: 'Yaşayış arayışı' },
+    { key: 'xasiyyetname',         short: 'Xasiyyətnamə' },
+    { key: 'idCopies',             short: 'ŞV surəti' },
+    { key: 'tabel',                short: 'Tabel' },
+    { key: 'forma027',             short: 'Forma 027' },
+];
+
+let _statFilter = 'all';
+
+async function renderStatsTable() {
+    const tbody = document.getElementById('stat-table-body');
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Yüklənir...</td></tr>';
+
+    let data = [];
+    try {
+        const res = await fetch('/api/komissiya/get-applications');
+        data = await res.json();
+        if (!Array.isArray(data)) throw new Error();
+    } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:red;">Məlumat alınmadı</td></tr>';
+        return;
+    }
+
+    // Qlobal xülasə kartları
+    const totalApps = data.length;
+    const fullDocs = data.filter(a => DOC_FIELDS_STAT.every(f => a[f.key] && a[f.key].length > 3)).length;
+    const missingAny = data.filter(a => DOC_FIELDS_STAT.some(f => !a[f.key] || a[f.key].length <= 3)).length;
+    const hasError = data.filter(a => a.docError && a.docError.trim()).length;
+    document.getElementById('st-total').textContent   = totalApps;
+    document.getElementById('st-full').textContent    = fullDocs;
+    document.getElementById('st-missing').textContent = missingAny;
+    document.getElementById('st-error').textContent   = hasError;
+
+    // Məktəb üzrə qruplaşdır
+    const grouped = {};
+    data.forEach(app => {
+        const key = (app.schoolText || 'Naməlum').trim();
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(app);
+    });
+
+    // Hər məktəb üçün statistika hesabla
+    const schools = Object.entries(grouped).map(([school, apps]) => {
+        const total = apps.length;
+        const full  = apps.filter(a => DOC_FIELDS_STAT.every(f => a[f.key] && a[f.key].length > 3)).length;
+        const miss  = total - full;
+        const err   = apps.filter(a => a.docError && a.docError.trim()).length;
+        const pct   = Math.round((full / total) * 100);
+
+        // Hansı sənəd növü ən çox çatışmır
+        const missCounts = {};
+        DOC_FIELDS_STAT.forEach(f => {
+            missCounts[f.short] = apps.filter(a => !a[f.key] || a[f.key].length <= 3).length;
+        });
+        const topMissing = Object.entries(missCounts)
+            .filter(([,c]) => c > 0)
+            .sort((a,b) => b[1]-a[1]);
+
+        return { school, total, full, miss, err, pct, topMissing };
+    }).sort((a,b) => b.miss - a.miss || b.err - a.err);
+
+    window._statData = schools; // cache
+    _renderStatRows(schools);
+}
+
+function _renderStatRows(schools) {
+    const tbody = document.getElementById('stat-table-body');
+    const filter = _statFilter;
+    const searchVal = (document.getElementById('stat-school-search')?.value || '').toLowerCase();
+
+    let rows = schools;
+    if (filter === 'missing') rows = schools.filter(s => s.miss > 0);
+    else if (filter === 'error')   rows = schools.filter(s => s.err  > 0);
+    else if (filter === 'full')    rows = schools.filter(s => s.miss === 0);
+    if (searchVal) rows = rows.filter(s => s.school.toLowerCase().includes(searchVal));
+
+    if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">Nəticə tapılmadı</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = rows.map(s => {
+        const barColor = s.pct >= 80 ? '' : s.pct >= 50 ? ' warn' : ' danger';
+        const missTagsHtml = s.topMissing.length > 0
+            ? `<div class="missing-doc-tags">${s.topMissing.map(([name, cnt]) =>
+                `<span class="missing-tag">✗ ${name} (${cnt})</span>`).join('')}</div>`
+            : '<span class="ok-pill">✓ Hamısı tam</span>';
+
+        const rowClass = s.err > 0 ? 'err-row' : s.miss > 0 ? 'warn-row' : '';
+
+        return `<tr class="${rowClass}">
+            <td>
+                <div style="font-size:12px;font-weight:700;color:var(--primary-navy);">${s.school}</div>
+            </td>
+            <td style="text-align:center;font-weight:700;color:var(--brand-blue);">${s.total}</td>
+            <td style="text-align:center;">
+                <span class="ok-pill">${s.full}</span>
+            </td>
+            <td style="text-align:center;">
+                ${s.miss > 0 ? `<span class="missing-pill">${s.miss}</span>` : '<span style="color:#94a3b8;font-size:11px;">—</span>'}
+            </td>
+            <td style="text-align:center;">
+                ${s.err > 0
+                    ? `<span style="font-size:10px;font-weight:700;background:#fee2e2;color:#dc2626;padding:2px 7px;border-radius:4px;"><i class="fa-solid fa-triangle-exclamation"></i> ${s.err}</span>`
+                    : '<span style="color:#94a3b8;font-size:11px;">—</span>'}
+            </td>
+            <td>
+                <div class="doc-bar-wrap">
+                    <div class="doc-bar">
+                        <div class="doc-bar-fill${barColor}" style="width:${s.pct}%;"></div>
+                    </div>
+                    <span style="font-size:11px;font-weight:700;color:${s.pct>=80?'#16a34a':s.pct>=50?'#d97706':'#dc2626'};min-width:32px;">${s.pct}%</span>
+                </div>
+                ${missTagsHtml}
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function filterStatTable(type, btn) {
+    if (btn) {
+        document.querySelectorAll('.stat-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        _statFilter = type;
+    }
+    if (window._statData) _renderStatRows(window._statData);
+}
+
 
 // Modal üçün qlobal dəyişən
 let currentModalApp = null;
@@ -830,6 +1116,10 @@ async function loadCommissionTable() {
             tableBody.appendChild(tr);
         });
     }
+    // Statistika tabı açıqdırsa yenilə
+    if (document.getElementById('tab-stats')?.classList.contains('active')) {
+        renderStatsTable();
+    }
 }
 
 // ──────────────────────────────────────────────
@@ -909,10 +1199,18 @@ function selectStudent(app, rowElement) {
     document.getElementById('panel-name').innerText = app.name + " (" + app.fin + ")";
     document.getElementById('panel-school').innerText = app.schoolText;
     document.getElementById('text-notes').value = app.notes || "";
-    document.getElementById('text-doc-error').value = app.docError || "";
+    document.getElementById('text-doc-error').value = app.docErrorNote || "";
     document.getElementById('select-status').value = app.decisionStatus || "Gözləmədə";
     document.getElementById('select-form').value = app.educationForm !== "-" ? app.educationForm : "Evdə təhsil (Ümumi proqram)";
     document.getElementById('decision-expiry-date').value = app.expiryDate && app.expiryDate !== "-" ? app.expiryDate.split('.').reverse().join('-') : "";
+
+    // Checkbox-ları doldur
+    const errKeys = ['coverLetter','residenceCertificate','xasiyyetname','idCopies','tabel','forma027'];
+    const checkedList = app.docErrorChecks ? app.docErrorChecks.split(',') : [];
+    errKeys.forEach(k => {
+        const cb = document.getElementById('err-' + k);
+        if (cb) cb.checked = checkedList.includes(k);
+    });
 
     uploadedFileBase64 = app.manualFileData || null;
     uploadedFileName = app.manualFileName || null;
@@ -932,13 +1230,35 @@ function selectStudent(app, rowElement) {
 async function saveCommissionDecision() {
     if (!selectedAppId) return;
     const notes = document.getElementById('text-notes').value;
-    const docError = document.getElementById('text-doc-error').value;
+    const docErrorNote = document.getElementById('text-doc-error').value;
     const finalDecision = document.getElementById('select-form').value;
     const status = document.getElementById('select-status').value;
     const expiry = document.getElementById('decision-expiry-date').value;
     const expiryDate = expiry ? expiry.split('-').reverse().join('.') : "-";
 
-    const payload = { id: selectedAppId, decisionStatus: status, educationForm: finalDecision, notes, expiryDate, docError };
+    // Checkbox-lardan seçilmiş sənədlər
+    const errKeys = ['coverLetter','residenceCertificate','xasiyyetname','idCopies','tabel','forma027'];
+    const checkedKeys = errKeys.filter(k => document.getElementById('err-' + k)?.checked);
+    const docErrorChecks = checkedKeys.join(',');
+
+    // docError sahəsini insan oxuya bilən mətnə çevir (köhnə formatla uyğun)
+    const DOC_LABELS = {
+        coverLetter: '1. Məktəbin müşayiət məktubu',
+        residenceCertificate: '2. Yaşayış yerindən arayış',
+        xasiyyetname: '3. Xasiyyətnamə',
+        idCopies: '4. Valideyn/Şagird ŞV surəti',
+        tabel: '5. Qiymət cədvəli / Tabel',
+        forma027: '6. Forma 027 (Tibb arayışı)'
+    };
+    let docErrorText = '';
+    if (checkedKeys.length > 0) {
+        docErrorText = 'Çatışmayan/Düzəliş lazım olan sənədlər:\n' + checkedKeys.map(k => '• ' + DOC_LABELS[k]).join('\n');
+        if (docErrorNote.trim()) docErrorText += '\n\nƏlavə qeyd: ' + docErrorNote.trim();
+    } else if (docErrorNote.trim()) {
+        docErrorText = docErrorNote.trim();
+    }
+
+    const payload = { id: selectedAppId, decisionStatus: status, educationForm: finalDecision, notes, expiryDate, docError: docErrorText, docErrorChecks, docErrorNote };
     if (uploadedFileBase64) { payload.manualFileData = uploadedFileBase64; payload.manualFileName = uploadedFileName; }
 
     try {
