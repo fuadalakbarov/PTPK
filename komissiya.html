@@ -88,6 +88,8 @@
         .status-pill.quvvede { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
         .status-pill.dusub { background: #fee2e2; color: var(--danger-red); border: 1px solid #fca5a5; }
         .status-pill.duzelis { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+        .status-pill.yenisened { background: #fef9c3; color: #854d0e; border: 2px solid #facc15; animation: pulse-badge 1.5s infinite; }
+        @keyframes pulse-badge { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
 
         /* Sənədlər düyməsi */
         .btn-docs { 
@@ -443,6 +445,7 @@
                                 <option value="Qüvvədədir">Qüvvədədir</option>
                                 <option value="Qüvvədən düşüb">Qüvvədən düşüb</option>
                                 <option value="Düzəliş lazım">⚠️ Düzəliş lazım</option>
+                                <option value="Yeni Sənəd ⚡">⚡ Yeni Sənəd (baxılsın)</option>
                             </select>
 
                             <label>Yekun Protokol Qərarı (Təhsil Forması):</label>
@@ -764,6 +767,7 @@ function getStatusPillClass(status) {
     if (status === "Qüvvədədir") return "quvvede";
     if (status === "Qüvvədən düşüb") return "dusub";
     if (status === "Düzəliş lazım") return "duzelis";
+    if (status && status.startsWith("Yeni Sənəd")) return "yenisened";
     return "gozleme";
 }
 
@@ -1083,8 +1087,9 @@ async function loadCommissionTable() {
     try {
         const res = await fetch('/api/komissiya/get-applications');
         if (!res.ok) throw new Error('Server xətası: ' + res.status);
-        data = await res.json();
-        if (!Array.isArray(data)) throw new Error('Yanlış cavab formatı');
+        const raw = await res.json();
+        if (!Array.isArray(raw)) throw new Error('Supabase cavabı: ' + JSON.stringify(raw).substring(0, 200));
+        data = raw;
     } catch(e) {
         tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:red;">
             &#9888; Serverə qoşulmaq mümkün olmadı: ${e.message}
