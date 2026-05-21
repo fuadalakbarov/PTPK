@@ -785,7 +785,7 @@
                     <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${app.year||'-'} · ${app.type||'-'}</div>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
-                    ${hasError ? '<span style="font-size:11px;font-weight:700;background:#fee2e2;color:#dc2626;padding:3px 8px;border-radius:4px;"><i class="fa-solid fa-triangle-exclamation"></i> Düzəliş lazım</span>' : ''}
+                    ${hasError ? '<span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:3px 9px;border-radius:4px;display:flex;align-items:center;gap:4px;"><i class="fa-solid fa-triangle-exclamation"></i> Düzəliş lazım</span>' : ''}
                     <span style="font-size:11px;font-weight:700;background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:4px;">${isApproved ? 'Qüvvədədir' : hasError ? 'Xəta var' : 'Gözləmədə'}</span>
                     <i class="fa-solid fa-chevron-down" style="color:var(--text-muted);font-size:11px;"></i>
                 </div>
@@ -803,9 +803,24 @@
 
         let errorHtml = '';
         if (hasError) {
-            errorHtml = `<div class="error-note-box">
-                <div class="error-label"><i class="fa-solid fa-triangle-exclamation"></i> Komissiya Xəta Qeydi</div>
-                <p>${app.docError}</p>
+            // docError mətnini sətir-sətir ayır, strukturlu göstər
+            const lines = app.docError.trim().split('\n').filter(l => l.trim());
+            const listItems = lines.map(l => {
+                const isBullet = l.trim().startsWith('•');
+                if (isBullet) {
+                    return `<div style="display:flex;align-items:flex-start;gap:6px;padding:3px 0;">
+                        <i class="fa-solid fa-circle-xmark" style="color:#dc2626;font-size:13px;margin-top:1px;flex-shrink:0;"></i>
+                        <span style="font-size:12px;font-weight:600;color:#7f1d1d;">${l.trim().replace(/^•\s*/,'')}</span>
+                    </div>`;
+                }
+                return `<div style="font-size:11px;font-weight:600;color:#991b1b;margin-bottom:4px;">${l}</div>`;
+            }).join('');
+
+            errorHtml = `<div class="error-note-box" style="border:2px solid #fca5a5;background:#fff1f1;border-radius:8px;padding:12px 14px;margin-top:10px;">
+                <div class="error-label" style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px dashed #fca5a5;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Komissiya Xəta Qeydi — Düzəliş Tələb Olunur
+                </div>
+                <div>${listItems}</div>
             </div>`;
         }
 
