@@ -337,8 +337,9 @@ async def resubmit_docs(
     if not payload:
         return JSONResponse({"error": "Heç bir fayl göndərilmədi"}, status_code=400)
 
-    # Xəta qeydini sil (sənəd yenidən göndərilib)
+    # Sənəd yenidən göndərildikdə komissiyaya bildiriş üçün status yenilə
     payload["docError"] = ""
+    payload["decisionStatus"] = "Yeni Sənəd ⚡"
 
     async with httpx.AsyncClient() as client:
         r = await client.patch(
