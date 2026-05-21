@@ -694,7 +694,8 @@
         const school = document.getElementById('schoolFilter').value;
 
         if (tabId === 'tab-muraciet') {
-            if (school && allApplications.length === 0) {
+            if (school) {
+                // Hər tab keçidində təzə data çək
                 fetch('/api/komissiya/get-applications')
                     .then(r => r.json())
                     .then(data => { allApplications = data; renderMuracietTab(); })
@@ -703,10 +704,8 @@
                 renderMuracietTab();
             }
         } else if (tabId === 'tab-qerarlar') {
-            // Məktəb seçilibsə və data varsa dərhal render et
-            if (school && allApplications.length > 0) {
-                renderTable();
-            } else if (school && allApplications.length === 0) {
+            if (school) {
+                // Hər tab keçidində təzə data çək
                 fetch('/api/komissiya/get-applications')
                     .then(r => r.json())
                     .then(data => { allApplications = data; renderTable(); })
@@ -990,16 +989,14 @@
             return;
         }
 
-        // Yalnız ilk dəfə yüklə — sonrakı məktəb seçimlərində lokal filter et
-        if (allApplications.length === 0) {
-            try {
-                const r = await fetch('/api/komissiya/get-applications');
-                allApplications = await r.json();
-            } catch(e) {
-                allApplications = [];
-                alert('Serverə qoşulmaq mümkün olmadı!');
-                return;
-            }
+        // Hər dəfə serverdən təzə data çək (keşdən oxuma)
+        try {
+            const r = await fetch('/api/komissiya/get-applications');
+            allApplications = await r.json();
+        } catch(e) {
+            allApplications = [];
+            alert('Serverə qoşulmaq mümkün olmadı!');
+            return;
         }
 
         searchInput.value = '';
