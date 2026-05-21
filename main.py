@@ -84,6 +84,7 @@ class DecisionUpdate(BaseModel):
     educationForm: str
     notes: str
     expiryDate: str
+    docError: Optional[str] = None
     manualFileData: Optional[str] = None
     manualFileName: Optional[str] = None
 
@@ -182,6 +183,7 @@ async def update_decision(data: DecisionUpdate):
         "educationForm": data.educationForm,
         "notes": data.notes,
         "expiryDate": data.expiryDate,
+        "docError": data.docError or "",
     }
     if data.manualFileData:
         payload["manualFileData"] = data.manualFileData
@@ -270,3 +272,50 @@ async def get_html(page: str):
     if os.path.exists(file_path):
         return FileResponse(file_path)
     return JSONResponse({"error": "not found"}, status_code=404)
+
+
+# ── Məktəbin sənədi yenidən göndərməsi ──
+@app.post("/api/school/resubmit-docs")
+async def resubmit_docs(
+    appId: str = Form(...),
+    coverLetter: UploadFile = File(None),
+    residenceCertificate: UploadFile = File(None),
+    xasiyyetname: UploadFile = File(None),
+    idCopies: UploadFile = File(None),
+    tabel: UploadFile = File(None),
+    forma027: UploadFile = File(None),
+):
+    field_map = {
+        "coverLetter": (coverLetter, "mushayiet"),
+        "residenceCertificate": (residenceCertificate, "yasayis"),
+        "xasiyyetname": (xasiyyetname, "xasiyyetname"),
+        "idCopies": (idCopies, "sv_sureti"),
+        "tabel": (tabel, "tabel"),
+        "forma027": (forma027, "forma027"),
+    }
+
+    payload = {}
+    for key, (upload, prefix) in field_map.items():
+        if upload and upload.filename and upload.filename not in ("", "bos.txt"):
+            data = await upload.read()
+            if len(data) > 0:
+                ext = os.path.splitext(upload.filename)[1].lstrip(".")
+                fname = f"{appId}_{prefix}.{ext}"
+                ok = await upload_to_storage(fname, data, ext)
+                if ok:
+                    payload[key] = fname
+
+    if not payload:
+        return JSONResponse({"error": "Heç bir fayl göndərilmədi"}, status_code=400)
+
+    # Xəta qeydini sil (sənəd yenidən göndərilib)
+    payload["docError"] = ""
+
+    async with httpx.AsyncClient() as client:
+        r = await client.patch(
+            f"{SUPABASE_URL}/applications?id=eq.{appId}",
+            json=payload,
+            headers=HEADERS
+        )
+
+    return {"status": "success", "updated": list(payload.keys())}
