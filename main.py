@@ -85,6 +85,8 @@ class DecisionUpdate(BaseModel):
     notes: str
     expiryDate: str
     docError: Optional[str] = None
+    docErrorChecks: Optional[str] = None
+    docErrorNote: Optional[str] = None
     manualFileData: Optional[str] = None
     manualFileName: Optional[str] = None
 
@@ -184,6 +186,8 @@ async def update_decision(data: DecisionUpdate):
         "notes": data.notes,
         "expiryDate": data.expiryDate,
         "docError": data.docError or "",
+        "docErrorChecks": data.docErrorChecks or "",
+        "docErrorNote": data.docErrorNote or "",
     }
     if data.manualFileData:
         payload["manualFileData"] = data.manualFileData
