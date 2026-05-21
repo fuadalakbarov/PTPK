@@ -690,9 +690,10 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         btn.classList.add('active');
+
+        const school = document.getElementById('schoolFilter').value;
+
         if (tabId === 'tab-muraciet') {
-            // If school selected but data not yet loaded, load it first
-            const school = document.getElementById('schoolFilter').value;
             if (school && allApplications.length === 0) {
                 fetch('/api/komissiya/get-applications')
                     .then(r => r.json())
@@ -700,6 +701,16 @@
                     .catch(() => renderMuracietTab());
             } else {
                 renderMuracietTab();
+            }
+        } else if (tabId === 'tab-qerarlar') {
+            // Məktəb seçilibsə və data varsa dərhal render et
+            if (school && allApplications.length > 0) {
+                renderTable();
+            } else if (school && allApplications.length === 0) {
+                fetch('/api/komissiya/get-applications')
+                    .then(r => r.json())
+                    .then(data => { allApplications = data; renderTable(); })
+                    .catch(() => {});
             }
         }
     }
@@ -753,7 +764,7 @@
     }
 
     function updateStats(approved, all) {
-        const errorApps = all.filter(a => a.docError && a.docError.trim());
+        const errorApps = all.filter(a => (a.docError && a.docError.trim()) || a.decisionStatus === 'Düzəliş lazım');
         const pending = all.filter(a => {
             const s = a.decisionStatus||'';
             return s==='Gözləmədə'||s==='';
@@ -764,13 +775,16 @@
     }
 
     function buildMuracietCard(app) {
-        const hasError = app.docError && app.docError.trim();
+        const hasError = (app.docError && app.docError.trim()) || app.decisionStatus === 'Düzəliş lazım';
         const st = app.decisionStatus || 'Gözləmədə';
         const isApproved = st==='Qüvvədədir'||st==='Təsdiqləndi'||st==='Aktiv'||st.indexOf('vv')!==-1;
+        const isDuzelis = st === 'Düzəliş lazım';
 
         let statusColor = '#d97706'; let statusBg = '#fef3c7';
-        if (isApproved) { statusColor = '#15803d'; statusBg = '#dcfce7'; }
-        if (hasError)   { statusColor = '#dc2626'; statusBg = '#fee2e2'; }
+        if (isApproved)  { statusColor = '#15803d'; statusBg = '#dcfce7'; }
+        if (isDuzelis || hasError) { statusColor = '#c2410c'; statusBg = '#fff7ed'; }
+
+        const statusLabel = isApproved ? 'Qüvvədədir' : isDuzelis ? '⚠️ Düzəliş lazım' : hasError ? '⚠️ Düzəliş lazım' : 'Gözləmədə';
 
         const missingDocs = DOC_FIELDS.filter(f => !app[f.key] || app[f.key].length <= 3);
         const allDocsOk = missingDocs.length === 0;
@@ -785,8 +799,8 @@
                     <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${app.year||'-'} · ${app.type||'-'}</div>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
-                    ${hasError ? '<span style="font-size:11px;font-weight:700;background:#dc2626;color:#fff;padding:3px 9px;border-radius:4px;display:flex;align-items:center;gap:4px;"><i class="fa-solid fa-triangle-exclamation"></i> Düzəliş lazım</span>' : ''}
-                    <span style="font-size:11px;font-weight:700;background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:4px;">${isApproved ? 'Qüvvədədir' : hasError ? 'Xəta var' : 'Gözləmədə'}</span>
+                    ${hasError || isDuzelis ? '<span style="font-size:11px;font-weight:700;background:#c2410c;color:#fff;padding:3px 9px;border-radius:4px;display:flex;align-items:center;gap:4px;"><i class="fa-solid fa-triangle-exclamation"></i> Düzəliş lazım</span>' : ''}
+                    <span style="font-size:11px;font-weight:700;background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:4px;">${statusLabel}</span>
                     <i class="fa-solid fa-chevron-down" style="color:var(--text-muted);font-size:11px;"></i>
                 </div>
             </div>`;
@@ -825,7 +839,7 @@
         }
 
         let resubmitBtn = '';
-        if (hasError || !allDocsOk) {
+        if (hasError || !allDocsOk || isDuzelis) {
             resubmitBtn = `<button onclick="openResubmitModal('${app.id}')" style="margin-top:12px;background:var(--brand-blue);color:#fff;border:none;border-radius:6px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;width:100%;">
                 <i class="fa-solid fa-upload"></i> Sənədi Yenidən Göndər
             </button>`;
