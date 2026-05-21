@@ -171,18 +171,18 @@ async def submit_student(
 @app.get("/api/komissiya/get-applications")
 async def get_applications():
     # manualFileData-nı siyahıdan çıxar — böyük base64 fayllar RAM-ı doldurmaqdan qorumaq üçün
-    select_cols = (
-        "id,fin,name,schoolText,schoolValue,type,year,docStatus,decisionStatus,"
-        "expiryDate,educationForm,notes,hasManualFile,manualFileName,"
-        "docError,docErrorChecks,docErrorNote,"
-        "coverLetter,residenceCertificate,xasiyyetname,idCopies,tabel,forma027"
-    )
     async with httpx.AsyncClient() as client:
         r = await client.get(
-            f"{SUPABASE_URL}/applications?select={select_cols}&order=schoolText.asc,name.asc",
+            f"{SUPABASE_URL}/applications?order=schoolText.asc,name.asc",
             headers=HEADERS
         )
-    return r.json()
+    data = r.json()
+    if not isinstance(data, list):
+        return data
+    # manualFileData-nı siyahıdan çıxar — RAM qənaəti üçün
+    for item in data:
+        item.pop("manualFileData", None)
+    return data
 
 
 @app.get("/api/komissiya/get-file")
