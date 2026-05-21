@@ -30,12 +30,14 @@ SUPABASE_STORAGE = "https://vlyuxgtwvfgbwaysbymv.supabase.co/storage/v1"
 SUPABASE_KEY     = os.environ.get("SUPABASE_KEY", "")
 STORAGE_BUCKET   = "ptpk-files"
 
-HEADERS = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": f"Bearer {SUPABASE_KEY}",
-    "Content-Type": "application/json",
-    "Prefer": "return=representation"
-}
+def HEADERS():
+    _key = os.environ.get("SUPABASE_KEY", "")
+    return {
+        "apikey": _key,
+        "Authorization": f"Bearer {_key}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+    }
 
 CONTENT_TYPES = {
     "pdf":  "application/pdf",
@@ -56,8 +58,8 @@ async def upload_to_storage(fname: str, data: bytes, ext: str) -> bool:
     ct = CONTENT_TYPES.get(ext.lower(), "application/octet-stream")
     url = f"{SUPABASE_STORAGE}/object/{STORAGE_BUCKET}/{fname}"
     headers = {
-        "apikey": SUPABASE_KEY,
-        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "apikey": os.environ.get("SUPABASE_KEY",""),
+        "Authorization": "Bearer " + os.environ.get("SUPABASE_KEY",""),
         "Content-Type": ct,
         "x-upsert": "true",
     }
@@ -163,7 +165,7 @@ async def submit_student(
     }
 
     async with httpx.AsyncClient() as client:
-        r = await client.post(f"{SUPABASE_URL}/applications", json=payload, headers=HEADERS)
+        r = await client.post(f"{SUPABASE_URL}/applications", json=payload, headers=HEADERS())
 
     return {"status": "success", "id": app_id}
 
@@ -173,14 +175,11 @@ async def get_applications():
     async with httpx.AsyncClient() as client:
         r = await client.get(
             f"{SUPABASE_URL}/applications?order=schoolText.asc,name.asc",
-            headers=HEADERS
+            headers=HEADERS()
         )
-    print(f"[DEBUG] Supabase status: {r.status_code}", flush=True)
-    print(f"[DEBUG] Supabase cavab (ilk 300 simvol): {r.text[:300]}", flush=True)
     data = r.json()
     if not isinstance(data, list):
-        print(f"[DEBUG] Supabase array deyil: {data}", flush=True)
-        raise HTTPException(status_code=502, detail=f"Supabase xetasi: {data}")
+        raise HTTPException(status_code=502, detail=f"Supabase xetasi: {str(data)[:200]}")
     for item in data:
         item.pop("manualFileData", None)
     return data
@@ -188,15 +187,14 @@ async def get_applications():
 
 @app.get("/api/komissiya/get-file")
 async def get_file(id: str):
-    """Yalnız bir şagirdin fayl datasını qaytarır (yükləmə üçün)"""
     async with httpx.AsyncClient() as client:
         r = await client.get(
             f"{SUPABASE_URL}/applications?id=eq.{id}&select=id,manualFileData,manualFileName,hasManualFile",
-            headers=HEADERS
+            headers=HEADERS()
         )
     data = r.json()
-    if not data:
-        raise HTTPException(status_code=404, detail="Tapılmadı")
+    if not isinstance(data, list) or len(data) == 0:
+        raise HTTPException(status_code=404, detail="Tapilmadi")
     return data[0]
 
 
@@ -220,22 +218,13 @@ async def update_decision(data: DecisionUpdate):
         r = await client.patch(
             f"{SUPABASE_URL}/applications?id=eq.{data.id}",
             json=payload,
-            headers=HEADERS
+            headers=HEADERS()
         )
-
     if r.status_code not in (200, 204):
-        raise HTTPException(
-            status_code=500,
-            detail=f"Supabase xətası: {r.status_code} — {r.text}"
-        )
-
+        raise HTTPException(status_code=500, detail=f"Supabase xetasi: {r.status_code}")
     updated = r.json()
     if isinstance(updated, list) and len(updated) == 0:
-        raise HTTPException(
-            status_code=404,
-            detail=f"ID tapılmadı: {data.id}"
-        )
-
+        raise HTTPException(status_code=404, detail=f"ID tapilmadi: {data.id}")
     return {"status": "success"}
 
 
@@ -244,7 +233,7 @@ async def delete_application(id: str):
     async with httpx.AsyncClient() as client:
         await client.delete(
             f"{SUPABASE_URL}/applications?id=eq.{id}",
-            headers=HEADERS
+            headers=HEADERS()
         )
     return {"status": "deleted"}
 
@@ -291,7 +280,7 @@ async def debug_storage():
             async with httpx.AsyncClient(timeout=10) as client:
                 r = await client.get(
                     f"{SUPABASE_STORAGE}/bucket/{STORAGE_BUCKET}",
-                    headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+                    headers={"apikey": os.environ.get("SUPABASE_KEY",""), "Authorization": "Bearer " + os.environ.get("SUPABASE_KEY","")}
                 )
             bucket_ok = r.status_code == 200
             bucket_msg = f"HTTP {r.status_code}: {r.text[:200]}"
@@ -355,7 +344,7 @@ async def resubmit_docs(
         r = await client.patch(
             f"{SUPABASE_URL}/applications?id=eq.{appId}",
             json=payload,
-            headers=HEADERS
+            headers=HEADERS()
         )
 
     return {"status": "success", "updated": list(payload.keys())}
