@@ -388,6 +388,11 @@
 
                             <label>Komissiya Diaqnozu / Rəyi:</label>
                             <textarea id="text-notes" placeholder="Rəsmi protokolu daxil edin..."></textarea>
+
+                            <label style="margin-top:8px; color:#dc2626;">
+                                <i class="fa-solid fa-triangle-exclamation"></i> Sənəd Xəta Qeydi (məktəbə göstərilir):
+                            </label>
+                            <textarea id="text-doc-error" placeholder="Hansı sənəd səhvdir, nə düzəldilməli — məktəb görəcək..." style="border-color:#fca5a5; background:#fff7f7; min-height:60px;"></textarea>
                             
                             <label>Rəsmi Sənədi Əllə Yüklə (Skan/PDF):</label>
                             <div class="file-upload-wrapper">
@@ -639,7 +644,18 @@ async function buildMergedPdf() {
     }
 
     if (addedCount === 0) {
-        showMergeStatus('⚠️ Heç bir sənəd yüklənə bilmədi. Fayllar serverdə mövcuddurmu?', 'error');
+        // Supabase debug yoxlaması
+        let debugMsg = '';
+        try {
+            const dbg = await fetch('/api/debug/storage-check');
+            const dbgData = await dbg.json();
+            if (!dbgData.supabase_key_set) {
+                debugMsg = ' (Səbəb: SUPABASE_KEY server mühitdə təyin edilməyib!)';
+            } else if (!dbgData.bucket_accessible) {
+                debugMsg = ` (Səbəb: Supabase bucket əlçatmaz — ${dbgData.bucket_response?.slice(0,80)})`;
+            }
+        } catch(e) {}
+        showMergeStatus('⚠️ Heç bir sənəd yüklənə bilmədi.' + debugMsg, 'error');
         document.getElementById('btn-merge').disabled = false;
         document.getElementById('btn-save').disabled = false;
         return null;
@@ -893,6 +909,7 @@ function selectStudent(app, rowElement) {
     document.getElementById('panel-name').innerText = app.name + " (" + app.fin + ")";
     document.getElementById('panel-school').innerText = app.schoolText;
     document.getElementById('text-notes').value = app.notes || "";
+    document.getElementById('text-doc-error').value = app.docError || "";
     document.getElementById('select-status').value = app.decisionStatus || "Gözləmədə";
     document.getElementById('select-form').value = app.educationForm !== "-" ? app.educationForm : "Evdə təhsil (Ümumi proqram)";
     document.getElementById('decision-expiry-date').value = app.expiryDate && app.expiryDate !== "-" ? app.expiryDate.split('.').reverse().join('-') : "";
@@ -915,12 +932,13 @@ function selectStudent(app, rowElement) {
 async function saveCommissionDecision() {
     if (!selectedAppId) return;
     const notes = document.getElementById('text-notes').value;
+    const docError = document.getElementById('text-doc-error').value;
     const finalDecision = document.getElementById('select-form').value;
     const status = document.getElementById('select-status').value;
     const expiry = document.getElementById('decision-expiry-date').value;
     const expiryDate = expiry ? expiry.split('-').reverse().join('.') : "-";
 
-    const payload = { id: selectedAppId, decisionStatus: status, educationForm: finalDecision, notes, expiryDate };
+    const payload = { id: selectedAppId, decisionStatus: status, educationForm: finalDecision, notes, expiryDate, docError };
     if (uploadedFileBase64) { payload.manualFileData = uploadedFileBase64; payload.manualFileName = uploadedFileName; }
 
     try {
