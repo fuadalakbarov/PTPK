@@ -48,15 +48,10 @@ CONTENT_TYPES = {
 }
 
 async def upload_to_storage(fname: str, data: bytes, ext: str) -> bool:
-    """Faylı Supabase Storage-a yüklə. Uğursuz olsa lokal uploads/ qovluğuna saxla."""
-    # Lokal qovluğa həmişə saxla (backup + fallback)
-    local_path = os.path.join(UPLOAD_DIR, fname)
-    with open(local_path, "wb") as f:
-        f.write(data)
-
-    # Supabase KEY yoxdursa, lokal saxlamaqla kifayətlən
+    """Faylı Supabase Storage-a yüklə."""
     if not SUPABASE_KEY:
-        return True
+        print(f"[XETA] SUPABASE_KEY muhit deyisheni teyinedilmeyib! Fayl saxlanilmadi: {fname}")
+        return False
 
     ct = CONTENT_TYPES.get(ext.lower(), "application/octet-stream")
     url = f"{SUPABASE_STORAGE}/object/{STORAGE_BUCKET}/{fname}"
@@ -69,10 +64,15 @@ async def upload_to_storage(fname: str, data: bytes, ext: str) -> bool:
     try:
         async with httpx.AsyncClient(timeout=60) as client:
             r = await client.post(url, content=data, headers=headers)
-        return r.status_code in (200, 201)
-    except Exception:
-        # Supabase uğursuz oldusa lokal fayl var, yenə də uğurlu sayırıq
-        return True
+        if r.status_code in (200, 201):
+            print(f"[OK] Supabase Storage-a yuklendi: {fname}")
+            return True
+        else:
+            print(f"[XETA] Supabase Storage cavabi {r.status_code}: {r.text[:300]}")
+            return False
+    except Exception as e:
+        print(f"[XETA] Supabase Storage baglanti xetasi: {e}")
+        return False
 
 def storage_public_url(fname: str) -> str:
     return f"{SUPABASE_STORAGE}/object/public/{STORAGE_BUCKET}/{fname}"
@@ -233,6 +233,37 @@ async def proxy_file(fname: str):
     return JSONResponse({"error": "Fayl tapılmadı"}, status_code=404)
 
 
+
+
+@app.get("/api/debug/storage-check")
+async def debug_storage():
+    """Supabase KEY ve Storage vəziyyətini yoxla"""
+    key_set = bool(SUPABASE_KEY)
+    key_preview = (SUPABASE_KEY[:8] + "...") if key_set else "YOX"
+    
+    # Bucket-e test sorgu
+    bucket_ok = False
+    bucket_msg = ""
+    if key_set:
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                r = await client.get(
+                    f"{SUPABASE_STORAGE}/bucket/{STORAGE_BUCKET}",
+                    headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+                )
+            bucket_ok = r.status_code == 200
+            bucket_msg = f"HTTP {r.status_code}: {r.text[:200]}"
+        except Exception as e:
+            bucket_msg = str(e)
+    
+    return {
+        "supabase_key_set": key_set,
+        "supabase_key_preview": key_preview,
+        "bucket": STORAGE_BUCKET,
+        "bucket_accessible": bucket_ok,
+        "bucket_response": bucket_msg,
+        "supabase_url": SUPABASE_URL,
+    }
 @app.get("/{page}.html")
 async def get_html(page: str):
     file_path = f"{page}.html"
