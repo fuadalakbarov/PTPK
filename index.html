@@ -1,992 +1,6 @@
 <!DOCTYPE html>
 <html lang="az">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PTPK — Rəqəmsal Sənəd Qəbulu</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root {
-            --navy: #060d1f;
-            --navy-2: #0d1a35;
-            --blue: #1a6cff;
-            --blue-glow: rgba(26, 108, 255, 0.18);
-            --blue-mid: #2a7fff;
-            --teal: #00d4b4;
-            --teal-dim: rgba(0, 212, 180, 0.12);
-            --white: #ffffff;
-            --off-white: #f0f4ff;
-            --muted: #6b7fa8;
-            --border: rgba(255,255,255,0.08);
-            --border-active: rgba(26,108,255,0.5);
-            --card-bg: rgba(255,255,255,0.03);
-            --input-bg: rgba(255,255,255,0.05);
-            --success: #00c97a;
-            --danger: #ff4d6d;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Sora', sans-serif;
-            background: var(--navy);
-            color: var(--white);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* Background grid */
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(26,108,255,0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(26,108,255,0.04) 1px, transparent 1px);
-            background-size: 60px 60px;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* Glow blobs */
-        .blob {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            pointer-events: none;
-            z-index: 0;
-        }
-        .blob-1 {
-            width: 500px; height: 500px;
-            background: rgba(26,108,255,0.12);
-            top: -150px; right: -100px;
-        }
-        .blob-2 {
-            width: 400px; height: 400px;
-            background: rgba(0,212,180,0.08);
-            bottom: 0; left: -100px;
-        }
-
-        /* Layout */
-        .shell {
-            position: relative;
-            z-index: 1;
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 32px 24px 60px;
-        }
-
-        /* Header */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 48px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .header-brand {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .logo-mark {
-            width: 44px; height: 44px;
-            background: linear-gradient(135deg, var(--blue), var(--teal));
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px;
-            font-weight: 800;
-            color: #fff;
-            font-family: 'JetBrains Mono', monospace;
-            letter-spacing: -1px;
-            flex-shrink: 0;
-            box-shadow: 0 0 20px rgba(26,108,255,0.4);
-        }
-
-        .brand-text-wrap h1 {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--white);
-            letter-spacing: -0.3px;
-            line-height: 1.2;
-        }
-        .brand-text-wrap p {
-            font-size: 11px;
-            color: var(--muted);
-            font-weight: 400;
-            margin-top: 2px;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .user-pill {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            padding: 6px 14px 6px 8px;
-            font-size: 12px;
-            color: var(--muted);
-        }
-        .user-pill .dot {
-            width: 6px; height: 6px;
-            background: var(--success);
-            border-radius: 50%;
-        }
-        #user-name-display { color: var(--off-white); font-weight: 500; }
-
-        .btn-logout {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: transparent;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 7px 14px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--muted);
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Sora', sans-serif;
-        }
-        .btn-logout:hover {
-            border-color: var(--danger);
-            color: var(--danger);
-            background: rgba(255,77,109,0.06);
-        }
-
-        /* Hero section */
-        .hero {
-            text-align: center;
-            margin-bottom: 48px;
-        }
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--teal-dim);
-            border: 1px solid rgba(0,212,180,0.25);
-            border-radius: 999px;
-            padding: 5px 14px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--teal);
-            margin-bottom: 20px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        .hero h2 {
-            font-size: 32px;
-            font-weight: 800;
-            letter-spacing: -1px;
-            line-height: 1.15;
-            background: linear-gradient(135deg, #fff 30%, #6b9fff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 12px;
-        }
-        .hero p {
-            font-size: 14px;
-            color: var(--muted);
-            font-weight: 400;
-            max-width: 420px;
-            margin: 0 auto;
-            line-height: 1.7;
-        }
-
-        /* Steps bar */
-        .steps-bar {
-            display: flex;
-            align-items: center;
-            gap: 0;
-            margin-bottom: 40px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 16px 24px;
-        }
-        .step-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex: 1;
-        }
-        .step-num {
-            width: 28px; height: 28px;
-            border-radius: 50%;
-            background: var(--input-bg);
-            border: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--muted);
-            font-family: 'JetBrains Mono', monospace;
-            flex-shrink: 0;
-            transition: all 0.3s;
-        }
-        .step-item.active .step-num {
-            background: linear-gradient(135deg, var(--blue), var(--teal));
-            border-color: transparent;
-            color: #fff;
-            box-shadow: 0 0 12px rgba(26,108,255,0.4);
-        }
-        .step-item.done .step-num {
-            background: rgba(0,201,122,0.15);
-            border-color: rgba(0,201,122,0.4);
-            color: var(--success);
-        }
-        .step-label { font-size: 12px; font-weight: 600; color: var(--muted); }
-        .step-item.active .step-label { color: var(--off-white); }
-        .step-divider { flex: 0 0 20px; height: 1px; background: var(--border); margin: 0 8px; }
-
-        /* Form card */
-        .form-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-        }
-
-        .form-section {
-            padding: 32px 36px;
-            border-bottom: 1px solid var(--border);
-        }
-        .form-section:last-child { border-bottom: none; }
-
-        .section-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 24px;
-        }
-        .section-label-icon {
-            width: 32px; height: 32px;
-            border-radius: 8px;
-            background: var(--blue-glow);
-            border: 1px solid rgba(26,108,255,0.2);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 13px;
-            color: var(--blue-mid);
-        }
-        .section-label h3 {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--off-white);
-            letter-spacing: -0.2px;
-        }
-        .section-label span {
-            font-size: 11px;
-            color: var(--muted);
-            margin-top: 1px;
-        }
-
-        /* Grid */
-        .field-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-        .field-grid .full { grid-column: 1 / -1; }
-
-        /* Field */
-        .field { display: flex; flex-direction: column; gap: 6px; }
-        .field label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-        }
-
-        .field input,
-        .field select {
-            background: var(--input-bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 11px 14px;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--off-white);
-            font-family: 'Sora', sans-serif;
-            outline: none;
-            transition: all 0.2s;
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%;
-        }
-        .field input::placeholder { color: rgba(107,127,168,0.5); }
-        .field input:focus,
-        .field select:focus {
-            border-color: var(--border-active);
-            background: rgba(26,108,255,0.06);
-            box-shadow: 0 0 0 3px rgba(26,108,255,0.1);
-        }
-        .field select option {
-            background: #0d1a35;
-            color: var(--off-white);
-        }
-        .select-wrap {
-            position: relative;
-        }
-        .select-wrap::after {
-            content: '⌄';
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--muted);
-            pointer-events: none;
-            font-size: 16px;
-        }
-
-        /* FIN badge */
-        .fin-wrap { position: relative; }
-        .fin-wrap input { padding-right: 60px; font-family: 'JetBrains Mono', monospace; letter-spacing: 2px; font-size: 14px; }
-        .fin-badge {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(26,108,255,0.12);
-            border: 1px solid rgba(26,108,255,0.2);
-            border-radius: 5px;
-            padding: 3px 7px;
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--blue-mid);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* File upload */
-        .file-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .file-item {
-            position: relative;
-            background: var(--input-bg);
-            border: 1px dashed rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-            overflow: hidden;
-        }
-        .file-item:hover {
-            border-color: rgba(26,108,255,0.4);
-            background: rgba(26,108,255,0.04);
-        }
-        .file-item.has-file {
-            border-color: rgba(0,201,122,0.35);
-            background: rgba(0,201,122,0.04);
-        }
-        .file-item input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-            width: 100%;
-            height: 100%;
-        }
-        .file-num {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--muted);
-            font-family: 'JetBrains Mono', monospace;
-            margin-bottom: 6px;
-        }
-        .file-title {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--off-white);
-            line-height: 1.4;
-            margin-bottom: 8px;
-        }
-        .file-status {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 11px;
-            color: var(--muted);
-            font-weight: 500;
-        }
-        .file-item.has-file .file-status {
-            color: var(--success);
-        }
-        .file-status i { font-size: 10px; }
-
-        /* Action row */
-        .action-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 28px 36px;
-        }
-
-        .btn-primary {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            background: linear-gradient(135deg, var(--blue) 0%, #0052cc 100%);
-            border: none;
-            border-radius: 12px;
-            padding: 14px 28px;
-            font-size: 14px;
-            font-weight: 700;
-            color: #fff;
-            cursor: pointer;
-            font-family: 'Sora', sans-serif;
-            transition: all 0.2s;
-            box-shadow: 0 4px 20px rgba(26,108,255,0.35);
-            letter-spacing: -0.2px;
-        }
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 28px rgba(26,108,255,0.45);
-        }
-        .btn-primary:active { transform: translateY(0); }
-
-        .btn-secondary {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            background: transparent;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px 22px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--muted);
-            cursor: pointer;
-            font-family: 'Sora', sans-serif;
-            transition: all 0.2s;
-            text-decoration: none;
-            white-space: nowrap;
-        }
-        .btn-secondary:hover {
-            border-color: rgba(26,108,255,0.4);
-            color: var(--off-white);
-            background: var(--blue-glow);
-        }
-
-        /* Footer links */
-        .footer-strip {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 28px;
-            margin-top: 40px;
-            padding-top: 28px;
-            border-top: 1px solid var(--border);
-        }
-        .footer-strip a {
-            font-size: 12px;
-            color: var(--muted);
-            text-decoration: none;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: color 0.2s;
-        }
-        .footer-strip a:hover { color: var(--off-white); }
-
-        .copyright {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 11px;
-            color: rgba(107,127,168,0.45);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 28px;
-            right: 28px;
-            background: #0d1a35;
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 14px 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--off-white);
-            transform: translateY(80px);
-            opacity: 0;
-            transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
-            z-index: 1000;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-            max-width: 320px;
-        }
-        .toast.show { transform: translateY(0); opacity: 1; }
-        .toast-icon { font-size: 18px; flex-shrink: 0; }
-        .toast.success .toast-icon { color: var(--success); }
-        .toast.error .toast-icon { color: var(--danger); }
-
-        /* Spinner */
-        .spinner {
-            width: 16px; height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            display: none;
-        }
-        .btn-primary.loading .spinner { display: block; }
-        .btn-primary.loading .btn-text { display: none; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Responsive */
-        @media (max-width: 640px) {
-            .shell { padding: 20px 16px 40px; }
-            .field-grid { grid-template-columns: 1fr; }
-            .file-grid { grid-template-columns: 1fr; }
-            .form-section { padding: 24px 20px; }
-            .action-row { flex-direction: column; padding: 20px; }
-            .btn-primary, .btn-secondary { width: 100%; }
-            .steps-bar { display: none; }
-            .hero h2 { font-size: 24px; }
-            .header { flex-wrap: wrap; gap: 12px; }
-        }
-
-        /* Entry animation */
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .hero { animation: fadeUp 0.5s ease both; }
-        .steps-bar { animation: fadeUp 0.5s 0.1s ease both; }
-        .form-card { animation: fadeUp 0.5s 0.2s ease both; }
-    </style>
-</head>
-<body>
-
-<div class="blob blob-1"></div>
-<div class="blob blob-2"></div>
-
-<div class="shell">
-
-    <!-- Header -->
-    <header class="header">
-        <div class="header-brand">
-            <div class="logo-mark">PK</div>
-            <div class="brand-text-wrap">
-                <h1>PTPK Portal</h1>
-                <p>Rəqəmsal Sənəd Qəbulu Sistemi</p>
-            </div>
-        </div>
-        <div class="header-right">
-            <div class="user-pill">
-                <span class="dot"></span>
-                <span id="user-name-display">İstifadəçi</span>
-            </div>
-            <button class="btn-logout" onclick="logout()">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i> Çıxış
-            </button>
-        </div>
-    </header>
-
-    <!-- Hero -->
-    <div class="hero">
-        <div class="hero-badge">
-            <i class="fa-solid fa-shield-halved"></i>
-            Təhlükəsiz · Rəsmi Sistem
-        </div>
-        <h2>Sənədlərinizi<br>Rəqəmsal Göndərin</h2>
-        <p>Psixoloji-Tibbi-Pedaqoji Komissiyaya müraciət üçün tələb olunan sənədləri aşağıdakı forma vasitəsilə yükləyin.</p>
-    </div>
-
-    <!-- Steps -->
-    <div class="steps-bar">
-        <div class="step-item active">
-            <div class="step-num">01</div>
-            <div>
-                <div class="step-label">Şagird məlumatları</div>
-            </div>
-        </div>
-        <div class="step-divider"></div>
-        <div class="step-item">
-            <div class="step-num">02</div>
-            <div>
-                <div class="step-label">Sənədlər</div>
-            </div>
-        </div>
-        <div class="step-divider"></div>
-        <div class="step-item">
-            <div class="step-num">03</div>
-            <div>
-                <div class="step-label">Göndəriş</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Form -->
-    <form id="studentForm">
-    <div class="form-card">
-
-        <!-- Section 1: Student info -->
-        <div class="form-section">
-            <div class="section-label">
-                <div class="section-label-icon"><i class="fa-solid fa-user-graduate"></i></div>
-                <div>
-                    <h3>Şagird Məlumatları</h3>
-                    <span>Şəxsi məlumatlar və məktəb</span>
-                </div>
-            </div>
-
-            <div class="field-grid">
-                <div class="field full">
-                    <label>Soyadı, Adı, Atasının adı</label>
-                    <input type="text" id="studentName" name="studentName" placeholder="Məsələn: Əliyev Anar Rauf oğlu" required>
-                </div>
-
-                <div class="field">
-                    <label>FİN Kod</label>
-                    <div class="fin-wrap">
-                        <input type="text" id="finCode" name="finCode" placeholder="XXXXXXX" maxlength="7" style="text-transform:uppercase;" required>
-                        <span class="fin-badge">FİN</span>
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label>Müraciət Növü</label>
-                    <div class="select-wrap">
-                        <select id="applicationType" name="applicationType" required>
-                            <option value="" disabled selected>Seçin...</option>
-                            <option value="Yeni">Yeni müraciət</option>
-                            <option value="Təkrar">Təkrar müraciət</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="field full">
-                    <label>Ümumtəhsil Müəssisəsi</label>
-                    <div class="select-wrap">
-                        <select id="schoolSelect" name="schoolSelect" required>
-                            <option value="" disabled selected>— Məktəbi seçin —</option>
-                            <optgroup label="📍 Gəncə şəhəri">
-                                <option>Gəncə şəhər İ.Qayıbov adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər Ə.Cavad adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 3 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
-                                <option>Gəncə şəhər M.Mehdizadə adına 4 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər M.Ə.Sabir adına 5 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər C.Cabbarlı adına 6 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 7 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər M.P.Vaqif adına 8 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 9 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər M.Hadi adına 10 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər N.Gəncəvi adına 11 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər V.Əliyev adına 12 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər H.Əliyev adına 13 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər M.Müşfiq adına 14 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər M.Əzizbəyov adına 15 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər M.Ş.Vazeh adına 16 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 17 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər N.Aydın adına 18 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 19 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər M.A.Abbaszadə adına 20 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 21 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 22 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 23 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 24 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 25 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 26 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər İ.Məmmədov adına 27 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
-                                <option>Gəncə şəhər 28 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 29 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 30 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 31 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 32 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 33 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 34 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 35 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 36 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 37 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 38 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 39 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 40 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 41 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 42 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər 43 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə şəhər İnteqrasiya təlimli İnternat Tipli Gimnaziya</option>
-                                <option>Gəncə şəhər 45 nömrəli xüsusi məktəbi</option>
-                            </optgroup>
-                            <optgroup label="📍 Göygöl rayonu">
-                                <option>Göygöl şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Göygöl şəhər 2 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
-                                <option>Xaqani kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Toğanalı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Üçtəpə kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Xanalılar kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Firuzabad kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Hacıməlik kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Aşıqlı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Quşqara kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Balçılı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Almalı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Çaykənd kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Çaylı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Dozular kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Gəncə kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Göykənd kənd ümumi orta məktəbi</option>
-                                <option>Qızılca kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Köşkü kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Mollacəlilli kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Nadel kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Pənahlılar kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Sarısu kənd ümumi orta məktəbi</option>
-                                <option>Şəhriyar kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Yenikənd kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Zurnabad kənd tam orta ümumtəhsil məktəbi</option>
-                            </optgroup>
-                            <optgroup label="📍 Daşkəsən rayonu">
-                                <option>Daşkəsən şəhər S.Vurğun adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Daşkəsən şəhər A.Mürsəlov adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Quşçu kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Bayan kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Əhmədli kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Alaxançallı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Zivlan kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Gurbulaq kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Xoşbulaq kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Almalı kənd ümumi orta məktəbi</option>
-                                <option>Astaf kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Çaykənd kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Çıraqlı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Daşkəsən kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Emilli kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Göyvilyurd kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Xaçbulaq kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Qabaqtəpə kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Qarataq kənd ümumi orta məktəbi</option>
-                                <option>Mollahasanlı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Muganlı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Pirverdilər kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Quşçu qəsəbə tam orta ümumtəhsil məktəbi</option>
-                                <option>Səbətkeçməz kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Şahvələdli kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Tazakənd kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Yenikənd kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Yolqullar kənd tam orta ümumtəhsil məktəbi</option>
-                            </optgroup>
-                            <optgroup label="📍 Goranboy rayonu">
-                                <option>Goranboy şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Goranboy şəhər 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Dəliməmmədli şəhər tam orta ümumtəhsil məktəbi</option>
-                                <option>Aşağı Ağcakənd qəsəbə tam orta ümumtəhsil məktəbi</option>
-                                <option>Qazanbulaq qəsəbə tam orta ümumtəhsil məktəbi</option>
-                                <option>Goran qəsəbə tam orta ümumtəhsil məktəbi</option>
-                                <option>Xan Qərvənd kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Səfikürd kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Tap Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Borsunlu kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Qızılhacılı kənd 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Qızılhacılı kənd 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Boluslu kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Nadir kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Veyisli kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Alpout kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Baxçakürd kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Abram kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Buzluq kənd ümumi orta məktəbi</option>
-                                <option>Gülüstan kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Ərzuman kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Fəxralı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Qaradağlı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Qaraməmmədli kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Qazan kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Quşçular kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Meşəli kənd ümumi orta məktəbi</option>
-                                <option>Sarısu kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Semax kənd ümumi orta məktəbi</option>
-                                <option>Toly kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Xoylunlu kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Zeyva kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Goranboy rayon İnteqrasiya təlimli İnternat Tipli Gimnaziya</option>
-                            </optgroup>
-                            <optgroup label="📍 Samux rayonu">
-                                <option>Samux şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux şəhər 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Alıuşağı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Burunqovaq kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Çobanddağ kənd ümumi orta məktəbi</option>
-                                <option>Samux rayon Əhmədbəyli kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Əli Bayramlı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Füzuli kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Göyüşlü kənd ümumi orta məktəbi</option>
-                                <option>Samux rayon Hacıalılı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon İnstitut qəsəbə tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Kəsəmən kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Kolayır kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Qarabağlar kənd 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Qarabağlar kənd 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Qarabağlı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Qədili kənd ümumi orta məktəbi</option>
-                                <option>Samux rayon Qırıqlı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Qobustu kənd əsas məktəbi</option>
-                                <option>Samux rayon Ləki kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Poylu kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Poylu qəsəbə tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Salahlı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Səfərliyev adına qəsəbə tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Sərkar kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Seyidlər kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Tatlı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Yenikənd kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Yenidövran qəsəbə tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Ziyadlı kənd tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon İstixana qəsəbə ümumi orta məktəbi</option>
-                                <option>Samux rayon Ləki kənd ümumi orta məktəbi</option>
-                                <option>Samux rayon Poylu kənd ümumi orta məktəbi</option>
-                                <option>Samux rayon Qəsəbə tam orta ümumtəhsil məktəbi</option>
-                                <option>Samux rayon Kolayır kənd əsas məktəbi</option>
-                            </optgroup>
-                            <optgroup label="📍 Naftalan şəhəri">
-                                <option>Naftalan şəhər İ.Nəsimi adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Naftalan şəhər Z.Rüstəmov adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                                <option>Naftalan şəhər Qaşaltı Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label>Tədris İli</label>
-                    <div class="select-wrap">
-                        <select id="academicYear" name="academicYear" required>
-                            <option value="2025/2026">2025 / 2026</option>
-                            <option value="2026/2027">2026 / 2027</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Section 2: Documents -->
-        <div class="form-section">
-            <div class="section-label">
-                <div class="section-label-icon"><i class="fa-solid fa-folder-open"></i></div>
-                <div>
-                    <h3>Tələb Olunan Sənədlər</h3>
-                    <span>6 sənədin hamısını yükləyin</span>
-                </div>
-            </div>
-
-            <div class="file-grid">
-                <div class="file-item" id="wrap-coverLetter">
-                    <input type="file" id="coverLetter" name="coverLetter" required onchange="onFileChange(this,'wrap-coverLetter','status-coverLetter')">
-                    <div class="file-num">01</div>
-                    <div class="file-title">Məktəbin müşayiət məktubu</div>
-                    <div class="file-status" id="status-coverLetter">
-                        <i class="fa-solid fa-arrow-up-from-bracket"></i> Fayl seçin
-                    </div>
-                </div>
-
-                <div class="file-item" id="wrap-residenceCertificate">
-                    <input type="file" id="residenceCertificate" name="residenceCertificate" required onchange="onFileChange(this,'wrap-residenceCertificate','status-residenceCertificate')">
-                    <div class="file-num">02</div>
-                    <div class="file-title">Yaşayış yerindən arayış</div>
-                    <div class="file-status" id="status-residenceCertificate">
-                        <i class="fa-solid fa-arrow-up-from-bracket"></i> Fayl seçin
-                    </div>
-                </div>
-
-                <div class="file-item" id="wrap-xasiyyetname">
-                    <input type="file" id="xasiyyetname" name="xasiyyetname" required onchange="onFileChange(this,'wrap-xasiyyetname','status-xasiyyetname')">
-                    <div class="file-num">03</div>
-                    <div class="file-title">Xasiyyətnamə (Məktəb tərəfindən)</div>
-                    <div class="file-status" id="status-xasiyyetname">
-                        <i class="fa-solid fa-arrow-up-from-bracket"></i> Fayl seçin
-                    </div>
-                </div>
-
-                <div class="file-item" id="wrap-idCopies">
-                    <input type="file" id="idCopies" name="idCopies" required onchange="onFileChange(this,'wrap-idCopies','status-idCopies')">
-                    <div class="file-num">04</div>
-                    <div class="file-title">Valideyn və şagirdin ŞV surətləri</div>
-                    <div class="file-status" id="status-idCopies">
-                        <i class="fa-solid fa-arrow-up-from-bracket"></i> Fayl seçin
-                    </div>
-                </div>
-
-                <div class="file-item" id="wrap-tabel">
-                    <input type="file" id="tabel" name="tabel" required onchange="onFileChange(this,'wrap-tabel','status-tabel')">
-                    <div class="file-num">05</div>
-                    <div class="file-title">Qiymət cədvəli / tabel (Məktəb tərəfindən)</div>
-                    <div class="file-status" id="status-tabel">
-                        <i class="fa-solid fa-arrow-up-from-bracket"></i> Fayl seçin
-                    </div>
-                </div>
-
-                <div class="file-item" id="wrap-forma027">
-                    <input type="file" id="forma027" name="forma027" required onchange="onFileChange(this,'wrap-forma027','status-forma027')">
-                    <div class="file-num">06</div>
-                    <div class="file-title">Tibb müəssisəsindən çıxarış (Forma 027)</div>
-                    <div class="file-status" id="status-forma027">
-                        <i class="fa-solid fa-arrow-up-from-bracket"></i> Fayl seçin
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Action -->
-        <div class="action-row">
-            <button type="button" class="btn-primary" id="submitBtn" onclick="submitForm()">
-                <div class="spinner" id="spinner"></div>
-                <span class="btn-text">
-                    <i class="fa-solid fa-paper-plane"></i>
-                    Sənədləri Portala Göndər
-                </span>
-            </button>
-            <a href="/mekteb.html" class="btn-secondary">
-                <i class="fa-solid fa-school"></i> Məktəb Portalı
-            </a>
-        </div>
-
-    </div>
-    </form>
-
-    <!-- Footer -->
-    <div class="footer-strip">
-        <a href="#"><i class="fa-regular fa-circle-question"></i> Təlimat</a>
-        <a href="#"><i class="fa-solid fa-link"></i> İstifadəçi Razılaşması</a>
-        <a href="#"><i class="fa-solid fa-headset"></i> Texniki Dəstək</a>
-    </div>
-    <div class="copyright">© 2026 Psixoloji-Tibbi-Pedaqoji Komissiya · by F.Alakbarov</div>
-
-</div>
-
-<!-- Toast -->
-<div class="toast" id="toast">
-    <span class="toast-icon" id="toast-icon"></span>
-    <span id="toast-msg"></span>
-</div>
-
 <script>
-// Auth guard
 (async function authGuard() {
     const token = localStorage.getItem('ptpk_token');
     if (!token) { window.location.href = '/login.html'; return; }
@@ -1005,12 +19,6 @@
     } catch { window.location.href = '/login.html'; }
 })();
 
-window.addEventListener('DOMContentLoaded', () => {
-    const email = localStorage.getItem('ptpk_email') || '';
-    const el = document.getElementById('user-name-display');
-    if (el && email) el.textContent = email;
-});
-
 async function logout() {
     const token = localStorage.getItem('ptpk_token');
     try {
@@ -1025,77 +33,1121 @@ async function logout() {
     window.location.href = '/login.html';
 }
 
-function onFileChange(input, wrapId, statusId) {
-    const wrap = document.getElementById(wrapId);
-    const status = document.getElementById(statusId);
-    if (input.files && input.files[0]) {
-        wrap.classList.add('has-file');
-        const name = input.files[0].name;
-        const short = name.length > 24 ? name.substring(0, 22) + '…' : name;
-        status.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${short}`;
-    } else {
-        wrap.classList.remove('has-file');
-        status.innerHTML = `<i class="fa-solid fa-arrow-up-from-bracket"></i> Fayl seçin`;
-    }
-}
+window.addEventListener('DOMContentLoaded', () => {
+    const email = localStorage.getItem('ptpk_email') || '';
+    const el = document.getElementById('user-name-display');
+    if (el && email) el.textContent = email;
+});
+</script>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTPK | Rəqəmsal Sənəd Qəbulu Sistemi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-function showToast(msg, type) {
-    const t = document.getElementById('toast');
-    const icon = document.getElementById('toast-icon');
-    document.getElementById('toast-msg').textContent = msg;
-    t.className = 'toast ' + type;
-    icon.textContent = type === 'success' ? '✓' : '✕';
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 4000);
+    <style>
+        :root {
+            --ink: #0a0e1a;
+            --ink-muted: #4a5568;
+            --ink-faint: #8896a8;
+            --azure: #0057b8;
+            --azure-dark: #003d85;
+            --azure-light: #e8f0fb;
+            --azure-mid: #4a90d9;
+            --gold: #c8973a;
+            --gold-light: #fdf4e3;
+            --surface: #ffffff;
+            --surface-2: #f5f7fa;
+            --surface-3: #edf0f5;
+            --border: #d6dce6;
+            --border-strong: #b0bac8;
+            --success: #1a7a4a;
+            --success-bg: #edf7f2;
+            --danger: #c0392b;
+            --danger-bg: #fdf0ef;
+            --radius: 10px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 3px rgba(10,14,26,0.08), 0 1px 2px rgba(10,14,26,0.04);
+            --shadow-md: 0 4px 12px rgba(10,14,26,0.10), 0 2px 4px rgba(10,14,26,0.06);
+            --shadow-lg: 0 12px 40px rgba(10,14,26,0.14), 0 4px 12px rgba(10,14,26,0.08);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', system-ui, sans-serif;
+            background-color: #e8edf5;
+            background-image:
+                radial-gradient(ellipse 80% 60% at 20% 0%, rgba(0,87,184,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 100%, rgba(0,87,184,0.06) 0%, transparent 60%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 28px 16px 40px;
+        }
+
+        /* TOP GOV BAR */
+        .gov-bar {
+            width: 100%;
+            max-width: 980px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding: 0 4px;
+        }
+        .gov-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--ink-muted);
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+        .gov-bar-left i { color: var(--azure); font-size: 13px; }
+        .gov-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(255,255,255,0.7);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 5px 12px 5px 7px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink);
+            backdrop-filter: blur(4px);
+        }
+        .user-chip .avatar {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--azure);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 10px;
+        }
+        .btn-exit {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.7);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-muted);
+            cursor: pointer;
+            transition: all 0.18s;
+            font-family: inherit;
+            backdrop-filter: blur(4px);
+        }
+        .btn-exit:hover {
+            background: var(--danger-bg);
+            border-color: #e8b4b0;
+            color: var(--danger);
+        }
+
+        /* MAIN CARD */
+        .portal-card {
+            width: 100%;
+            max-width: 980px;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        /* HEADER STRIPE */
+        .card-header {
+            background: var(--azure);
+            background-image: linear-gradient(135deg, var(--azure-dark) 0%, var(--azure) 50%, #1a6fd4 100%);
+            padding: 24px 36px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-header::before {
+            content: '';
+            position: absolute;
+            right: -60px;
+            top: -60px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            pointer-events: none;
+        }
+        .card-header::after {
+            content: '';
+            position: absolute;
+            right: 80px;
+            bottom: -80px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+            pointer-events: none;
+        }
+        .logo-wrap {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .logo-wrap img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+        .header-text { flex: 1; }
+        .header-text h1 {
+            font-size: 19px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+            line-height: 1.3;
+        }
+        .header-text p {
+            font-size: 12.5px;
+            color: rgba(255,255,255,0.72);
+            margin-top: 3px;
+            font-weight: 400;
+        }
+        .header-badges {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .badge-secure {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+            letter-spacing: 0.01em;
+        }
+        .badge-official {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(200,151,58,0.25);
+            border: 1px solid rgba(200,151,58,0.5);
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #ffd580;
+            letter-spacing: 0.02em;
+        }
+
+        /* SECTION TABS / PROGRESS */
+        .progress-bar {
+            background: var(--surface-3);
+            border-bottom: 1px solid var(--border);
+            padding: 0 36px;
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+        .prog-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 0;
+            margin-right: 28px;
+            border-bottom: 2px solid transparent;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--ink-faint);
+            transition: all 0.2s;
+            cursor: default;
+        }
+        .prog-step.active {
+            color: var(--azure);
+            border-bottom-color: var(--azure);
+        }
+        .prog-step.done {
+            color: var(--success);
+            border-bottom-color: transparent;
+        }
+        .prog-num {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--border);
+            color: var(--ink-faint);
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .prog-step.active .prog-num {
+            background: var(--azure);
+            color: #fff;
+        }
+        .prog-step.done .prog-num {
+            background: var(--success);
+            color: #fff;
+        }
+
+        /* BODY */
+        .card-body {
+            padding: 32px 36px;
+        }
+
+        /* SECTION HEADERS */
+        .section-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .section-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: var(--azure-light);
+            color: var(--azure);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+        .section-head h2 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--ink);
+            letter-spacing: 0.01em;
+        }
+        .section-head p {
+            font-size: 12px;
+            color: var(--ink-faint);
+            margin-top: 1px;
+        }
+
+        /* FORM GRID */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px 20px;
+            margin-bottom: 28px;
+        }
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .field.span2 { grid-column: span 2; }
+
+        .field label {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--ink);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .field label .req {
+            color: var(--azure);
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            height: 44px;
+            padding: 0 14px;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            color: var(--ink);
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            outline: none;
+            transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+        .field select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%234a5568' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+        .field input:focus,
+        .field select:focus {
+            border-color: var(--azure);
+            box-shadow: 0 0 0 3px rgba(0,87,184,0.10);
+            background: var(--surface);
+        }
+        .field input::placeholder {
+            color: var(--ink-faint);
+            font-weight: 400;
+        }
+        .field select option { font-weight: 400; }
+        .field select optgroup { font-weight: 700; color: var(--azure); }
+
+        /* FIN CODE — monospace */
+        #finCode {
+            font-family: 'DM Mono', monospace;
+            font-size: 15px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        /* FILE UPLOAD CARDS */
+        .docs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+        .doc-card {
+            background: var(--surface-2);
+            border: 1.5px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: border-color 0.18s, background 0.18s;
+            position: relative;
+        }
+        .doc-card:hover {
+            border-color: var(--azure-mid);
+            background: var(--azure-light);
+        }
+        .doc-card.has-file {
+            border-style: solid;
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+        .doc-label {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .doc-num {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            background: var(--azure);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .doc-card.has-file .doc-num {
+            background: var(--success);
+        }
+        .doc-label-text {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--ink);
+            line-height: 1.4;
+        }
+        .doc-file-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .doc-file-input input[type="file"] {
+            display: none;
+        }
+        .btn-choose {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 7px;
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-muted);
+            cursor: pointer;
+            transition: all 0.18s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .btn-choose:hover {
+            border-color: var(--azure);
+            color: var(--azure);
+            background: var(--azure-light);
+        }
+        .doc-card.has-file .btn-choose {
+            border-color: var(--success);
+            color: var(--success);
+            background: var(--success-bg);
+        }
+        .file-name-display {
+            font-size: 11.5px;
+            color: var(--ink-faint);
+            font-weight: 500;
+            font-family: 'DM Mono', monospace;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 140px;
+        }
+        .doc-card.has-file .file-name-display {
+            color: var(--success);
+        }
+
+        /* ACTION ROW */
+        .action-row {
+            display: flex;
+            gap: 12px;
+            align-items: stretch;
+        }
+        .btn-submit {
+            flex: 1;
+            height: 52px;
+            background: var(--azure);
+            background-image: linear-gradient(135deg, var(--azure-dark) 0%, var(--azure) 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 15px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 14px rgba(0,87,184,0.35);
+            transition: all 0.2s;
+            letter-spacing: 0.01em;
+        }
+        .btn-submit:hover {
+            background-image: linear-gradient(135deg, #002f66 0%, var(--azure-dark) 100%);
+            box-shadow: 0 6px 20px rgba(0,87,184,0.45);
+            transform: translateY(-1px);
+        }
+        .btn-submit:active { transform: translateY(0); }
+        .btn-school {
+            height: 52px;
+            padding: 0 22px;
+            background: var(--surface);
+            border: 1.5px solid var(--azure);
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 700;
+            font-family: inherit;
+            color: var(--azure);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.18s;
+            white-space: nowrap;
+        }
+        .btn-school:hover {
+            background: var(--azure-light);
+            box-shadow: 0 2px 8px rgba(0,87,184,0.15);
+        }
+
+        /* FOOTER */
+        .card-footer {
+            background: var(--surface-2);
+            border-top: 1px solid var(--border);
+            padding: 14px 36px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .footer-links {
+            display: flex;
+            gap: 20px;
+        }
+        .footer-links a {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--ink-faint);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.15s;
+        }
+        .footer-links a:hover { color: var(--azure); }
+        .footer-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--success);
+        }
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* BOTTOM COPYRIGHT */
+        .page-footer {
+            margin-top: 18px;
+            font-size: 12px;
+            color: rgba(10,14,26,0.45);
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 700px) {
+            body { padding: 12px 8px 32px; }
+            .card-header { padding: 18px 20px; }
+            .header-badges { display: none; }
+            .progress-bar { padding: 0 20px; overflow-x: auto; }
+            .card-body { padding: 24px 20px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .field.span2 { grid-column: span 1; }
+            .docs-grid { grid-template-columns: 1fr; }
+            .action-row { flex-direction: column; }
+            .card-footer { flex-direction: column; gap: 10px; padding: 14px 20px; }
+            .gov-bar { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- GOV TOP BAR -->
+<div class="gov-bar">
+    <div class="gov-bar-left">
+        <i class="fa-solid fa-landmark"></i>
+        Azərbaycan Respublikası Təhsil Nazirliyi
+    </div>
+    <div class="gov-bar-right">
+        <div class="user-chip">
+            <div class="avatar"><i class="fa-solid fa-user" style="font-size:9px;"></i></div>
+            <span id="user-name-display">İstifadəçi</span>
+        </div>
+        <button class="btn-exit" onclick="logout()">
+            <i class="fa-solid fa-right-from-bracket"></i> Çıxış
+        </button>
+    </div>
+</div>
+
+<!-- MAIN CARD -->
+<div class="portal-card">
+
+    <!-- HEADER -->
+    <div class="card-header">
+        <div class="logo-wrap">
+            <img src="image.png" alt="PTPK Loqo">
+        </div>
+        <div class="header-text">
+            <h1>Rəqəmsal Sənəd Qəbulu Sistemi</h1>
+            <p>Psixoloji-Tibbi-Pedaqoji Komissiya · Gəncə şəhər Təhsil İdarəsi</p>
+        </div>
+        <div class="header-badges">
+            <div class="badge-official">
+                <i class="fa-solid fa-shield-halved" style="font-size:10px;"></i>
+                RƏSMİ PORTAL
+            </div>
+            <div class="badge-secure">
+                <i class="fa-solid fa-lock" style="font-size:10px;"></i>
+                Şifrəli bağlantı
+            </div>
+        </div>
+    </div>
+
+    <!-- PROGRESS STEPS -->
+    <div class="progress-bar">
+        <div class="prog-step active">
+            <div class="prog-num">1</div>
+            Şagird məlumatları
+        </div>
+        <div class="prog-step">
+            <div class="prog-num">2</div>
+            Sənədlər
+        </div>
+        <div class="prog-step">
+            <div class="prog-num">3</div>
+            Göndəriş
+        </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="card-body">
+        <form id="studentForm">
+
+            <!-- SECTION 1: Student Info -->
+            <div class="section-head">
+                <div class="section-icon">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <div>
+                    <h2>Şagird Məlumatları</h2>
+                    <p>Zəhmət olmasa bütün xanaları dəqiq doldurun</p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label>Soyadı, Adı, Atasının adı <span class="req">*</span></label>
+                    <input type="text" id="studentName" name="studentName" placeholder="S.A.A. tam formada" required>
+                </div>
+
+                <div class="field">
+                    <label>FİN Kod <span class="req">*</span></label>
+                    <input type="text" id="finCode" name="finCode" placeholder="0000000" maxlength="7" style="text-transform: uppercase;" required>
+                </div>
+
+                <div class="field span2">
+                    <label>Ümumtəhsil Müəssisəsi <span class="req">*</span></label>
+                    <select id="schoolSelect" name="schoolSelect" required>
+                        <option value="" disabled selected>— Məktəbi seçin —</option>
+                        <optgroup label="📍 Gəncə şəhəri">
+                            <option value="Gəncə şəhər İ.Qayıbov adına 1 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər İ.Qayıbov adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər Ə.Cavad adına 2 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər Ə.Cavad adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 3 nömrəli tam orta ümumtəhsil məktəb-liseyi">Gəncə şəhər 3 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
+                            <option value="Gəncə şəhər M.Mehdizadə adına 4 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Mehdizadə adına 4 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər M.Ə.Sabir adına 5 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Ə.Sabir adına 5 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər C.Cabbarlı adına 6 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər C.Cabbarlı adına 6 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 7 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 7 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər M.P.Vaqif adına 8 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.P.Vaqif adına 8 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 9 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 9 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər M.Hadi adına 10 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Hadi adına 10 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər N.Gəncəvi adına 11 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər N.Gəncəvi adına 11 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər V.Əliyev adına 12 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər V.Əliyev adına 12 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər H.Əliyev adına 13 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər H.Əliyev adına 13 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər M.Müşfiq adına 14 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Müşfiq adına 14 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər M.Əzizbəyov adına 15 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Əzizbəyov adına 15 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər M.Ş.Vazeh adına 16 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Ş.Vazeh adına 16 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 17 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 17 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər N.Aydın adına 18 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər N.Aydın adına 18 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 19 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 19 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər M.A.Abbaszadə adına 20 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.A.Abbaszadə adına 20 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 21 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 21 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 22 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 22 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 23 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 23 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 24 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 24 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 25 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 25 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 26 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 26 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər İ.Məmmədov adına 27 nömrəli tam orta ümumtəhsil məktəb-liseyi">Gəncə şəhər İ.Məmmədov adına 27 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
+                            <option value="Gəncə şəhər 28 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 28 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 29 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 29 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 30 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 30 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 31 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 31 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 32 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 32 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 33 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 33 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 34 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 34 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 35 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 35 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 36 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 36 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 37 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 37 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 38 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 38 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 39 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 39 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 40 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 40 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 41 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 41 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 42 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 42 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər 43 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 43 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə şəhər İnteqrasiya təlimli İnternat Tipli Gimnaziya">Gəncə şəhər İnteqrasiya təlimli İnternat Tipli Gimnaziya</option>
+                            <option value="Gəncə şəhər 45 nömrəli xüsusi məktəbi">Gəncə şəhər 45 nömrəli xüsusi məktəbi</option>
+                        </optgroup>
+                        <optgroup label="📍 Göygöl rayonu">
+                            <option value="Göygöl şəhər 1 nömrəli tam orta ümumtəhsil məktəbi">Göygöl şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Göygöl şəhər 2 nömrəli tam orta ümumtəhsil məktəb-liseyi">Göygöl şəhər 2 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
+                            <option value="Xaqani kənd tam orta ümumtəhsil məktəbi">Xaqani kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Toğanalı kənd tam orta ümumtəhsil məktəbi">Toğanalı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Üçtəpə kənd tam orta ümumtəhsil məktəbi">Üçtəpə kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Xanalılar kənd tam orta ümumtəhsil məktəbi">Xanalılar kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Firuzabad kənd tam orta ümumtəhsil məktəbi">Firuzabad kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Hacıməlik kənd tam orta ümumtəhsil məktəbi">Hacıməlik kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Aşıqlı kənd tam orta ümumtəhsil məktəbi">Aşıqlı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Quşqara kənd tam orta ümumtəhsil məktəbi">Quşqara kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Balçılı kənd tam orta ümumtəhsil məktəbi">Balçılı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Almalı kənd tam orta ümumtəhsil məktəbi">Almalı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Çaykənd kənd tam orta ümumtəhsil məktəbi">Çaykənd kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Çaylı kənd tam orta ümumtəhsil məktəbi">Çaylı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Dozular kənd tam orta ümumtəhsil məktəbi">Dozular kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gəncə kənd tam orta ümumtəhsil məktəbi">Gəncə kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Göykənd kənd ümumi orta məktəbi">Göykənd kənd ümumi orta məktəbi</option>
+                            <option value="Qızılca kənd tam orta ümumtəhsil məktəbi">Qızılca kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Köşkü kənd tam orta ümumtəhsil məktəbi">Köşkü kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Mollacəlilli kənd tam orta ümumtəhsil məktəbi">Mollacəlilli kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Nadel kənd tam orta ümumtəhsil məktəbi">Nadel kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Pənahlılar kənd tam orta ümumtəhsil məktəbi">Pənahlılar kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Sarısu kənd ümumi orta məktəbi">Sarısu kənd ümumi orta məktəbi</option>
+                            <option value="Şəhriyar kənd tam orta ümumtəhsil məktəbi">Şəhriyar kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Yenikənd kənd tam orta ümumtəhsil məktəbi">Yenikənd kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Zurnabad kənd tam orta ümumtəhsil məktəbi">Zurnabad kənd tam orta ümumtəhsil məktəbi</option>
+                        </optgroup>
+                        <optgroup label="📍 Daşkəsən rayonu">
+                            <option value="Daşkəsən şəhər S.Vurğun adına 1 nömrəli tam orta ümumtəhsil məktəbi">Daşkəsən şəhər S.Vurğun adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Daşkəsən şəhər A.Mürsəlov adına 2 nömrəli tam orta ümumtəhsil məktəbi">Daşkəsən şəhər A.Mürsəlov adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Quşçu kənd tam orta ümumtəhsil məktəbi">Quşçu kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Bayan kənd tam orta ümumtəhsil məktəbi">Bayan kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Əhmədli kənd tam orta ümumtəhsil məktəbi">Əhmədli kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Alaxançallı kənd tam orta ümumtəhsil məktəbi">Alaxançallı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Zivlan kənd tam orta ümumtəhsil məktəbi">Zivlan kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Gurbulaq kənd tam orta ümumtəhsil məktəbi">Gurbulaq kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Xoşbulaq kənd tam orta ümumtəhsil məktəbi">Xoşbulaq kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Almalı kənd ümumi orta məktəbi">Almalı kənd ümumi orta məktəbi</option>
+                            <option value="Astaf kənd tam orta ümumtəhsil məktəbi">Astaf kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Çaykənd kənd tam orta ümumtəhsil məktəbi">Çaykənd kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Çıraqlı kənd tam orta ümumtəhsil məktəbi">Çıraqlı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Daşkəsən kənd tam orta ümumtəhsil məktəbi">Daşkəsən kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Emilli kənd tam orta ümumtəhsil məktəbi">Emilli kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Göyvilyurd kənd tam orta ümumtəhsil məktəbi">Göyvilyurd kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Xaçbulaq kənd tam orta ümumtəhsil məktəbi">Xaçbulaq kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Qabaqtəpə kənd tam orta ümumtəhsil məktəbi">Qabaqtəpə kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Qarataq kənd ümumi orta məktəbi">Qarataq kənd ümumi orta məktəbi</option>
+                            <option value="Mollahasanlı kənd tam orta ümumtəhsil məktəbi">Mollahasanlı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Muganlı kənd tam orta ümumtəhsil məktəbi">Muganlı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Pirverdilər kənd tam orta ümumtəhsil məktəbi">Pirverdilər kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Quşçu qəsəbə tam orta ümumtəhsil məktəbi">Quşçu qəsəbə tam orta ümumtəhsil məktəbi</option>
+                            <option value="Səbətkeçməz kənd tam orta ümumtəhsil məktəbi">Səbətkeçməz kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Şahvələdli kənd tam orta ümumtəhsil məktəbi">Şahvələdli kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Tazakənd kənd tam orta ümumtəhsil məktəbi">Tazakənd kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Yenikənd kənd tam orta ümumtəhsil məktəbi">Yenikənd kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Yolqullar kənd tam orta ümumtəhsil məktəbi">Yolqullar kənd tam orta ümumtəhsil məktəbi</option>
+                        </optgroup>
+                        <optgroup label="📍 Goranboy rayonu">
+                            <option value="Goranboy şəhər 1 nömrəli tam orta ümumtəhsil məktəbi">Goranboy şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Goranboy şəhər 2 nömrəli tam orta ümumtəhsil məktəbi">Goranboy şəhər 2 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Dəliməmmədli şəhər tam orta ümumtəhsil məktəbi">Dəliməmmədli şəhər tam orta ümumtəhsil məktəbi</option>
+                            <option value="Aşağı Ağcakənd qəsəbə tam orta ümumtəhsil məktəbi">Aşağı Ağcakənd qəsəbə tam orta ümumtəhsil məktəbi</option>
+                            <option value="Qazanbulaq qəsəbə tam orta ümumtəhsil məktəbi">Qazanbulaq qəsəbə tam orta ümumtəhsil məktəbi</option>
+                            <option value="Goran qəsəbə tam orta ümumtəhsil məktəbi">Goran qəsəbə tam orta ümumtəhsil məktəbi</option>
+                            <option value="Xan Qərvənd kənd tam orta ümumtəhsil məktəbi">Xan Qərvənd kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Səfikürd kənd tam orta ümumtəhsil məktəbi">Səfikürd kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Tap Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi">Tap Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Borsunlu kənd tam orta ümumtəhsil məktəbi">Borsunlu kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Qızılhacılı kənd 1 nömrəli tam orta ümumtəhsil məktəbi">Qızılhacılı kənd 1 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Qızılhacılı kənd 2 nömrəli tam orta ümumtəhsil məktəbi">Qızılhacılı kənd 2 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Boluslu kənd tam orta ümumtəhsil məktəbi">Boluslu kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Nadir kənd tam orta ümumtəhsil məktəbi">Nadir kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Veyisli kənd tam orta ümumtəhsil məktəbi">Veyisli kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Alpout kənd tam orta ümumtəhsil məktəbi">Alpout kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Baxçakürd kənd tam orta ümumtəhsil məktəbi">Baxçakürd kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Abram kənd tam orta ümumtəhsil məktəbi">Abram kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Buzluq kənd ümumi orta məktəbi">Buzluq kənd ümumi orta məktəbi</option>
+                            <option value="Gülüstan kənd tam orta ümumtəhsil məktəbi">Gülüstan kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Ərzuman kənd tam orta ümumtəhsil məktəbi">Ərzuman kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Fəxralı kənd tam orta ümumtəhsil məktəbi">Fəxralı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Qaradağlı kənd tam orta ümumtəhsil məktəbi">Qaradağlı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Qaraməmmədli kənd tam orta ümumtəhsil məktəbi">Qaraməmmədli kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Qazan kənd tam orta ümumtəhsil məktəbi">Qazan kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Quşçular kənd tam orta ümumtəhsil məktəbi">Quşçular kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Meşəli kənd ümumi orta məktəbi">Meşəli kənd ümumi orta məktəbi</option>
+                            <option value="Sarısu kənd tam orta ümumtəhsil məktəbi">Sarısu kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Semax kənd ümumi orta məktəbi">Semax kənd ümumi orta məktəbi</option>
+                            <option value="Toly kənd tam orta ümumtəhsil məktəbi">Toly kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Xoylunlu kənd tam orta ümumtəhsil məktəbi">Xoylunlu kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Zeyva kənd tam orta ümumtəhsil məktəbi">Zeyva kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Goranboy rayon İnteqrasiya təlimli İnternat Tipli Gimnaziya">Goranboy rayon İnteqrasiya təlimli İnternat Tipli Gimnaziya</option>
+                        </optgroup>
+                        <optgroup label="📍 Samux rayonu">
+                            <option value="Samux şəhər 1 nömrəli tam orta ümumtəhsil məktəbi">Samux şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux şəhər 2 nömrəli tam orta ümumtəhsil məktəbi">Samux şəhər 2 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Alıuşağı kənd tam orta ümumtəhsil məktəbi">Samux rayon Alıuşağı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Burunqovaq kənd tam orta ümumtəhsil məktəbi">Samux rayon Burunqovaq kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Çobanddağ kənd ümumi orta məktəbi">Samux rayon Çobanddağ kənd ümumi orta məktəbi</option>
+                            <option value="Samux rayon Əhmədbəyli kənd tam orta ümumtəhsil məktəbi">Samux rayon Əhmədbəyli kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Əli Bayramlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Əli Bayramlı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Füzuli kənd tam orta ümumtəhsil məktəbi">Samux rayon Füzuli kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Göyüşlü kənd ümumi orta məktəbi">Samux rayon Göyüşlü kənd ümumi orta məktəbi</option>
+                            <option value="Samux rayon Hacıalılı kənd tam orta ümumtəhsil məktəbi">Samux rayon Hacıalılı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon İnstitut qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon İnstitut qəsəbə tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Kəsəmən kənd tam orta ümumtəhsil məktəbi">Samux rayon Kəsəmən kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Kolayır kənd tam orta ümumtəhsil məktəbi">Samux rayon Kolayır kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Qarabağlar kənd 1 nömrəli tam orta ümumtəhsil məktəbi">Samux rayon Qarabağlar kənd 1 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Qarabağlar kənd 2 nömrəli tam orta ümumtəhsil məktəbi">Samux rayon Qarabağlar kənd 2 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Qarabağlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Qarabağlı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Qədili kənd ümumi orta məktəbi">Samux rayon Qədili kənd ümumi orta məktəbi</option>
+                            <option value="Samux rayon Qırıqlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Qırıqlı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Qobustu kənd əsas məktəbi">Samux rayon Qobustu kənd əsas məktəbi</option>
+                            <option value="Samux rayon Ləki kənd tam orta ümumtəhsil məktəbi">Samux rayon Ləki kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Poylu kənd tam orta ümumtəhsil məktəbi">Samux rayon Poylu kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Poylu qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon Poylu qəsəbə tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Salahlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Salahlı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Səfərliyev adına qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon Səfərliyev adına qəsəbə tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Sərkar kənd tam orta ümumtəhsil məktəbi">Samux rayon Sərkar kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Seyidlər kənd tam orta ümumtəhsil məktəbi">Samux rayon Seyidlər kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Tatlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Tatlı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Yenikənd kənd tam orta ümumtəhsil məktəbi">Samux rayon Yenikənd kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Yenidövran qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon Yenidövran qəsəbə tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Ziyadlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Ziyadlı kənd tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon İstixana qəsəbə ümumi orta məktəbi">Samux rayon İstixana qəsəbə ümumi orta məktəbi</option>
+                            <option value="Samux rayon Ləki kənd ümumi orta məktəbi">Samux rayon Ləki kənd ümumi orta məktəbi</option>
+                            <option value="Samux rayon Poylu kənd ümumi orta məktəbi">Samux rayon Poylu kənd ümumi orta məktəbi</option>
+                            <option value="Samux rayon Qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon Qəsəbə tam orta ümumtəhsil məktəbi</option>
+                            <option value="Samux rayon Kolayır kənd əsas məktəbi">Samux rayon Kolayır kənd əsas məktəbi</option>
+                        </optgroup>
+                        <optgroup label="📍 Naftalan şəhəri">
+                            <option value="Naftalan şəhər İ.Nəsimi adına 1 nömrəli tam orta ümumtəhsil məktəbi">Naftalan şəhər İ.Nəsimi adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Naftalan şəhər Z.Rüstəmov adına 2 nömrəli tam orta ümumtəhsil məktəbi">Naftalan şəhər Z.Rüstəmov adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option value="Naftalan şəhər Qaşaltı Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi">Naftalan şəhər Qaşaltı Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Müraciət Növü <span class="req">*</span></label>
+                    <select id="applicationType" name="applicationType" required>
+                        <option value="" disabled selected>Seçin...</option>
+                        <option value="Yeni">Yeni müraciət</option>
+                        <option value="Təkrar">Təkrar müraciət</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Tədris İli <span class="req">*</span></label>
+                    <select id="academicYear" name="academicYear" required>
+                        <option value="2025/2026">2025 / 2026</option>
+                        <option value="2026/2027">2026 / 2027</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- SECTION 2: Documents -->
+            <div class="section-head">
+                <div class="section-icon">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+                <div>
+                    <h2>Tələb Olunan Sənədlər</h2>
+                    <p>6 sənədin hamısı yüklənməlidir</p>
+                </div>
+            </div>
+
+            <div class="docs-grid">
+                <div class="doc-card" id="card-coverLetter">
+                    <div class="doc-label">
+                        <div class="doc-num">1</div>
+                        <div class="doc-label-text">Məktəbin müşayiət məktubu</div>
+                    </div>
+                    <div class="doc-file-input">
+                        <input type="file" id="coverLetter" name="coverLetter" required onchange="handleFile('coverLetter','card-coverLetter','name-coverLetter')">
+                        <button type="button" class="btn-choose" onclick="document.getElementById('coverLetter').click()">
+                            <i class="fa-solid fa-upload" style="font-size:11px;"></i> Fayl seç
+                        </button>
+                        <span class="file-name-display" id="name-coverLetter">Seçilməyib</span>
+                    </div>
+                </div>
+
+                <div class="doc-card" id="card-residenceCertificate">
+                    <div class="doc-label">
+                        <div class="doc-num">2</div>
+                        <div class="doc-label-text">Yaşayış yerindən arayış</div>
+                    </div>
+                    <div class="doc-file-input">
+                        <input type="file" id="residenceCertificate" name="residenceCertificate" required onchange="handleFile('residenceCertificate','card-residenceCertificate','name-residenceCertificate')">
+                        <button type="button" class="btn-choose" onclick="document.getElementById('residenceCertificate').click()">
+                            <i class="fa-solid fa-upload" style="font-size:11px;"></i> Fayl seç
+                        </button>
+                        <span class="file-name-display" id="name-residenceCertificate">Seçilməyib</span>
+                    </div>
+                </div>
+
+                <div class="doc-card" id="card-xasiyyetname">
+                    <div class="doc-label">
+                        <div class="doc-num">3</div>
+                        <div class="doc-label-text">Xasiyyətnamə (məktəb tərəfindən)</div>
+                    </div>
+                    <div class="doc-file-input">
+                        <input type="file" id="xasiyyetname" name="xasiyyetname" required onchange="handleFile('xasiyyetname','card-xasiyyetname','name-xasiyyetname')">
+                        <button type="button" class="btn-choose" onclick="document.getElementById('xasiyyetname').click()">
+                            <i class="fa-solid fa-upload" style="font-size:11px;"></i> Fayl seç
+                        </button>
+                        <span class="file-name-display" id="name-xasiyyetname">Seçilməyib</span>
+                    </div>
+                </div>
+
+                <div class="doc-card" id="card-idCopies">
+                    <div class="doc-label">
+                        <div class="doc-num">4</div>
+                        <div class="doc-label-text">Valideyn və şagirdin ŞV surətləri</div>
+                    </div>
+                    <div class="doc-file-input">
+                        <input type="file" id="idCopies" name="idCopies" required onchange="handleFile('idCopies','card-idCopies','name-idCopies')">
+                        <button type="button" class="btn-choose" onclick="document.getElementById('idCopies').click()">
+                            <i class="fa-solid fa-upload" style="font-size:11px;"></i> Fayl seç
+                        </button>
+                        <span class="file-name-display" id="name-idCopies">Seçilməyib</span>
+                    </div>
+                </div>
+
+                <div class="doc-card" id="card-tabel">
+                    <div class="doc-label">
+                        <div class="doc-num">5</div>
+                        <div class="doc-label-text">Qiymət cədvəli / tabel (məktəb tərəfindən)</div>
+                    </div>
+                    <div class="doc-file-input">
+                        <input type="file" id="tabel" name="tabel" required onchange="handleFile('tabel','card-tabel','name-tabel')">
+                        <button type="button" class="btn-choose" onclick="document.getElementById('tabel').click()">
+                            <i class="fa-solid fa-upload" style="font-size:11px;"></i> Fayl seç
+                        </button>
+                        <span class="file-name-display" id="name-tabel">Seçilməyib</span>
+                    </div>
+                </div>
+
+                <div class="doc-card" id="card-forma027">
+                    <div class="doc-label">
+                        <div class="doc-num">6</div>
+                        <div class="doc-label-text">Tibb müəssisəsindən çıxarış (Forma 027)</div>
+                    </div>
+                    <div class="doc-file-input">
+                        <input type="file" id="forma027" name="forma027" required onchange="handleFile('forma027','card-forma027','name-forma027')">
+                        <button type="button" class="btn-choose" onclick="document.getElementById('forma027').click()">
+                            <i class="fa-solid fa-upload" style="font-size:11px;"></i> Fayl seç
+                        </button>
+                        <span class="file-name-display" id="name-forma027">Seçilməyib</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="action-row">
+                <button type="button" class="btn-submit" onclick="submitForm()">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    Sənədləri Portala Göndər
+                </button>
+                <a href="/mekteb.html" class="btn-school">
+                    <i class="fa-solid fa-school"></i>
+                    Məktəb Portalı
+                </a>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="card-footer">
+        <div class="footer-links">
+            <a href="#"><i class="fa-solid fa-circle-question" style="font-size:12px;"></i> Təlimat</a>
+            <a href="#"><i class="fa-solid fa-file-contract" style="font-size:12px;"></i> Razılaşma</a>
+            <a href="#"><i class="fa-solid fa-headset" style="font-size:12px;"></i> Dəstək</a>
+        </div>
+        <div class="footer-status">
+            <div class="status-dot"></div>
+            Sistem aktiv
+        </div>
+    </div>
+
+</div>
+
+<div class="page-footer">
+    © 2026 Psixoloji-Tibbi-Pedaqoji Komissiya &nbsp;·&nbsp; by F.Alakbarov
+</div>
+
+<script>
+function handleFile(inputId, cardId, nameId) {
+    const input = document.getElementById(inputId);
+    const card = document.getElementById(cardId);
+    const nameEl = document.getElementById(nameId);
+    if (input.files && input.files.length > 0) {
+        const fname = input.files[0].name;
+        nameEl.textContent = fname.length > 20 ? fname.substring(0,18) + '…' : fname;
+        card.classList.add('has-file');
+    } else {
+        nameEl.textContent = 'Seçilməyib';
+        card.classList.remove('has-file');
+    }
 }
 
 async function submitForm() {
+    const form = document.getElementById('studentForm');
     const fin = document.getElementById('finCode').value.trim();
     const name = document.getElementById('studentName').value.trim();
-    const school = document.getElementById('schoolSelect').value;
+    const schoolSelect = document.getElementById('schoolSelect');
 
-    if (!fin || !name || !school) {
-        showToast('Zəhmət olmasa tələb olunan sahələri doldurun.', 'error');
+    if (!fin || !name || schoolSelect.value === '') {
+        alert('Zəhmət olmasa tələb olunan xanaları tam doldurun!');
         return;
     }
 
-    const reqFiles = ['coverLetter','residenceCertificate','xasiyyetname','idCopies','tabel','forma027'];
+    const reqFiles = ['coverLetter', 'residenceCertificate', 'xasiyyetname', 'idCopies', 'tabel', 'forma027'];
     for (let id of reqFiles) {
         if (document.getElementById(id).files.length === 0) {
-            showToast('Zəhmət olmasa 6 sənədin hamısını yükləyin.', 'error');
+            alert('Zəhmət olmasa tələb olunan 6 sənədin hər birini tam yükləyin!');
             return;
         }
     }
 
-    const btn = document.getElementById('submitBtn');
-    btn.classList.add('loading');
-    btn.disabled = true;
+    const formData = new FormData(form);
 
-    const formData = new FormData(document.getElementById('studentForm'));
     try {
         const response = await fetch('/api/school/submit-student', {
             method: 'POST',
             body: formData
         });
+
         if (response.ok) {
-            showToast('Sənədlər uğurla göndərildi!', 'success');
-            document.getElementById('studentForm').reset();
-            document.querySelectorAll('.file-item').forEach(w => {
-                w.classList.remove('has-file');
-            });
-            document.querySelectorAll('.file-status').forEach(s => {
-                s.innerHTML = `<i class="fa-solid fa-arrow-up-from-bracket"></i> Fayl seçin`;
-            });
+            alert('Uğurlu əməliyyat! Sənədlər rəsmi verilənlər bazasına yazıldı.');
+            form.reset();
+            document.querySelectorAll('.doc-card').forEach(c => c.classList.remove('has-file'));
+            document.querySelectorAll('.file-name-display').forEach(el => el.textContent = 'Seçilməyib');
         } else {
-            showToast('Server xətası baş verdi. Yenidən cəhd edin.', 'error');
+            alert('Server xətası baş verdi. Məlumat yazılmadı.');
         }
     } catch (error) {
-        showToast('Serverə qoşulmaq mümkün olmadı.', 'error');
-    } finally {
-        btn.classList.remove('loading');
-        btn.disabled = false;
+        console.error('Bağlantı xətası:', error);
+        alert('Python serverinə bağlanmaq mümkün olmadı! Terminalda main.py-ın işlədiyindən əmin olun.');
     }
 }
 </script>
+
 </body>
 </html>
