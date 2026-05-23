@@ -8,220 +8,313 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+    <style>
         :root {
-            --navy:       #0d1b2a;
-            --navy2:      #1a2e45;
-            --accent:     #c9a84c;
-            --accent2:    #f0d080;
-            --blue:       #2563eb;
-            --muted:      #64748b;
-            --border:     #d1d5db;
-            --success:    #16a34a;
-            --danger:     #dc2626;
-            --gold-light: #fffbf0;
+            --navy:    #0d1b2a;
+            --navy2:   #1a2e45;
+            --accent:  #c9a84c;
+            --accent2: #f0d080;
+            --muted:   #94a3b8;
+            --success: #16a34a;
+            --danger:  #dc2626;
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            min-height: 100vh;
-            background: var(--navy);
+            min-height: 100dvh;
             font-family: 'DM Sans', sans-serif;
-            flex-direction: row !important;
-            align-items: center !important;
-            justify-content: center !important;
-            padding: 40px !important;
-            gap: 48px !important;
-            display: flex;
+            overflow: hidden;
+            background: #0d1b2a;
         }
-        body::before {
-            content: '';
-            position: fixed; inset: 0;
-            background:
-                radial-gradient(ellipse 60% 80% at 85% 30%, rgba(201,168,76,0.09) 0%, transparent 55%),
-                radial-gradient(ellipse 80% 50% at 10% 70%, rgba(13,27,42,0.8) 0%, transparent 60%);
-            pointer-events: none; z-index: 0;
+
+        /* ── VIDEO FULLSCREEN BG ── */
+        #video-bg {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
         }
-        .video-side {
-            position: relative; z-index: 1;
-            flex: 1 1 0; min-width: 0; align-self: stretch;
-        }
-        .video-wrapper {
-            width: 100%; height: 100%; min-height: 480px;
-            border-radius: 12px; overflow: hidden;
-            box-shadow: 0 32px 80px rgba(0,0,0,0.5);
-            border: 1px solid rgba(201,168,76,0.2);
+        #yt-player {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 177.78vh;
+            height: 100vh;
+            min-width: 100vw;
+            min-height: 56.25vw;
+            transform: translate(-50%, -50%);
             pointer-events: none;
         }
-        .video-wrapper iframe {
-            width: 100%; height: 100%;
-            min-height: 480px; border: none; display: block;
-        }
-        .login-side {
-            position: relative; z-index: 1;
-            flex: 0 0 440px; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 20px;
-        }
-        @media (max-width: 900px) {
-            body { flex-direction: column !important; padding: 20px !important; gap: 24px !important; }
-            .video-side { width: 100%; min-height: 240px; align-self: auto; }
-            .video-wrapper { min-height: 240px; }
-            .video-wrapper iframe { min-height: 240px; }
-            .login-side { flex: 0 0 auto; width: 100%; max-width: 440px; }
+        #video-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                135deg,
+                rgba(13,27,42,0.78) 0%,
+                rgba(13,27,42,0.55) 50%,
+                rgba(13,27,42,0.72) 100%
+            );
+            z-index: 1;
         }
 
+        /* ── PAGE LAYOUT — centered for komissiya ── */
+        .page-layout {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100dvh;
+            padding: 40px 20px;
+        }
+
+        /* ── GLASS CARD ── */
         .login-card {
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1px solid rgba(201,168,76,0.4);
-            box-shadow: 0 40px 100px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.8);
-            width: 100%; max-width: 440px; overflow: hidden;
-            animation: fadeUp 0.5s cubic-bezier(.22,.68,0,1.2) both;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(24px) saturate(160%);
+            -webkit-backdrop-filter: blur(24px) saturate(160%);
+            border: 1px solid rgba(201,168,76,0.22);
+            box-shadow:
+                0 8px 32px rgba(0,0,0,0.5),
+                inset 0 1px 0 rgba(255,255,255,0.1),
+                inset 0 -1px 0 rgba(0,0,0,0.1);
+            animation: fadeUp 0.6s cubic-bezier(.22,.68,0,1.15) both;
         }
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(28px) scale(0.98); }
-            to   { opacity: 1; transform: translateY(0)   scale(1); }
+            from { opacity: 0; transform: translateY(32px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
+        /* ── CARD HEADER ── */
         .card-header {
-            background: var(--navy);
-            padding: 28px 32px 24px; text-align: center;
-            position: relative; overflow: hidden;
-            border-bottom: 3px solid var(--accent);
+            padding: 28px 32px 22px;
+            text-align: center;
+            position: relative;
+            border-bottom: 1px solid rgba(201,168,76,0.25);
+            background: rgba(13,27,42,0.4);
         }
         .card-header::before {
             content: '';
             position: absolute; inset: 0;
-            background: radial-gradient(circle at 50% 0%, rgba(201,168,76,0.12), transparent 60%);
+            background: radial-gradient(circle at 50% 0%, rgba(201,168,76,0.1), transparent 65%);
             pointer-events: none;
         }
-        .card-header img { height: 54px; margin-bottom: 13px; position: relative; z-index: 1; filter: drop-shadow(0 2px 8px rgba(201,168,76,0.4)); }
+        .card-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 10%; right: 10%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+        .card-header img {
+            height: 52px;
+            margin-bottom: 13px;
+            position: relative; z-index: 1;
+            filter: drop-shadow(0 2px 10px rgba(201,168,76,0.6));
+        }
         .card-header h1 {
             position: relative; z-index: 1;
             color: #fff; font-family: 'Noto Serif', serif;
-            font-size: 17px; font-weight: 700; line-height: 1.4;
+            font-size: 16.5px; font-weight: 700; line-height: 1.4;
         }
-        .card-header p  { position: relative; z-index: 1; color: #94a3b8; font-size: 11.5px; margin-top: 5px; font-weight: 500; }
+        .card-header p {
+            position: relative; z-index: 1;
+            color: rgba(255,255,255,0.5); font-size: 11.5px; margin-top: 5px; font-weight: 500;
+        }
         .card-header .badge {
             display: inline-flex; align-items: center; gap: 5px;
-            background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.4);
+            background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.35);
             color: var(--accent2); font-size: 10px; font-weight: 700;
             text-transform: uppercase; letter-spacing: 1px;
-            padding: 4px 10px; border-radius: 20px; margin-top: 10px; position: relative; z-index: 1;
+            padding: 4px 10px; border-radius: 20px; margin-top: 10px;
+            position: relative; z-index: 1;
         }
-        .card-body { padding: 28px 32px 32px; }
 
-        .steps { display: flex; align-items: center; margin-bottom: 26px; }
+        /* ── CARD BODY ── */
+        .card-body { padding: 26px 32px 30px; }
+
+        /* ── STEPS ── */
+        .steps { display: flex; align-items: center; margin-bottom: 24px; }
         .step  { display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; }
         .step-dot {
-            width: 32px; height: 32px; border-radius: 50%;
-            border: 2px solid var(--border); background: #f9fafb;
+            width: 30px; height: 30px; border-radius: 50%;
+            border: 1.5px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.06);
             display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: 700; color: var(--muted); transition: all 0.3s;
+            font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.4);
+            transition: all 0.3s;
         }
-        .step.active .step-dot { background: var(--navy); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 4px rgba(201,168,76,0.15); }
-        .step.done   .step-dot { background: var(--success); border-color: var(--success); color: #fff; }
-        .step-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
-        .step.active .step-label { color: var(--navy); font-weight: 700; }
-        .step.done   .step-label { color: var(--success); }
-        .step-line { flex: 0 0 36px; height: 2px; background: var(--border); margin-bottom: 20px; transition: background 0.4s; }
+        .step.active .step-dot {
+            background: rgba(201,168,76,0.2);
+            border-color: var(--accent);
+            color: var(--accent2);
+            box-shadow: 0 0 0 4px rgba(201,168,76,0.1);
+        }
+        .step.done .step-dot {
+            background: rgba(22,163,74,0.2);
+            border-color: var(--success);
+            color: #4ade80;
+        }
+        .step-label {
+            font-size: 10px; font-weight: 600;
+            color: rgba(255,255,255,0.35);
+            text-transform: uppercase; letter-spacing: 0.6px;
+        }
+        .step.active .step-label { color: var(--accent2); font-weight: 700; }
+        .step.done .step-label { color: #4ade80; }
+        .step-line {
+            flex: 0 0 32px; height: 1px;
+            background: rgba(255,255,255,0.15);
+            margin-bottom: 20px; transition: background 0.4s;
+        }
         .step-line.done { background: var(--success); }
 
-        .form-group { margin-bottom: 18px; }
+        /* ── FORM ── */
+        .form-group { margin-bottom: 16px; }
         .form-group label {
-            display: block; font-size: 11px; font-weight: 700; color: var(--navy);
+            display: block; font-size: 11px; font-weight: 700;
+            color: rgba(255,255,255,0.6);
             text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 7px;
         }
         .form-group input {
             width: 100%; padding: 11px 14px; font-size: 14px; font-weight: 500;
-            border: 1.5px solid var(--border); border-radius: 8px; outline: none;
-            color: var(--navy); transition: all 0.2s; background: #fafafa;
+            border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; outline: none;
+            color: #fff; transition: all 0.2s;
+            background: rgba(255,255,255,0.08);
             font-family: 'DM Sans', sans-serif;
         }
-        .form-group input:focus { border-color: var(--navy); background: #fff; box-shadow: 0 0 0 3px rgba(201,168,76,0.12); }
+        .form-group input::placeholder { color: rgba(255,255,255,0.3); }
+        .form-group input:focus {
+            border-color: rgba(201,168,76,0.6);
+            background: rgba(255,255,255,0.12);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+        }
 
+        /* ── OTP ── */
         .otp-wrapper { display: flex; gap: 8px; justify-content: center; margin: 6px 0; }
         .otp-cell {
-            width: 48px; height: 58px; border: 1.5px solid var(--border); border-radius: 10px;
-            font-size: 26px; font-weight: 800; text-align: center; color: var(--navy);
-            outline: none; transition: all 0.2s; background: #fafafa;
+            width: 46px; height: 56px;
+            border: 1px solid rgba(255,255,255,0.18); border-radius: 10px;
+            font-size: 24px; font-weight: 800; text-align: center; color: #fff;
+            outline: none; transition: all 0.2s;
+            background: rgba(255,255,255,0.08);
             font-family: 'DM Sans', sans-serif;
         }
-        .otp-cell:focus  { border-color: var(--accent); background: var(--gold-light); box-shadow: 0 0 0 3px rgba(201,168,76,0.12); }
-        .otp-cell.filled { border-color: var(--navy); background: #fff; }
+        .otp-cell:focus  {
+            border-color: rgba(201,168,76,0.7);
+            background: rgba(201,168,76,0.1);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+        }
+        .otp-cell.filled {
+            border-color: rgba(201,168,76,0.5);
+            background: rgba(201,168,76,0.08);
+            color: var(--accent2);
+        }
 
+        /* ── BUTTONS ── */
         .btn-main {
-            width: 100%; background: var(--navy); color: #fff; border: none;
-            border-radius: 8px; padding: 13px; font-size: 14px; font-weight: 700;
+            width: 100%; background: rgba(201,168,76,0.18); color: var(--accent2);
+            border: 1px solid rgba(201,168,76,0.4); border-radius: 10px;
+            padding: 13px; font-size: 14px; font-weight: 700;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
             gap: 8px; transition: all 0.2s; margin-top: 4px;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'DM Sans', sans-serif; backdrop-filter: blur(8px);
         }
-        .btn-main:hover    { background: var(--navy2); box-shadow: 0 4px 16px rgba(13,27,42,0.25); }
-        .btn-main:disabled { background: #94a3b8; cursor: not-allowed; box-shadow: none; }
+        .btn-main:hover {
+            background: rgba(201,168,76,0.28);
+            box-shadow: 0 4px 20px rgba(201,168,76,0.2);
+            transform: translateY(-1px);
+        }
+        .btn-main:active { transform: translateY(0) scale(0.98); }
+        .btn-main:disabled {
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.1);
+            cursor: not-allowed; transform: none; box-shadow: none;
+        }
         .btn-back {
-            background: none; border: none; color: var(--muted); font-size: 13px;
-            font-weight: 600; cursor: pointer; display: flex; align-items: center;
+            background: none; border: none; color: rgba(255,255,255,0.45);
+            font-size: 13px; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center;
             gap: 6px; padding: 10px 0 0; font-family: 'DM Sans', sans-serif;
         }
-        .btn-back:hover { color: var(--navy); }
+        .btn-back:hover { color: rgba(255,255,255,0.8); }
 
-        .alert { padding: 10px 14px; border-radius: 7px; font-size: 13px; font-weight: 600; margin-bottom: 16px; display: none; }
-        .alert.error   { background: #fef2f2; color: var(--danger);  border: 1px solid #fecaca; display: flex; gap: 8px; align-items: center; }
-        .alert.success { background: #f0fdf4; color: var(--success); border: 1px solid #bbf7d0; display: flex; gap: 8px; align-items: center; }
-        .alert.info    { background: #fffbf0; color: #92400e;        border: 1px solid #fde68a; display: flex; gap: 8px; align-items: center; }
+        /* ── ALERTS ── */
+        .alert {
+            padding: 10px 14px; border-radius: 8px;
+            font-size: 13px; font-weight: 600; margin-bottom: 14px; display: none;
+        }
+        .alert.error   { background: rgba(220,38,38,0.15); color: #fca5a5; border: 1px solid rgba(220,38,38,0.3); display: flex; gap: 8px; align-items: center; }
+        .alert.success { background: rgba(22,163,74,0.15); color: #86efac; border: 1px solid rgba(22,163,74,0.3); display: flex; gap: 8px; align-items: center; }
+        .alert.info    { background: rgba(201,168,76,0.12); color: var(--accent2); border: 1px solid rgba(201,168,76,0.3); display: flex; gap: 8px; align-items: center; }
 
-        .timer-text { font-size: 12px; color: var(--muted); text-align: center; margin-top: 10px; font-weight: 500; }
-        .timer-text span { color: var(--navy); font-weight: 700; font-variant-numeric: tabular-nums; }
-        .section-title { font-size: 17px; font-weight: 700; color: var(--navy); margin-bottom: 6px; font-family: 'Noto Serif', serif; }
-        .section-sub   { font-size: 13px; color: var(--muted); margin-bottom: 22px; line-height: 1.6; }
-        .section-sub strong { color: var(--navy); }
+        .timer-text { font-size: 12px; color: rgba(255,255,255,0.4); text-align: center; margin-top: 10px; font-weight: 500; }
+        .timer-text span { color: var(--accent2); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+        .section-title { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 6px; font-family: 'Noto Serif', serif; }
+        .section-sub   { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 20px; line-height: 1.6; }
+        .section-sub strong { color: rgba(255,255,255,0.8); }
 
         .spinner {
             width: 16px; height: 16px;
-            border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff;
+            border: 2px solid rgba(201,168,76,0.3); border-top-color: var(--accent2);
             border-radius: 50%; animation: spin 0.7s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .copyright { color: rgba(255,255,255,0.4); font-size: 11.5px; font-weight: 500; text-align: center; }
-
         .security-box {
             display: flex; align-items: center; gap: 8px;
-            background: #fffbf0; border: 1px solid rgba(201,168,76,0.4);
+            background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.25);
             border-radius: 8px; padding: 10px 13px;
-            font-size: 12px; color: #92400e; font-weight: 600; margin-bottom: 18px;
+            font-size: 12px; color: var(--accent2); font-weight: 600; margin-bottom: 16px;
         }
 
         .other-login-link {
-            text-align: center; margin-top: 18px; padding-top: 16px;
-            border-top: 1px solid #f1f5f9;
-            font-size: 12.5px; color: var(--muted);
+            text-align: center; margin-top: 16px; padding-top: 14px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            font-size: 12.5px; color: rgba(255,255,255,0.4);
         }
         .other-login-link a {
-            color: var(--navy); font-weight: 700; text-decoration: none;
-            border-bottom: 1px solid rgba(13,27,42,0.25); padding-bottom: 1px;
+            color: var(--accent2); font-weight: 700; text-decoration: none;
+            border-bottom: 1px solid rgba(201,168,76,0.35); padding-bottom: 1px;
         }
-        .other-login-link a:hover { border-color: var(--accent); }
+        .other-login-link a:hover { border-color: var(--accent); color: #fff; }
+
+        .copyright {
+            position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+            color: rgba(255,255,255,0.3); font-size: 11px; font-weight: 500;
+            letter-spacing: 0.2px; white-space: nowrap; z-index: 3;
+        }
 
         .flag-bar {
-            height: 4px;
+            height: 3px;
             background: linear-gradient(90deg, #0092BC 33.33%, #FF0000 33.33% 66.66%, #009E60 66.66%);
-            border-radius: 2px; width: 100%; max-width: 440px; opacity: 0.6;
+            opacity: 0.6;
         }
 
         .step-panel { display: none; }
         .step-panel.active { display: block; }
-    </style>
 
-    <!-- Səs effektləri -->
+        @media (max-width: 600px) {
+            .page-layout { padding: 20px; }
+            .login-card { max-width: 100%; }
+        }
+    </style>
     <script>
         const SFX = (() => {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             function resume() { if (ctx.state === 'suspended') ctx.resume(); }
             function beep({ freq = 880, type = 'sine', vol = 0.18, dur = 0.08, delay = 0 } = {}) {
                 resume();
-                const osc  = ctx.createOscillator();
+                const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.connect(gain); gain.connect(ctx.destination);
                 osc.type = type;
@@ -244,62 +337,55 @@
 </head>
 <body>
 
-<!-- Video tərəfi -->
-<div class="video-side">
-    <div class="video-wrapper">
-        <div id="yt-player"></div>
-    </div>
-    <script>
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
-        var ytPlayer;
-        function onYouTubeIframeAPIReady() {
-            ytPlayer = new YT.Player('yt-player', {
-                videoId: 'YYJml3FOQVg',
-                playerVars: {
-                    autoplay: 1, loop: 1, playlist: 'YYJml3FOQVg',
-                    mute: 1, controls: 0, disablekb: 1, fs: 0,
-                    modestbranding: 1, rel: 0, iv_load_policy: 3, playsinline: 1
-                },
-                events: {
-                    onReady: function(e) {
-                        e.target.mute();
-                        e.target.playVideo();
-                        var unlocked = false;
-                        function unlock() {
-                            if (unlocked) return;
-                            unlocked = true;
-                            e.target.unMute();
-                            e.target.setVolume(50);
-                            document.removeEventListener('click', unlock);
-                            document.removeEventListener('keydown', unlock);
-                            document.removeEventListener('touchstart', unlock);
-                            document.removeEventListener('scroll', unlock);
-                        }
-                        document.addEventListener('click', unlock);
-                        document.addEventListener('keydown', unlock);
-                        document.addEventListener('touchstart', unlock);
-                        document.addEventListener('scroll', unlock);
-                    },
-                    onStateChange: function(e) {
-                        if (e.data === YT.PlayerState.ENDED) e.target.playVideo();
-                    }
-                }
-            });
-        }
-    </script>
+<!-- FULLSCREEN VIDEO BG -->
+<div id="video-bg">
+    <div id="yt-player"></div>
 </div>
 
-<!-- Login tərəfi -->
-<div class="login-side">
+<script>
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
+    var ytPlayer;
+    function onYouTubeIframeAPIReady() {
+        ytPlayer = new YT.Player('yt-player', {
+            videoId: 'YYJml3FOQVg',
+            playerVars: {
+                autoplay: 1, loop: 1, playlist: 'YYJml3FOQVg',
+                mute: 1, controls: 0, disablekb: 1, fs: 0,
+                modestbranding: 1, rel: 0, iv_load_policy: 3, playsinline: 1
+            },
+            events: {
+                onReady: function(e) {
+                    e.target.mute(); e.target.playVideo();
+                    var unlocked = false;
+                    function unlock() {
+                        if (unlocked) return; unlocked = true;
+                        e.target.unMute(); e.target.setVolume(40);
+                        ['click','keydown','touchstart','scroll'].forEach(ev => document.removeEventListener(ev, unlock));
+                    }
+                    ['click','keydown','touchstart','scroll'].forEach(ev => document.addEventListener(ev, unlock));
+                },
+                onStateChange: function(e) {
+                    if (e.data === YT.PlayerState.ENDED) e.target.playVideo();
+                }
+            }
+        });
+    }
+</script>
 
+<!-- MAIN LAYOUT -->
+<div class="page-layout">
 <div class="login-card">
+    <div class="flag-bar"></div>
     <div class="card-header">
         <img src="image.png" alt="PTPK Logo">
         <h1>Komissiya Girişi</h1>
         <p>Psixoloji-Tibbi-Pedaqoji Komissiya Portalı</p>
-        <div class="badge"><i class="fa-solid fa-lock"></i> Yalnız Komissiya Üzvləri</div>
+        <div class="badge">
+            <i class="fa-solid fa-shield-halved" style="font-size:10px;"></i>
+            Komissiya üzvləri üçün
+        </div>
     </div>
 
     <div class="card-body">
@@ -315,7 +401,7 @@
             </div>
             <div class="step-line" id="line-2"></div>
             <div class="step" id="step-ind-3">
-                <div class="step-dot"><i class="fa-solid fa-check" style="font-size:12px;"></i></div>
+                <div class="step-dot"><i class="fa-solid fa-check" style="font-size:11px;"></i></div>
                 <div class="step-label">Giriş</div>
             </div>
         </div>
@@ -324,24 +410,23 @@
 
         <!-- STEP 1 -->
         <div class="step-panel active" id="panel-1">
-            <div class="security-box">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                Bu giriş yalnız komissiya üzvləri üçün nəzərdə tutulub
-            </div>
-            <div class="section-title">Komissiya e-poçtu ilə daxil olun</div>
+            <div class="section-title">Komissiya e-poçtu</div>
             <div class="section-sub">
-                Komissiya üzvü kimi qeydiyyatda olan e-poçt ünvanınızı daxil edin.
-                Doğrulama kodu göndəriləcək.
+                Komissiya üzvü kimi qeydiyyatda olan Gmail ünvanınızı daxil edin.
+            </div>
+            <div class="security-box">
+                <i class="fa-solid fa-lock" style="font-size:13px;"></i>
+                Yalnız komissiya üzvləri bu girişdən istifadə edə bilər
             </div>
             <div class="form-group">
-                <label><i class="fa-solid fa-envelope"></i> &nbsp;E-poçt ünvanı</label>
-                <input type="email" id="email-input" placeholder="komissiya@rto.az" autocomplete="email">
+                <label><i class="fa-brands fa-google"></i> &nbsp;Gmail ünvanı</label>
+                <input type="email" id="email-input" placeholder="nümunə@gmail.com" autocomplete="email">
             </div>
             <button class="btn-main" id="btn-send-otp" onclick="sendOTP()">
                 <i class="fa-solid fa-paper-plane"></i> Kod Göndər
             </button>
             <div class="other-login-link">
-                Məktəb istifadəçisisiniz? <a href="login.html">← Məktəb girişinə keçin</a>
+                Məktəb istifadəçisisiniz? <a href="login.html">Əsas giriş →</a>
             </div>
         </div>
 
@@ -369,27 +454,23 @@
         </div>
 
         <!-- STEP 3 -->
-        <div class="step-panel" id="panel-3" style="text-align:center;">
-            <div style="font-size:54px; margin-bottom:14px;">✅</div>
+        <div class="step-panel" id="panel-3" style="text-align:center; padding: 10px 0;">
+            <div style="font-size:48px; margin-bottom:14px;">✅</div>
             <div class="section-title" style="text-align:center;">Uğurla daxil oldunuz!</div>
             <div class="section-sub" style="text-align:center; margin-top:8px;" id="success-text">Yönləndirilirsiniz...</div>
             <div style="margin-top:20px;">
-                <div class="spinner" style="margin:auto; border-color:rgba(15,23,42,0.2); border-top-color:var(--navy);"></div>
+                <div class="spinner" style="margin:auto;"></div>
             </div>
         </div>
     </div>
 </div>
+</div>
 
-<div class="flag-bar"></div>
 <div class="copyright">© 2026 Psixoloji-Tibbi-Pedaqoji Komissiya · by F.Alakbarov</div>
 
-</div><!-- login-side -->
-
 <script>
-    // ── Bu login yalnız "komissiya" rollu emaillər üçündür → komissiya.html ──
     const THIS_ROLE    = 'komissiya';
     const REDIRECT_URL = 'komissiya.html';
-
     let timerInterval = null;
     let timerSeconds  = 600;
     let currentEmail  = '';
@@ -404,7 +485,6 @@
         localStorage.removeItem('ptpk_token');
         localStorage.removeItem('ptpk_role');
         localStorage.removeItem('ptpk_email');
-
         document.getElementById('email-input').addEventListener('keydown', e => {
             if (e.key === 'Enter') sendOTP();
         });
@@ -432,31 +512,23 @@
     async function sendOTP() {
         const email = document.getElementById('email-input').value.trim().toLowerCase();
         if (!email || !email.includes('@')) {
-            SFX.error();
-            showAlert('Zəhmət olmasa düzgün e-poçt ünvanı daxil edin.', 'error'); return;
+            SFX.error(); showAlert('Zəhmət olmasa düzgün e-poçt ünvanı daxil edin.', 'error'); return;
         }
-
         SFX.send();
         const btn = document.getElementById('btn-send-otp');
         btn.disabled = true;
         btn.innerHTML = '<div class="spinner"></div> Göndərilir...';
         hideAlert();
-
         try {
             const res  = await fetch('/api/auth/send-otp', {
                 method: 'POST', headers: {'Content-Type':'application/json'},
                 body: JSON.stringify({email})
             });
             const data = await res.json();
-
             if (data.status === 'success') {
-                // ── Rol yoxlaması: yalnız "komissiya" rollu emaillər bu loginə girə bilər ──
                 if (data.role !== THIS_ROLE) {
                     SFX.error();
-                    showAlert(
-                        'Bu e-poçt komissiya üzvü üçün deyil. Məktəb girişindən istifadə edin.',
-                        'error'
-                    );
+                    showAlert('Bu e-poçt komissiya üzvü kimi qeydiyyatda deyil.', 'error');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kod Göndər';
                     return;
@@ -464,48 +536,34 @@
                 currentEmail = email;
                 document.getElementById('otp-sub-text').innerHTML =
                     `E-poçtunuza göndərilən 6 rəqəmli kodu daxil edin.<br><strong>${email}</strong>`;
-                goToStep(2);
-                startTimer();
+                goToStep(2); startTimer();
                 showAlert('Kod uğurla göndərildi! E-poçtunuzu yoxlayın.', 'success');
             } else {
-                SFX.error();
-                showAlert(data.message || 'Xəta baş verdi.', 'error');
+                SFX.error(); showAlert(data.message || 'Xəta baş verdi.', 'error');
             }
-        } catch {
-            SFX.error();
-            showAlert('Serverə qoşulmaq mümkün olmadı!', 'error');
-        }
-
+        } catch { SFX.error(); showAlert('Serverə qoşulmaq mümkün olmadı!', 'error'); }
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kod Göndər';
     }
 
     async function verifyOTP() {
-        const code = Array.from({length:6}, (_, i) =>
-            document.getElementById('otp-'+i).value).join('');
-
+        const code = Array.from({length:6}, (_,i) => document.getElementById('otp-'+i).value).join('');
         if (!/^\d{6}$/.test(code)) {
-            SFX.error();
-            showAlert('Zəhmət olmasa 6 rəqəmli kodu tam daxil edin.', 'error'); return;
+            SFX.error(); showAlert('Zəhmət olmasa 6 rəqəmli kodu tam daxil edin.', 'error'); return;
         }
-
         const btn = document.getElementById('btn-verify');
         btn.disabled = true;
         btn.innerHTML = '<div class="spinner"></div> Yoxlanılır...';
         hideAlert();
-
         try {
             const res  = await fetch('/api/auth/verify-otp', {
                 method: 'POST', headers: {'Content-Type':'application/json'},
                 body: JSON.stringify({email: currentEmail, code})
             });
             const data = await res.json();
-
             if (data.status === 'success') {
-                // ── İkinci mərhələ rol yoxlaması ──
                 if (data.role !== THIS_ROLE) {
-                    SFX.error();
-                    showAlert('Giriş rədd edildi. Bu giriş yalnız komissiya üzvləri üçündür.', 'error');
+                    SFX.error(); showAlert('Giriş rədd edildi. Bu giriş yalnız komissiya üzvləri üçündür.', 'error');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
                     return;
@@ -514,21 +572,17 @@
                 localStorage.setItem('ptpk_token', data.token);
                 localStorage.setItem('ptpk_role',  data.role);
                 localStorage.setItem('ptpk_email', data.email);
-
-                SFX.success();
-                goToStep(3);
+                SFX.success(); goToStep(3);
                 document.getElementById('success-text').innerHTML =
                     `Xoş gəldiniz, <strong>${data.full_name || data.email}</strong>!<br>Yönləndirilirsiniz...`;
                 setTimeout(() => { window.location.href = REDIRECT_URL; }, 1800);
             } else {
-                SFX.error();
-                showAlert(data.message || 'Kod yanlışdır.', 'error');
+                SFX.error(); showAlert(data.message || 'Kod yanlışdır.', 'error');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
             }
         } catch {
-            SFX.error();
-            showAlert('Serverə qoşulmaq mümkün olmadı!', 'error');
+            SFX.error(); showAlert('Serverə qoşulmaq mümkün olmadı!', 'error');
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
         }
@@ -539,7 +593,7 @@
             document.getElementById('panel-'+i).classList.toggle('active', i===n);
             const s = document.getElementById('step-ind-'+i);
             s.classList.remove('active','done');
-            if (i < n)  s.classList.add('done');
+            if (i < n) s.classList.add('done');
             if (i === n) s.classList.add('active');
         });
         if (n >= 2) document.getElementById('line-1').classList.add('done');
@@ -548,9 +602,7 @@
     }
 
     function goBack() {
-        SFX.back();
-        clearInterval(timerInterval);
-        goToStep(1);
+        SFX.back(); clearInterval(timerInterval); goToStep(1);
         for (let i=0; i<6; i++) {
             const c = document.getElementById('otp-'+i);
             c.value = ''; c.classList.remove('filled');
@@ -558,12 +610,9 @@
     }
 
     function startTimer() {
-        timerSeconds = 600;
-        clearInterval(timerInterval);
-        updateTimer();
+        timerSeconds = 600; clearInterval(timerInterval); updateTimer();
         timerInterval = setInterval(() => {
-            timerSeconds--;
-            updateTimer();
+            timerSeconds--; updateTimer();
             if (timerSeconds <= 0) {
                 clearInterval(timerInterval);
                 showAlert('Kodun müddəti bitdi. Yenidən göndərin.', 'error');
@@ -578,7 +627,6 @@
         document.getElementById('timer-count').textContent = `${m}:${s}`;
     }
 
-    // OTP cell navigasiya
     document.addEventListener('DOMContentLoaded', () => {
         for (let i=0; i<6; i++) {
             const cell = document.getElementById('otp-'+i);
@@ -593,8 +641,7 @@
                 }
             });
             cell.addEventListener('keydown', function(e) {
-                if (e.key==='Backspace' && !this.value && i>0)
-                    document.getElementById('otp-'+(i-1)).focus();
+                if (e.key==='Backspace' && !this.value && i>0) document.getElementById('otp-'+(i-1)).focus();
                 if (e.key==='Enter') verifyOTP();
             });
             cell.addEventListener('paste', function(e) {
