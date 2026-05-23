@@ -63,13 +63,13 @@ window.addEventListener('DOMContentLoaded', () => {
             --red:      #dc2626;
             --red-lt:   #fee2e2;
             --muted:    #64748b;
-            --border:   rgba(255,255,255,0.16);
-            --border2:  rgba(255,255,255,0.24);
-            --text:     #f1f5f9;
-            --text2:    rgba(241,245,249,0.82);
-            --text3:    rgba(241,245,249,0.55);
-            --card-bg:  rgba(255,255,255,0.13);
-            --card-bg2: rgba(255,255,255,0.09);
+            --border:   rgba(255,255,255,0.28);
+            --border2:  rgba(255,255,255,0.36);
+            --text:     #ffffff;
+            --text2:    rgba(255,255,255,0.92);
+            --text3:    rgba(255,255,255,0.70);
+            --card-bg:  rgba(255,255,255,0.22);
+            --card-bg2: rgba(255,255,255,0.18);
             --radius:   12px;
             --radius-lg:20px;
         }
@@ -109,7 +109,7 @@ window.addEventListener('DOMContentLoaded', () => {
             content: '';
             position: absolute;
             inset: 0;
-            background: rgba(10, 20, 35, 0.52);
+            background: rgba(10, 20, 35, 0.28);
             z-index: 1;
         }
 
@@ -151,7 +151,7 @@ window.addEventListener('DOMContentLoaded', () => {
             display: flex;
             align-items: center;
             gap: 8px;
-            background: var(--card-bg);
+            background: rgba(255,255,255,0.20);
             border: 1px solid var(--border2);
             border-radius: 30px;
             padding: 6px 14px 6px 8px;
@@ -169,7 +169,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         .btn-logout {
             display: flex; align-items: center; gap: 6px;
-            background: var(--card-bg);
+            background: rgba(255,255,255,0.20);
             border: 1px solid var(--border2);
             border-radius: 30px;
             padding: 6px 14px;
@@ -200,7 +200,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         /* ── PORTAL HEADER ── */
         .portal-header {
-            background: var(--card-bg);
+            background: rgba(255,255,255,0.22);
             border: 1px solid var(--border2);
             border-bottom: none;
             border-radius: var(--radius-lg) var(--radius-lg) 0 0;
@@ -210,7 +210,7 @@ window.addEventListener('DOMContentLoaded', () => {
             gap: 22px;
             position: relative;
             overflow: hidden;
-            backdrop-filter: blur(16px);
+            backdrop-filter: blur(20px);
         }
         .portal-header::before {
             content: '';
@@ -231,7 +231,7 @@ window.addEventListener('DOMContentLoaded', () => {
         .logo-box {
             width: 58px; height: 58px;
             border-radius: 14px;
-            background: rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.16);
             border: 1px solid rgba(255,255,255,0.15);
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
@@ -272,7 +272,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         /* ── PROGRESS STRIP ── */
         .prog-strip {
-            background: rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.16);
             border: 1px solid var(--border);
             border-top: none; border-bottom: none;
             padding: 0 36px;
@@ -334,11 +334,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
         /* ── CARD BODY ── */
         .card-body {
-            background: rgba(255,255,255,0.10);
+            background: rgba(255,255,255,0.26);
             border: 1px solid var(--border);
             border-top: none;
             padding: 32px 36px;
-            backdrop-filter: blur(16px);
+            backdrop-filter: blur(20px);
         }
 
         /* ── SECTION HEADS ── */
@@ -388,7 +388,7 @@ window.addEventListener('DOMContentLoaded', () => {
             font-size: 14px; font-weight: 500;
             font-family: 'Outfit', sans-serif;
             color: var(--text);
-            background: rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.20);
             border: 1px solid rgba(255,255,255,0.12);
             border-radius: var(--radius);
             outline: none;
@@ -399,7 +399,7 @@ window.addEventListener('DOMContentLoaded', () => {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%2394a3b8' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
-            background-color: rgba(255,255,255,0.12);
+            background-color: rgba(255,255,255,0.20);
             padding-right: 36px;
         }
         .field select option,
@@ -410,7 +410,7 @@ window.addEventListener('DOMContentLoaded', () => {
         .field input:focus,
         .field select:focus {
             border-color: rgba(201,168,76,0.5);
-            background: rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.26);
             box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
         }
         .field input::placeholder { color: var(--text3); font-weight: 400; }
@@ -429,7 +429,7 @@ window.addEventListener('DOMContentLoaded', () => {
             margin-bottom: 28px;
         }
         .doc-card {
-            background: rgba(255,255,255,0.09);
+            background: rgba(255,255,255,0.16);
             border: 1px dashed rgba(255,255,255,0.12);
             border-radius: var(--radius);
             padding: 14px 16px;
@@ -561,12 +561,12 @@ window.addEventListener('DOMContentLoaded', () => {
         .btn-secondary:hover {
             border-color: rgba(255,255,255,0.25);
             color: #fff;
-            background: rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.26);
         }
 
         /* ── CARD FOOTER ── */
         .card-footer {
-            background: rgba(255,255,255,0.02);
+            background: rgba(255,255,255,0.14);
             border: 1px solid var(--border);
             border-top: none;
             border-radius: 0 0 var(--radius-lg) var(--radius-lg);
