@@ -1,5 +1,974 @@
 <!DOCTYPE html>
 <html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTPK | Rəqəmsal Sənəd Qəbulu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Noto+Serif+AZ:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --az-blue:     #006AB4;
+            --az-red:      #EF3340;
+            --az-green:    #00AF66;
+            --gold:        #C5922D;
+            --gold-light:  #E8C07A;
+            --gold-pale:   #F7EDD5;
+            --navy:        #0A1628;
+            --navy2:       #112040;
+            --cream:       #FDFAF4;
+            --border-gold: rgba(197,146,45,0.5);
+            --border-gold2:rgba(197,146,45,0.25);
+            --text-dark:   #1A1208;
+            --text-mid:    #4A3B20;
+            --text-light:  #8B7355;
+            --shadow:      0 2px 24px rgba(10,22,40,0.18);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Noto Serif AZ', 'Playfair Display', Georgia, serif;
+            min-height: 100dvh;
+            background-color: #1a3a5c;
+            background-image: url('ed_teh.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px 60px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(
+                180deg,
+                rgba(6,18,40,0.72) 0%,
+                rgba(6,18,40,0.55) 40%,
+                rgba(6,18,40,0.65) 100%
+            );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── STATE HEADER BAR ── */
+        .state-bar {
+            width: 100%;
+            max-width: 820px;
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 0 18px;
+        }
+
+        .state-flag {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            overflow: hidden;
+            border-radius: 3px;
+            width: 42px;
+            height: 24px;
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .flag-stripe { flex: 1; }
+        .flag-stripe.blue  { background: #006AB4; }
+        .flag-stripe.red   { background: #EF3340; }
+        .flag-stripe.green { background: #00AF66; }
+
+        .state-bar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .state-bar-brand span {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.65);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: rgba(253,250,244,0.12);
+            border: 1px solid rgba(197,146,45,0.3);
+            border-radius: 4px;
+            padding: 5px 12px 5px 8px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--gold-light);
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        .user-avatar {
+            width: 22px; height: 22px;
+            border-radius: 3px;
+            background: rgba(197,146,45,0.25);
+            border: 1px solid rgba(197,146,45,0.4);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: 700; color: var(--gold-light);
+        }
+
+        .btn-logout {
+            display: flex; align-items: center; gap: 5px;
+            background: rgba(239,51,64,0.15);
+            border: 1px solid rgba(239,51,64,0.3);
+            border-radius: 4px;
+            padding: 5px 12px;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: #ff9aa0;
+            cursor: pointer;
+            font-family: 'IBM Plex Mono', monospace;
+            letter-spacing: 0.04em;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover {
+            background: rgba(239,51,64,0.28);
+            border-color: rgba(239,51,64,0.55);
+        }
+
+        /* ── MAIN PORTAL CARD ── */
+        .portal-wrap {
+            width: 100%;
+            max-width: 820px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* STATE CREST HEADER */
+        .portal-crest {
+            background: rgba(10,22,40,0.88);
+            border: 1px solid var(--border-gold);
+            border-bottom: none;
+            border-radius: 8px 8px 0 0;
+            padding: 28px 36px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .portal-crest::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse at 50% 0%, rgba(197,146,45,0.12) 0%, transparent 65%),
+                radial-gradient(ellipse at 0% 100%, rgba(0,106,180,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 100% 100%, rgba(0,175,102,0.08) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        /* Ornamental top rule */
+        .crest-ornament {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+        .orn-line {
+            height: 1px;
+            width: 80px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+        .orn-diamond {
+            width: 6px; height: 6px;
+            background: var(--gold);
+            transform: rotate(45deg);
+            flex-shrink: 0;
+        }
+        .orn-dot {
+            width: 3px; height: 3px;
+            background: var(--gold-light);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .crest-emblem {
+            width: 68px; height: 68px;
+            border-radius: 50%;
+            border: 2px solid var(--border-gold);
+            background: rgba(197,146,45,0.1);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 1;
+        }
+        .crest-emblem img {
+            width: 48px; height: 48px;
+            object-fit: contain;
+            filter: brightness(1.1);
+        }
+        .crest-emblem-fallback {
+            font-size: 28px;
+            color: var(--gold-light);
+        }
+
+        .crest-titles {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .crest-ministry {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9.5px;
+            font-weight: 500;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: rgba(232,192,122,0.7);
+            margin-bottom: 6px;
+        }
+        .crest-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--gold-light);
+            letter-spacing: 0.01em;
+            line-height: 1.25;
+            margin-bottom: 6px;
+        }
+        .crest-subtitle {
+            font-family: 'Noto Serif AZ', serif;
+            font-size: 12px;
+            color: rgba(232,192,122,0.6);
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        .crest-badges {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+        .crest-badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            border: 1px solid var(--border-gold2);
+            border-radius: 3px;
+            padding: 4px 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px; font-weight: 500;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            color: rgba(232,192,122,0.75);
+        }
+
+        /* ── PROGRESS BAR ── */
+        .prog-strip {
+            background: var(--navy);
+            border: 1px solid var(--border-gold2);
+            border-top: none; border-bottom: none;
+            padding: 0 36px;
+            display: flex;
+            align-items: stretch;
+            border-top: 1px solid rgba(197,146,45,0.2);
+        }
+        .prog-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 12px 0;
+            margin-right: 28px;
+            border-bottom: 2px solid transparent;
+            font-size: 11.5px; font-weight: 600;
+            font-family: 'IBM Plex Mono', monospace;
+            letter-spacing: 0.04em;
+            color: rgba(232,192,122,0.45);
+            transition: all 0.25s;
+        }
+        .prog-item.active {
+            color: var(--gold-light);
+            border-bottom-color: var(--gold);
+        }
+        .prog-item.done { color: #6ee7b7; }
+        .prog-num {
+            width: 20px; height: 20px; border-radius: 50%;
+            background: rgba(197,146,45,0.08);
+            border: 1px solid rgba(197,146,45,0.2);
+            color: rgba(232,192,122,0.5);
+            font-size: 10px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.25s;
+        }
+        .prog-item.active .prog-num {
+            background: rgba(197,146,45,0.2);
+            border-color: var(--gold);
+            color: var(--gold-light);
+        }
+        .prog-item.done .prog-num {
+            background: rgba(16,185,129,0.2);
+            border-color: #6ee7b7;
+            color: #6ee7b7;
+        }
+        .prog-fill {
+            margin-left: auto;
+            display: flex; align-items: center; gap: 10px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10.5px; color: rgba(232,192,122,0.5);
+        }
+        .prog-fill-bar {
+            width: 90px; height: 2px;
+            background: rgba(197,146,45,0.12);
+            border-radius: 1px;
+            overflow: hidden;
+        }
+        .prog-fill-inner {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold), var(--gold-light));
+            transition: width 0.4s cubic-bezier(.22,.68,0,1.2);
+        }
+
+        /* ── FORM BODY ── */
+        .card-body {
+            background: var(--cream);
+            border: 1px solid var(--border-gold2);
+            border-top: none;
+            padding: 36px 40px;
+        }
+
+        /* Section headings */
+        .sec-head {
+            display: flex; align-items: center; gap: 14px;
+            margin-bottom: 24px; padding-bottom: 14px;
+            border-bottom: 1px solid rgba(197,146,45,0.2);
+            position: relative;
+        }
+        .sec-head::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; left: 0;
+            width: 60px; height: 1px;
+            background: var(--gold);
+        }
+        .sec-icon {
+            width: 38px; height: 38px; border-radius: 4px;
+            background: rgba(197,146,45,0.1);
+            border: 1px solid rgba(197,146,45,0.3);
+            color: var(--gold);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; flex-shrink: 0;
+        }
+        .sec-head h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px; font-weight: 600;
+            color: var(--text-dark);
+            letter-spacing: 0.01em;
+        }
+        .sec-head p {
+            font-size: 11.5px; color: var(--text-light);
+            margin-top: 2px;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        /* Form grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px 24px;
+            margin-bottom: 36px;
+        }
+        .field { display: flex; flex-direction: column; gap: 7px; }
+        .field.span2 { grid-column: span 2; }
+
+        .field label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px; font-weight: 500;
+            color: var(--text-light);
+            text-transform: uppercase; letter-spacing: 0.1em;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .field label .req { color: var(--gold); font-size: 14px; line-height: 1; }
+
+        .field input,
+        .field select {
+            width: 100%; height: 46px;
+            padding: 0 14px;
+            font-size: 13.5px; font-weight: 400;
+            font-family: 'Noto Serif AZ', serif;
+            color: var(--text-dark);
+            background: rgba(253,250,244,0.8);
+            border: 1px solid rgba(197,146,45,0.3);
+            border-radius: 4px;
+            outline: none;
+            transition: all 0.2s;
+            appearance: none; -webkit-appearance: none;
+        }
+        .field select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%23C5922D' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-color: rgba(253,250,244,0.8);
+            padding-right: 36px;
+        }
+        .field input:focus,
+        .field select:focus {
+            border-color: var(--gold);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(197,146,45,0.12);
+        }
+        .field input::placeholder { color: rgba(139,115,85,0.55); font-weight: 400; }
+
+        #finCode {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 15px; letter-spacing: 0.2em;
+            text-transform: uppercase;
+        }
+
+        /* Document upload grid */
+        .docs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .doc-card {
+            background: rgba(255,252,245,0.6);
+            border: 1px dashed rgba(197,146,45,0.35);
+            border-radius: 4px;
+            padding: 14px 16px;
+            display: flex; flex-direction: column; gap: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+        .doc-card:hover {
+            border-color: var(--gold);
+            background: rgba(197,146,45,0.04);
+        }
+        .doc-card.has-file {
+            border-style: solid;
+            border-color: rgba(0,175,102,0.5);
+            background: rgba(0,175,102,0.04);
+        }
+        .doc-top { display: flex; align-items: flex-start; gap: 10px; }
+        .doc-num {
+            width: 24px; height: 24px; border-radius: 4px;
+            background: rgba(197,146,45,0.12);
+            border: 1px solid rgba(197,146,45,0.3);
+            color: var(--gold);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .doc-card.has-file .doc-num {
+            background: rgba(0,175,102,0.12);
+            border-color: rgba(0,175,102,0.4);
+            color: #00AF66;
+        }
+        .doc-label-text {
+            font-size: 12.5px; font-weight: 500;
+            color: var(--text-mid); line-height: 1.45;
+            font-family: 'Noto Serif AZ', serif;
+        }
+        .doc-bottom { display: flex; align-items: center; gap: 8px; }
+        .doc-file-input input[type="file"] { display: none; }
+
+        .btn-choose {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: white;
+            border: 1px solid rgba(197,146,45,0.35);
+            border-radius: 3px;
+            padding: 5px 10px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10.5px; font-weight: 600;
+            letter-spacing: 0.04em;
+            color: var(--text-mid); cursor: pointer;
+            transition: all 0.18s;
+            white-space: nowrap;
+        }
+        .btn-choose:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+        .doc-card.has-file .btn-choose {
+            border-color: rgba(0,175,102,0.4);
+            color: #007a48;
+        }
+        .file-name {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10.5px; font-weight: 400;
+            color: var(--text-light);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            max-width: 140px;
+        }
+        .doc-card.has-file .file-name { color: #007a48; }
+
+        /* Alert */
+        .alert {
+            padding: 12px 16px; border-radius: 4px;
+            font-size: 13px; font-weight: 500;
+            display: none; gap: 10px; align-items: center;
+            margin-bottom: 20px;
+            font-family: 'Noto Serif AZ', serif;
+        }
+        .alert.error   { background: rgba(239,51,64,0.08); color: #b91c1c; border: 1px solid rgba(239,51,64,0.25); display: flex; }
+        .alert.success { background: rgba(0,175,102,0.08); color: #065f46; border: 1px solid rgba(0,175,102,0.25); display: flex; }
+        .alert.info    { background: rgba(0,106,180,0.08); color: #1e40af; border: 1px solid rgba(0,106,180,0.2); display: flex; }
+
+        /* Action row */
+        .action-row {
+            display: flex; gap: 12px; align-items: stretch;
+        }
+        .btn-submit {
+            flex: 1; height: 52px;
+            background: var(--navy);
+            border: 1px solid var(--border-gold);
+            border-radius: 4px;
+            color: var(--gold-light);
+            font-family: 'Playfair Display', serif;
+            font-size: 14.5px; font-weight: 600;
+            cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+            letter-spacing: 0.02em;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(197,146,45,0.12), transparent);
+            pointer-events: none;
+        }
+        .btn-submit:hover {
+            background: rgba(10,22,40,0.9);
+            box-shadow: 0 4px 20px rgba(197,146,45,0.18);
+            transform: translateY(-1px);
+        }
+        .btn-submit:active { transform: translateY(0); }
+        .btn-submit:disabled {
+            background: rgba(139,115,85,0.2);
+            color: var(--text-light);
+            border-color: rgba(139,115,85,0.2);
+            cursor: not-allowed; transform: none; box-shadow: none;
+        }
+        .btn-secondary {
+            height: 52px; padding: 0 22px;
+            background: transparent;
+            border: 1px solid rgba(197,146,45,0.3);
+            border-radius: 4px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11.5px; font-weight: 600;
+            letter-spacing: 0.06em;
+            color: var(--text-mid);
+            cursor: pointer;
+            display: flex; align-items: center; gap: 8px;
+            text-decoration: none;
+            transition: all 0.18s;
+            white-space: nowrap;
+        }
+        .btn-secondary:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(197,146,45,0.05);
+        }
+
+        /* Footer */
+        .card-footer {
+            background: var(--navy);
+            border: 1px solid var(--border-gold2);
+            border-top: 1px solid rgba(197,146,45,0.25);
+            border-radius: 0 0 8px 8px;
+            padding: 14px 36px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .footer-links { display: flex; gap: 20px; }
+        .footer-links a {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10.5px; font-weight: 500;
+            letter-spacing: 0.06em;
+            color: rgba(197,146,45,0.55);
+            text-decoration: none;
+            text-transform: uppercase;
+            display: flex; align-items: center; gap: 5px;
+            transition: color 0.15s;
+        }
+        .footer-links a:hover { color: var(--gold-light); }
+        .footer-status {
+            display: flex; align-items: center; gap: 7px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px; font-weight: 500;
+            color: rgba(110,231,183,0.8);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .status-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2.5s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
+            50% { opacity: 0.6; box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+        }
+
+        /* Page footer */
+        .page-footer {
+            margin-top: 22px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px; color: rgba(255,255,255,0.35);
+            font-weight: 400; text-align: center;
+            position: relative; z-index: 2;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        /* Spinner */
+        .spinner {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(197,146,45,0.2);
+            border-top-color: var(--gold-light);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Responsive */
+        @media (max-width: 680px) {
+            body { padding: 12px 10px 40px; }
+            .portal-crest { padding: 22px 20px 18px; }
+            .card-body { padding: 24px 20px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .field.span2 { grid-column: span 1; }
+            .docs-grid { grid-template-columns: 1fr; }
+            .action-row { flex-direction: column; }
+            .card-footer { flex-direction: column; gap: 10px; padding: 14px 20px; }
+            .prog-strip { padding: 0 18px; overflow-x: auto; }
+            .prog-fill { display: none; }
+            .crest-title { font-size: 18px; }
+            .state-bar-brand span { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- STATE BAR -->
+<div class="state-bar">
+    <div class="state-bar-brand">
+        <div class="state-flag">
+            <div class="flag-stripe blue"></div>
+            <div class="flag-stripe red"></div>
+            <div class="flag-stripe green"></div>
+        </div>
+        <span>Azərbaycan Respublikası · Təhsil Nazirliyi</span>
+    </div>
+    <div class="topbar-right">
+        <div class="user-chip">
+            <div class="user-avatar"><i class="fa-solid fa-user" style="font-size:8px;"></i></div>
+            <span id="user-name-display">İstifadəçi</span>
+        </div>
+        <button class="btn-logout" onclick="logout()">
+            <i class="fa-solid fa-right-from-bracket" style="font-size:10px;"></i> Çıxış
+        </button>
+    </div>
+</div>
+
+<div class="portal-wrap">
+
+    <!-- CREST HEADER -->
+    <div class="portal-crest">
+        <div class="crest-ornament">
+            <div class="orn-line"></div>
+            <div class="orn-dot"></div>
+            <div class="orn-diamond"></div>
+            <div class="orn-dot"></div>
+            <div class="orn-line" style="transform:scaleX(-1)"></div>
+        </div>
+
+        <div class="crest-emblem">
+            <img src="image.png" alt="PTPK" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+            <div class="crest-emblem-fallback" style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+        </div>
+
+        <div class="crest-titles">
+            <div class="crest-ministry">Gəncə-Daşkəsən Regional Təhsil İdarəsi</div>
+            <h1 class="crest-title">Rəqəmsal Sənəd Qəbulu Sistemi</h1>
+            <p class="crest-subtitle">Psixoloji-Tibbi-Pedaqoji Komissiya</p>
+        </div>
+
+        <div class="crest-badges">
+            <div class="crest-badge">
+                <i class="fa-solid fa-shield-halved" style="font-size:8px;"></i>
+                Rəsmi Portal
+            </div>
+            <div class="crest-badge">
+                <i class="fa-solid fa-lock" style="font-size:8px;"></i>
+                Şifrəli Bağlantı
+            </div>
+            <div class="crest-badge">
+                <i class="fa-solid fa-stamp" style="font-size:8px;"></i>
+                Dövlət Qurumu
+            </div>
+        </div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="prog-strip">
+        <div class="prog-item active" id="pi-1">
+            <div class="prog-num">1</div>
+            Şagird məlumatları
+        </div>
+        <div class="prog-item" id="pi-2">
+            <div class="prog-num">2</div>
+            Sənədlər
+        </div>
+        <div class="prog-item" id="pi-3">
+            <div class="prog-num">3</div>
+            Göndəriş
+        </div>
+        <div class="prog-fill">
+            <span id="prog-text">0 / 9</span>
+            <div class="prog-fill-bar">
+                <div class="prog-fill-inner" id="prog-bar" style="width:0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARD BODY -->
+    <div class="card-body">
+        <form id="studentForm">
+
+            <div id="alert-box" class="alert"></div>
+
+            <!-- Section 1 -->
+            <div class="sec-head">
+                <div class="sec-icon"><i class="fa-solid fa-user-graduate"></i></div>
+                <div>
+                    <h2>Şagird Məlumatları</h2>
+                    <p>Bütün xanaları dəqiq doldurun · Məcburi sahələr * ilə işarələnib</p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label>Soyadı, Adı, Atasının adı <span class="req">*</span></label>
+                    <input type="text" id="studentName" name="studentName" placeholder="Tam ad (S.A.A.)" required oninput="updateProgress()">
+                </div>
+                <div class="field">
+                    <label>FİN Kod <span class="req">*</span></label>
+                    <input type="text" id="finCode" name="finCode" placeholder="0000000" maxlength="7" style="text-transform:uppercase;" required oninput="updateProgress()">
+                </div>
+                <div class="field span2">
+                    <label>Ümumtəhsil Müəssisəsi <span class="req">*</span></label>
+                    <select id="schoolSelect" name="schoolSelect" required onchange="updateProgress()">
+                        <option value="" disabled selected>— Məktəbi seçin —</option>
+                        <optgroup label="📍 Gəncə şəhəri">
+                            <option>Gəncə şəhər İ.Qayıbov adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option>Gəncə şəhər Ə.Cavad adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option>Gəncə şəhər 3 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
+                            <option>Gəncə şəhər M.Mehdizadə adına 4 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option>Gəncə şəhər M.Ə.Sabir adına 5 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option>Gəncə şəhər İnteqrasiya təlimli İnternat Tipli Gimnaziya</option>
+                            <option>Gəncə şəhər 45 nömrəli xüsusi məktəbi</option>
+                        </optgroup>
+                        <optgroup label="📍 Göygöl rayonu">
+                            <option>Göygöl şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option>Göygöl şəhər 2 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
+                        </optgroup>
+                        <optgroup label="📍 Daşkəsən rayonu">
+                            <option>Daşkəsən şəhər S.Vurğun adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option>Daşkəsən şəhər A.Mürsəlov adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
+                        </optgroup>
+                        <optgroup label="📍 Goranboy rayonu">
+                            <option>Goranboy şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option>Goranboy şəhər 2 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option>Goranboy rayon İnteqrasiya təlimli İnternat Tipli Gimnaziya</option>
+                        </optgroup>
+                        <optgroup label="📍 Samux rayonu">
+                            <option>Samux şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option>Samux şəhər 2 nömrəli tam orta ümumtəhsil məktəbi</option>
+                        </optgroup>
+                        <optgroup label="📍 Naftalan şəhəri">
+                            <option>Naftalan şəhər İ.Nəsimi adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
+                            <option>Naftalan şəhər Z.Rüstəmov adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Müraciət Növü <span class="req">*</span></label>
+                    <select id="applicationType" name="applicationType" required onchange="updateProgress()">
+                        <option value="" disabled selected>Seçin...</option>
+                        <option value="Yeni">Yeni müraciət</option>
+                        <option value="Təkrar">Təkrar müraciət</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Tədris İli <span class="req">*</span></label>
+                    <select id="academicYear" name="academicYear" required onchange="updateProgress()">
+                        <option value="2025/2026">2025 / 2026</option>
+                        <option value="2026/2027">2026 / 2027</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div class="sec-head">
+                <div class="sec-icon" style="background:rgba(0,106,180,0.1); border-color:rgba(0,106,180,0.3); color:#006AB4;">
+                    <i class="fa-solid fa-folder-open"></i>
+                </div>
+                <div>
+                    <h2>Tələb Olunan Sənədlər</h2>
+                    <p>6 sənədin hamısı yüklənməlidir · PDF, JPG, PNG formatında</p>
+                </div>
+            </div>
+
+            <div class="docs-grid">
+                <div class="doc-card" id="card-coverLetter" onclick="document.getElementById('coverLetter').click()">
+                    <div class="doc-top">
+                        <div class="doc-num">1</div>
+                        <div class="doc-label-text">Məktəbin müşayiət məktubu</div>
+                    </div>
+                    <div class="doc-bottom">
+                        <div class="doc-file-input">
+                            <input type="file" id="coverLetter" name="coverLetter" required onchange="handleFile('coverLetter','card-coverLetter','name-coverLetter')">
+                        </div>
+                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('coverLetter').click()">
+                            <i class="fa-solid fa-arrow-up-from-bracket" style="font-size:9px;"></i> Fayl seç
+                        </button>
+                        <span class="file-name" id="name-coverLetter">Seçilməyib</span>
+                    </div>
+                </div>
+
+                <div class="doc-card" id="card-residenceCertificate" onclick="document.getElementById('residenceCertificate').click()">
+                    <div class="doc-top">
+                        <div class="doc-num">2</div>
+                        <div class="doc-label-text">Yaşayış yerindən arayış</div>
+                    </div>
+                    <div class="doc-bottom">
+                        <div class="doc-file-input">
+                            <input type="file" id="residenceCertificate" name="residenceCertificate" required onchange="handleFile('residenceCertificate','card-residenceCertificate','name-residenceCertificate')">
+                        </div>
+                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('residenceCertificate').click()">
+                            <i class="fa-solid fa-arrow-up-from-bracket" style="font-size:9px;"></i> Fayl seç
+                        </button>
+                        <span class="file-name" id="name-residenceCertificate">Seçilməyib</span>
+                    </div>
+                </div>
+
+                <div class="doc-card" id="card-xasiyyetname" onclick="document.getElementById('xasiyyetname').click()">
+                    <div class="doc-top">
+                        <div class="doc-num">3</div>
+                        <div class="doc-label-text">Xasiyyətnamə (məktəb tərəfindən)</div>
+                    </div>
+                    <div class="doc-bottom">
+                        <div class="doc-file-input">
+                            <input type="file" id="xasiyyetname" name="xasiyyetname" required onchange="handleFile('xasiyyetname','card-xasiyyetname','name-xasiyyetname')">
+                        </div>
+                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('xasiyyetname').click()">
+                            <i class="fa-solid fa-arrow-up-from-bracket" style="font-size:9px;"></i> Fayl seç
+                        </button>
+                        <span class="file-name" id="name-xasiyyetname">Seçilməyib</span>
+                    </div>
+                </div>
+
+                <div class="doc-card" id="card-idCopies" onclick="document.getElementById('idCopies').click()">
+                    <div class="doc-top">
+                        <div class="doc-num">4</div>
+                        <div class="doc-label-text">Valideyn və şagirdin ŞV surətləri</div>
+                    </div>
+                    <div class="doc-bottom">
+                        <div class="doc-file-input">
+                            <input type="file" id="idCopies" name="idCopies" required onchange="handleFile('idCopies','card-idCopies','name-idCopies')">
+                        </div>
+                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('idCopies').click()">
+                            <i class="fa-solid fa-arrow-up-from-bracket" style="font-size:9px;"></i> Fayl seç
+                        </button>
+                        <span class="file-name" id="name-idCopies">Seçilməyib</span>
+                    </div>
+                </div>
+
+                <div class="doc-card" id="card-tabel" onclick="document.getElementById('tabel').click()">
+                    <div class="doc-top">
+                        <div class="doc-num">5</div>
+                        <div class="doc-label-text">Qiymət cədvəli / tabel (məktəb tərəfindən)</div>
+                    </div>
+                    <div class="doc-bottom">
+                        <div class="doc-file-input">
+                            <input type="file" id="tabel" name="tabel" required onchange="handleFile('tabel','card-tabel','name-tabel')">
+                        </div>
+                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('tabel').click()">
+                            <i class="fa-solid fa-arrow-up-from-bracket" style="font-size:9px;"></i> Fayl seç
+                        </button>
+                        <span class="file-name" id="name-tabel">Seçilməyib</span>
+                    </div>
+                </div>
+
+                <div class="doc-card" id="card-forma027" onclick="document.getElementById('forma027').click()">
+                    <div class="doc-top">
+                        <div class="doc-num">6</div>
+                        <div class="doc-label-text">Tibb müəssisəsindən çıxarış (Forma 027)</div>
+                    </div>
+                    <div class="doc-bottom">
+                        <div class="doc-file-input">
+                            <input type="file" id="forma027" name="forma027" required onchange="handleFile('forma027','card-forma027','name-forma027')">
+                        </div>
+                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('forma027').click()">
+                            <i class="fa-solid fa-arrow-up-from-bracket" style="font-size:9px;"></i> Fayl seç
+                        </button>
+                        <span class="file-name" id="name-forma027">Seçilməyib</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="action-row">
+                <button type="button" class="btn-submit" id="btn-submit" onclick="submitForm()">
+                    <i class="fa-solid fa-paper-plane" style="font-size:13px;"></i>
+                    Sənədləri Portala Göndər
+                </button>
+                <a href="/mekteb.html" class="btn-secondary">
+                    <i class="fa-solid fa-building-columns" style="font-size:12px;"></i>
+                    Məktəb Portalı
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- CARD FOOTER -->
+    <div class="card-footer">
+        <div class="footer-links">
+            <a href="#"><i class="fa-solid fa-circle-question" style="font-size:10px;"></i> Təlimat</a>
+            <a href="#"><i class="fa-solid fa-file-contract" style="font-size:10px;"></i> Razılaşma</a>
+            <a href="#"><i class="fa-solid fa-headset" style="font-size:10px;"></i> Dəstək</a>
+        </div>
+        <div class="footer-status">
+            <div class="status-dot"></div>
+            Sistem aktiv
+        </div>
+    </div>
+
+</div>
+
+<div class="page-footer">
+    © 2026 Psixoloji-Tibbi-Pedaqoji Komissiya &nbsp;·&nbsp; Gəncə-Daşkəsən Regional Təhsil İdarəsi
+</div>
+
 <script>
 (async function authGuard() {
     const token = localStorage.getItem('ptpk_token');
@@ -22,10 +991,7 @@
 async function logout() {
     const token = localStorage.getItem('ptpk_token');
     try {
-        await fetch('/api/auth/logout', {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({token})
-        });
+        await fetch('/api/auth/logout', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({token}) });
     } catch {}
     localStorage.removeItem('ptpk_token');
     localStorage.removeItem('ptpk_role');
@@ -39,1083 +1005,14 @@ window.addEventListener('DOMContentLoaded', () => {
     if (el && email) el.textContent = email;
     updateProgress();
 });
-</script>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PTPK | Rəqəmsal Sənəd Qəbulu</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root {
-            --navy:     #1e3a5f;
-            --navy2:    #264a72;
-            --navy3:    #2f5a82;
-            --accent:   #c9a84c;
-            --accent2:  #f0d080;
-            --accent3:  #fdf0c4;
-            --blue:     #2563eb;
-            --blue-lt:  #dbeafe;
-            --green:    #16a34a;
-            --green-lt: #dcfce7;
-            --red:      #dc2626;
-            --red-lt:   #fee2e2;
-            --muted:    #64748b;
-            --border:   rgba(15,23,42,0.12);
-            --border2:  rgba(15,23,42,0.18);
-            --text:     #0f172a;
-            --text2:    rgba(15,23,42,0.75);
-            --text3:    rgba(15,23,42,0.50);
-            --card-bg:  rgba(255, 255, 255, 0.96);
-            --card-bg2: rgba(255, 255, 255, 0.96);
-            --radius:   12px;
-            --radius-lg:20px;
-        }
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-
-        body {
-            font-family: 'Outfit', sans-serif;
-            min-height: 100dvh;
-            background: #0f1f35 url('ed_teh.jpg') center center / cover no-repeat fixed;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 16px 48px;
-            overflow-x: hidden;
-        }
-
-        /* ── VIDEO BG ── */
-        #video-bg {
-            position: fixed;
-            inset: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            pointer-events: none;
-            overflow: hidden;
-        }
-        #yt-player {
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 177.78vh; height: 100vh;
-            min-width: 100vw; min-height: 56.25vw;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-        }
-        #video-bg::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 10, 30, 0.45);
-            z-index: 1;
-        }
-
-        /* ── TOPBAR ── */
-        .topbar {
-            width: 100%;
-            max-width: 1000px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 0 18px;
-            position: relative;
-            z-index: 2;
-        }
-        .topbar-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .topbar-brand .flag {
-            height: 3px;
-            width: 36px;
-            border-radius: 2px;
-            background: linear-gradient(90deg, #0092BC 33.33%, #EF3340 33.33% 66.66%, #00AF66 66.66%);
-        }
-        .topbar-brand span {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text3);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .user-chip {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.96);
-            border: 1px solid var(--border2);
-            border-radius: 30px;
-            padding: 6px 14px 6px 8px;
-            font-size: 12.5px;
-            font-weight: 500;
-            color: var(--text2);
-            backdrop-filter: blur(10px);
-        }
-        .user-avatar {
-            width: 24px; height: 24px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 10px; font-weight: 700; color: #fff;
-        }
-        .btn-logout {
-            display: flex; align-items: center; gap: 6px;
-            background: rgba(255, 255, 255, 0.96);
-            border: 1px solid var(--border2);
-            border-radius: 30px;
-            padding: 6px 14px;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--text3);
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: 'Outfit', sans-serif;
-            backdrop-filter: blur(10px);
-        }
-        .btn-logout:hover {
-            color: #fca5a5;
-            border-color: rgba(220,38,38,0.4);
-            background: rgba(220,38,38,0.08);
-        }
-
-        /* ── MAIN WRAPPER ── */
-        .main-wrap {
-            width: 100%;
-            max-width: 1000px;
-            display: flex;
-            flex-direction: column;
-            gap: 0;
-            position: relative;
-            z-index: 2;
-        }
-
-        /* ── PORTAL HEADER ── */
-        .portal-header {
-            background: rgba(255, 255, 255, 0.96);
-            border: 1px solid var(--border2);
-            border-bottom: none;
-            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-            padding: 28px 36px;
-            display: flex;
-            align-items: center;
-            gap: 22px;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(20px);
-        }
-        .portal-header::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg,
-                rgba(37,99,235,0.22) 0%,
-                rgba(201,168,76,0.10) 50%,
-                transparent 100%);
-            pointer-events: none;
-        }
-        .portal-header::after {
-            content: '';
-            position: absolute;
-            bottom: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(180,130,20,0.4), transparent);
-        }
-        .logo-box {
-            width: 58px; height: 58px;
-            border-radius: 14px;
-            background: rgba(255, 255, 255, 0.50);
-            border: 1px solid rgba(255,255,255,0.15);
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-            position: relative; z-index: 1;
-        }
-        .logo-box img { width: 44px; height: 44px; object-fit: contain; }
-        .header-text { flex: 1; position: relative; z-index: 1; }
-        .header-text h1 {
-            font-size: 20px; font-weight: 700;
-            color: #fff; letter-spacing: -0.3px; line-height: 1.3;
-        }
-        .header-text p {
-            font-size: 12.5px; color: var(--text2);
-            margin-top: 4px; font-weight: 400;
-        }
-        .header-badges {
-            display: flex; flex-direction: column;
-            align-items: flex-end; gap: 7px;
-            position: relative; z-index: 1;
-        }
-        .hbadge {
-            display: inline-flex; align-items: center; gap: 5px;
-            border-radius: 20px;
-            padding: 4px 11px;
-            font-size: 10.5px; font-weight: 700;
-            letter-spacing: 0.04em; text-transform: uppercase;
-        }
-        .hbadge.gold {
-            background: rgba(201,168,76,0.15);
-            border: 1px solid rgba(201,168,76,0.35);
-            color: var(--accent2);
-        }
-        .hbadge.blue {
-            background: rgba(37,99,235,0.15);
-            border: 1px solid rgba(37,99,235,0.3);
-            color: #93c5fd;
-        }
-
-        /* ── PROGRESS STRIP ── */
-        .prog-strip {
-            background: rgba(255, 255, 255, 0.94);
-            border: 1px solid var(--border);
-            border-top: none; border-bottom: none;
-            padding: 0 36px;
-            display: flex;
-            align-items: stretch;
-            gap: 0;
-            backdrop-filter: blur(16px);
-        }
-        .prog-item {
-            display: flex; align-items: center; gap: 9px;
-            padding: 13px 0;
-            margin-right: 32px;
-            border-bottom: 2px solid transparent;
-            font-size: 12.5px; font-weight: 600;
-            color: var(--text3);
-            transition: all 0.25s;
-            cursor: default;
-        }
-        .prog-item.active {
-            color: var(--accent2);
-            border-bottom-color: var(--accent);
-        }
-        .prog-item.done { color: #4ade80; }
-        .prog-num {
-            width: 22px; height: 22px; border-radius: 50%;
-            background: rgba(15,23,42,0.08);
-            border: 1px solid rgba(15,23,42,0.14);
-            color: #64748b;
-            font-size: 11px; font-weight: 700;
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.25s;
-        }
-        .prog-item.active .prog-num {
-            background: rgba(201,168,76,0.2);
-            border-color: var(--accent);
-            color: var(--accent2);
-        }
-        .prog-item.done .prog-num {
-            background: rgba(22,163,74,0.2);
-            border-color: #22c55e;
-            color: #4ade80;
-        }
-        .prog-fill {
-            margin-left: auto;
-            display: flex; align-items: center; gap: 8px;
-            font-size: 11.5px; font-weight: 600; color: var(--text3);
-        }
-        .prog-fill-bar {
-            width: 80px; height: 3px;
-            border-radius: 2px;
-            background: rgba(255,255,255,0.1);
-            overflow: hidden;
-        }
-        .prog-fill-inner {
-            height: 100%; border-radius: 2px;
-            background: linear-gradient(90deg, var(--accent), var(--accent2));
-            transition: width 0.4s cubic-bezier(.22,.68,0,1.2);
-        }
-
-        /* ── CARD BODY ── */
-        .card-body {
-            background: rgba(255, 255, 255, 0.62);
-            border: 1px solid var(--border);
-            border-top: none;
-            padding: 32px 36px;
-            backdrop-filter: blur(20px);
-        }
-
-        /* ── SECTION HEADS ── */
-        .sec-head {
-            display: flex; align-items: center; gap: 12px;
-            margin-bottom: 22px; padding-bottom: 14px;
-            border-bottom: 1px solid var(--border);
-        }
-        .sec-icon {
-            width: 36px; height: 36px; border-radius: 10px;
-            background: rgba(37,99,235,0.15);
-            border: 1px solid rgba(37,99,235,0.25);
-            color: #93c5fd;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 15px; flex-shrink: 0;
-        }
-        .sec-icon.gold {
-            background: rgba(201,168,76,0.12);
-            border-color: rgba(201,168,76,0.25);
-            color: var(--accent2);
-        }
-        .sec-head h2 { font-size: 14.5px; font-weight: 700; color: var(--text); }
-        .sec-head p { font-size: 12px; color: var(--text3); margin-top: 2px; }
-
-        /* ── FORM GRID ── */
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px 20px;
-            margin-bottom: 32px;
-        }
-        .field { display: flex; flex-direction: column; gap: 7px; }
-        .field.span2 { grid-column: span 2; }
-
-        .field label {
-            font-size: 11px; font-weight: 700;
-            color: var(--text3);
-            text-transform: uppercase; letter-spacing: 0.08em;
-            display: flex; align-items: center; gap: 5px;
-        }
-        .field label .req { color: var(--accent); font-size: 14px; line-height: 1; }
-
-        .field input,
-        .field select {
-            width: 100%; height: 46px;
-            padding: 0 14px;
-            font-size: 14px; font-weight: 500;
-            font-family: 'Outfit', sans-serif;
-            color: #0f172a;
-            background: rgba(255, 255, 255, 0.55);
-            border: 1px solid rgba(15,23,42,0.15);
-            border-radius: var(--radius);
-            outline: none;
-            transition: all 0.2s;
-            appearance: none; -webkit-appearance: none;
-        }
-        .field select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%2394a3b8' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-color: rgba(255, 255, 255, 0.55);
-            padding-right: 36px;
-        }
-        .field select option,
-        .field select optgroup {
-            background: #f1f5f9;
-            color: #f1f5f9;
-        }
-        .field input:focus,
-        .field select:focus {
-            border-color: rgba(201,168,76,0.5);
-            background: rgba(255, 255, 255, 0.62);
-            box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
-        }
-        .field input::placeholder { color: var(--text3); font-weight: 400; }
-
-        #finCode {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 16px; letter-spacing: 0.14em;
-            text-transform: uppercase;
-        }
-
-        /* ── DOCS GRID ── */
-        .docs-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 28px;
-        }
-        .doc-card {
-            background: rgba(255, 255, 255, 0.50);
-            border: 1px dashed rgba(15,23,42,0.18);
-            border-radius: var(--radius);
-            padding: 14px 16px;
-            display: flex; flex-direction: column; gap: 10px;
-            transition: all 0.2s;
-            cursor: pointer;
-            position: relative;
-        }
-        .doc-card:hover {
-            border-color: rgba(180,130,20,0.50);
-            background: rgba(201,168,76,0.05);
-        }
-        .doc-card.has-file {
-            border-style: solid;
-            border-color: rgba(22,163,74,0.5);
-            background: rgba(22,163,74,0.06);
-        }
-        .doc-top {
-            display: flex; align-items: flex-start; gap: 10px;
-        }
-        .doc-num {
-            width: 24px; height: 24px; border-radius: 7px;
-            background: rgba(37,99,235,0.2);
-            border: 1px solid rgba(37,99,235,0.3);
-            color: #93c5fd;
-            font-size: 11px; font-weight: 700;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-        .doc-card.has-file .doc-num {
-            background: rgba(22,163,74,0.2);
-            border-color: rgba(22,163,74,0.5);
-            color: #4ade80;
-        }
-        .doc-label-text {
-            font-size: 12.5px; font-weight: 600;
-            color: var(--text2); line-height: 1.45;
-        }
-        .doc-bottom {
-            display: flex; align-items: center; gap: 8px;
-        }
-        .doc-file-input input[type="file"] { display: none; }
-        .btn-choose {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(255,255,255,0.80);
-            border: 1px solid rgba(15,23,42,0.18);
-            border-radius: 8px;
-            padding: 6px 11px;
-            font-size: 11.5px; font-weight: 600;
-            color: #334155; cursor: pointer;
-            transition: all 0.18s;
-            font-family: 'Outfit', sans-serif;
-            white-space: nowrap;
-        }
-        .btn-choose:hover {
-            border-color: rgba(201,168,76,0.4);
-            color: var(--accent2);
-            background: rgba(201,168,76,0.08);
-        }
-        .doc-card.has-file .btn-choose {
-            border-color: rgba(22,163,74,0.35);
-            color: #4ade80;
-            background: rgba(22,163,74,0.08);
-        }
-        .file-name {
-            font-size: 11px; font-weight: 500;
-            color: var(--text3);
-            font-family: 'JetBrains Mono', monospace;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-            max-width: 160px;
-        }
-        .doc-card.has-file .file-name { color: #4ade80; }
-
-        /* ── ALERT ── */
-        .alert {
-            padding: 12px 16px; border-radius: var(--radius);
-            font-size: 13.5px; font-weight: 600;
-            display: none; gap: 10px; align-items: center;
-            margin-bottom: 20px;
-        }
-        .alert.error   { background: rgba(220,38,38,0.12); color: #fca5a5; border: 1px solid rgba(220,38,38,0.25); display: flex; }
-        .alert.success { background: rgba(22,163,74,0.12); color: #86efac; border: 1px solid rgba(22,163,74,0.25); display: flex; }
-        .alert.info    { background: rgba(37,99,235,0.12); color: #93c5fd; border: 1px solid rgba(37,99,235,0.25); display: flex; }
-
-        /* ── ACTION ROW ── */
-        .action-row {
-            display: flex; gap: 12px; align-items: stretch;
-        }
-        .btn-submit {
-            flex: 1; height: 54px;
-            background: rgba(201,168,76,0.18);
-            border: 1px solid rgba(201,168,76,0.4);
-            border-radius: var(--radius);
-            color: var(--accent2);
-            font-size: 15px; font-weight: 700;
-            font-family: 'Outfit', sans-serif;
-            cursor: pointer;
-            display: flex; justify-content: center; align-items: center; gap: 10px;
-            transition: all 0.2s;
-            letter-spacing: 0.01em;
-            backdrop-filter: blur(8px);
-        }
-        .btn-submit:hover {
-            background: rgba(201,168,76,0.26);
-            box-shadow: 0 4px 20px rgba(201,168,76,0.2);
-            transform: translateY(-1px);
-        }
-        .btn-submit:active { transform: translateY(0) scale(0.99); }
-        .btn-submit:disabled {
-            background: rgba(255,255,255,0.05);
-            color: var(--text3);
-            border-color: rgba(255,255,255,0.08);
-            cursor: not-allowed; transform: none; box-shadow: none;
-        }
-        .btn-secondary {
-            height: 54px; padding: 0 22px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.14);
-            border-radius: var(--radius);
-            font-size: 14px; font-weight: 600;
-            font-family: 'Outfit', sans-serif;
-            color: var(--text2);
-            cursor: pointer;
-            display: flex; align-items: center; gap: 8px;
-            text-decoration: none;
-            transition: all 0.18s;
-            white-space: nowrap;
-        }
-        .btn-secondary:hover {
-            border-color: rgba(255,255,255,0.25);
-            color: #fff;
-            background: rgba(255, 255, 255, 0.62);
-        }
-
-        /* ── CARD FOOTER ── */
-        .card-footer {
-            background: rgba(255, 255, 255, 0.94);
-            border: 1px solid var(--border);
-            border-top: none;
-            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-            padding: 14px 36px;
-            display: flex; align-items: center; justify-content: space-between;
-            backdrop-filter: blur(16px);
-        }
-        .footer-links {
-            display: flex; gap: 20px;
-        }
-        .footer-links a {
-            font-size: 12px; font-weight: 600;
-            color: #64748b; text-decoration: none;
-            display: flex; align-items: center; gap: 5px;
-            transition: color 0.15s;
-        }
-        .footer-links a:hover { color: var(--accent2); }
-        .footer-status {
-            display: flex; align-items: center; gap: 7px;
-            font-size: 11.5px; font-weight: 600;
-            color: #4ade80;
-        }
-        .status-dot {
-            width: 7px; height: 7px; border-radius: 50%;
-            background: #22c55e;
-            animation: pulse 2s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
-            50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(34,197,94,0); }
-        }
-
-        /* ── PAGE FOOTER ── */
-        .page-footer {
-            margin-top: 20px;
-            font-size: 11.5px; color: var(--text3);
-            font-weight: 500; text-align: center;
-            position: relative; z-index: 2;
-            color: rgba(255,255,255,0.7);
-        }
-
-        /* ── SPINNER ── */
-        .spinner {
-            width: 18px; height: 18px;
-            border: 2px solid rgba(201,168,76,0.3);
-            border-top-color: var(--accent2);
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ── RESPONSIVE ── */
-        @media (max-width: 720px) {
-            body { padding: 12px 8px 32px; }
-            .portal-header { padding: 20px; gap: 14px; }
-            .header-badges { display: none; }
-            .prog-strip { padding: 0 20px; overflow-x: auto; }
-            .prog-fill { display: none; }
-            .card-body { padding: 24px 20px; }
-            .form-grid { grid-template-columns: 1fr; }
-            .field.span2 { grid-column: span 1; }
-            .docs-grid { grid-template-columns: 1fr; }
-            .action-row { flex-direction: column; }
-            .card-footer { flex-direction: column; gap: 10px; padding: 14px 20px; }
-            .topbar-brand span { display: none; }
-        }
-    </style>
-</head>
-<body>
-
-
-<!-- FULLSCREEN VIDEO BG -->
-<div id="video-bg">
-    <div id="yt-player"></div>
-</div>
-
-<script>
-var tag = document.createElement('script');
-tag.src = "https://www.youtube.com/iframe_api";
-document.head.appendChild(tag);
-var ytPlayer;
-function onYouTubeIframeAPIReady() {
-    ytPlayer = new YT.Player('yt-player', {
-        videoId: 'iV-woQD3KFI',
-        playerVars: {
-            autoplay: 1, loop: 1, playlist: 'iV-woQD3KFI',
-            mute: 1, controls: 0, disablekb: 1, fs: 0,
-            modestbranding: 1, rel: 0, iv_load_policy: 3, playsinline: 1
-        },
-        events: {
-            onReady: function(e) {
-                e.target.mute();
-                e.target.playVideo();
-            },
-            onStateChange: function(e) {
-                if (e.data === YT.PlayerState.ENDED) e.target.playVideo();
-            }
-        }
-    });
-}
-</script>
-
-<!-- TOPBAR -->
-<div class="topbar">
-    <div class="topbar-brand">
-        <div class="flag"></div>
-        <span>Gəncə-Daşkəsən Regional Təhsil İdarəsi</span>
-    </div>
-    <div class="topbar-right">
-        <div class="user-chip">
-            <div class="user-avatar"><i class="fa-solid fa-user" style="font-size:9px;"></i></div>
-            <span id="user-name-display">İstifadəçi</span>
-        </div>
-        <button class="btn-logout" onclick="logout()">
-            <i class="fa-solid fa-right-from-bracket" style="font-size:11px;"></i> Çıxış
-        </button>
-    </div>
-</div>
-
-<div class="main-wrap">
-
-    <!-- HEADER -->
-    <div class="portal-header">
-        <div class="logo-box">
-            <img src="image.png" alt="PTPK">
-        </div>
-        <div class="header-text">
-            <h1>Rəqəmsal Sənəd Qəbulu Sistemi</h1>
-            <p>Psixoloji-Tibbi-Pedaqoji Komissiya · Gəncə-Daşkəsən Regional Təhsil İdarəsi</p>
-        </div>
-        <div class="header-badges">
-            <div class="hbadge gold">
-                <i class="fa-solid fa-shield-halved" style="font-size:9px;"></i>
-                Rəsmi Portal
-            </div>
-            <div class="hbadge blue">
-                <i class="fa-solid fa-lock" style="font-size:9px;"></i>
-                Şifrəli bağlantı
-            </div>
-        </div>
-    </div>
-
-    <!-- PROGRESS -->
-    <div class="prog-strip">
-        <div class="prog-item active" id="pi-1">
-            <div class="prog-num">1</div>
-            Şagird məlumatları
-        </div>
-        <div class="prog-item" id="pi-2">
-            <div class="prog-num">2</div>
-            Sənədlər
-        </div>
-        <div class="prog-item" id="pi-3">
-            <div class="prog-num">3</div>
-            Göndəriş
-        </div>
-        <div class="prog-fill">
-            <span id="prog-text">0 / 9 tamamlandı</span>
-            <div class="prog-fill-bar">
-                <div class="prog-fill-inner" id="prog-bar" style="width:0%"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- BODY -->
-    <div class="card-body">
-        <form id="studentForm">
-
-            <div id="alert-box" class="alert"></div>
-
-            <!-- SECTION 1 -->
-            <div class="sec-head">
-                <div class="sec-icon">
-                    <i class="fa-solid fa-user-graduate"></i>
-                </div>
-                <div>
-                    <h2>Şagird Məlumatları</h2>
-                    <p>Bütün xanaları dəqiq doldurun</p>
-                </div>
-            </div>
-
-            <div class="form-grid">
-                <div class="field">
-                    <label>Soyadı, Adı, Atasının adı <span class="req">*</span></label>
-                    <input type="text" id="studentName" name="studentName" placeholder="Tam ad (S.A.A.)" required oninput="updateProgress()">
-                </div>
-
-                <div class="field">
-                    <label>FİN Kod <span class="req">*</span></label>
-                    <input type="text" id="finCode" name="finCode" placeholder="0000000" maxlength="7" style="text-transform:uppercase;" required oninput="updateProgress()">
-                </div>
-
-                <div class="field span2">
-                    <label>Ümumtəhsil Müəssisəsi <span class="req">*</span></label>
-                    <select id="schoolSelect" onchange="updateProgress()" name="schoolSelect" required>
-                        <option value="" disabled selected>— Məktəbi seçin —</option>
-                        <optgroup label="📍 Gəncə şəhəri">
-                            <option value="Gəncə şəhər İ.Qayıbov adına 1 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər İ.Qayıbov adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər Ə.Cavad adına 2 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər Ə.Cavad adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 3 nömrəli tam orta ümumtəhsil məktəb-liseyi">Gəncə şəhər 3 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
-                            <option value="Gəncə şəhər M.Mehdizadə adına 4 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Mehdizadə adına 4 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər M.Ə.Sabir adına 5 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Ə.Sabir adına 5 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər C.Cabbarlı adına 6 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər C.Cabbarlı adına 6 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 7 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 7 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər M.P.Vaqif adına 8 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.P.Vaqif adına 8 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 9 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 9 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər M.Hadi adına 10 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Hadi adına 10 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər N.Gəncəvi adına 11 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər N.Gəncəvi adına 11 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər V.Əliyev adına 12 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər V.Əliyev adına 12 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər H.Əliyev adına 13 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər H.Əliyev adına 13 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər M.Müşfiq adına 14 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Müşfiq adına 14 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər M.Əzizbəyov adına 15 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Əzizbəyov adına 15 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər M.Ş.Vazeh adına 16 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.Ş.Vazeh adına 16 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 17 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 17 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər N.Aydın adına 18 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər N.Aydın adına 18 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 19 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 19 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər M.A.Abbaszadə adına 20 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər M.A.Abbaszadə adına 20 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 21 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 21 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 22 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 22 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 23 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 23 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 24 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 24 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 25 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 25 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 26 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 26 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər İ.Məmmədov adına 27 nömrəli tam orta ümumtəhsil məktəb-liseyi">Gəncə şəhər İ.Məmmədov adına 27 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
-                            <option value="Gəncə şəhər 28 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 28 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 29 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 29 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 30 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 30 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 31 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 31 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 32 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 32 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 33 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 33 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 34 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 34 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 35 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 35 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 36 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 36 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 37 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 37 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 38 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 38 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 39 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 39 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 40 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 40 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 41 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 41 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 42 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 42 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər 43 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər 43 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə şəhər İnteqrasiya təlimli İnternat Tipli Gimnaziya">Gəncə şəhər İnteqrasiya təlimli İnternat Tipli Gimnaziya</option>
-                            <option value="Gəncə şəhər 45 nömrəli xüsusi məktəbi">Gəncə şəhər 45 nömrəli xüsusi məktəbi</option>
-                        </optgroup>
-                        <optgroup label="📍 Göygöl rayonu">
-                            <option value="Göygöl şəhər 1 nömrəli tam orta ümumtəhsil məktəbi">Göygöl şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Göygöl şəhər 2 nömrəli tam orta ümumtəhsil məktəb-liseyi">Göygöl şəhər 2 nömrəli tam orta ümumtəhsil məktəb-liseyi</option>
-                            <option value="Xaqani kənd tam orta ümumtəhsil məktəbi">Xaqani kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Toğanalı kənd tam orta ümumtəhsil məktəbi">Toğanalı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Üçtəpə kənd tam orta ümumtəhsil məktəbi">Üçtəpə kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Xanalılar kənd tam orta ümumtəhsil məktəbi">Xanalılar kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Firuzabad kənd tam orta ümumtəhsil məktəbi">Firuzabad kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Hacıməlik kənd tam orta ümumtəhsil məktəbi">Hacıməlik kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Aşıqlı kənd tam orta ümumtəhsil məktəbi">Aşıqlı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Quşqara kənd tam orta ümumtəhsil məktəbi">Quşqara kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Balçılı kənd tam orta ümumtəhsil məktəbi">Balçılı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Almalı kənd tam orta ümumtəhsil məktəbi">Almalı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Çaykənd kənd tam orta ümumtəhsil məktəbi">Çaykənd kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Çaylı kənd tam orta ümumtəhsil məktəbi">Çaylı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Dozular kənd tam orta ümumtəhsil məktəbi">Dozular kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gəncə kənd tam orta ümumtəhsil məktəbi">Gəncə kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Göykənd kənd ümumi orta məktəbi">Göykənd kənd ümumi orta məktəbi</option>
-                            <option value="Qızılca kənd tam orta ümumtəhsil məktəbi">Qızılca kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Köşkü kənd tam orta ümumtəhsil məktəbi">Köşkü kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Mollacəlilli kənd tam orta ümumtəhsil məktəbi">Mollacəlilli kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Nadel kənd tam orta ümumtəhsil məktəbi">Nadel kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Pənahlılar kənd tam orta ümumtəhsil məktəbi">Pənahlılar kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Sarısu kənd ümumi orta məktəbi">Sarısu kənd ümumi orta məktəbi</option>
-                            <option value="Şəhriyar kənd tam orta ümumtəhsil məktəbi">Şəhriyar kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Yenikənd kənd tam orta ümumtəhsil məktəbi">Yenikənd kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Zurnabad kənd tam orta ümumtəhsil məktəbi">Zurnabad kənd tam orta ümumtəhsil məktəbi</option>
-                        </optgroup>
-                        <optgroup label="📍 Daşkəsən rayonu">
-                            <option value="Daşkəsən şəhər S.Vurğun adına 1 nömrəli tam orta ümumtəhsil məktəbi">Daşkəsən şəhər S.Vurğun adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Daşkəsən şəhər A.Mürsəlov adına 2 nömrəli tam orta ümumtəhsil məktəbi">Daşkəsən şəhər A.Mürsəlov adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Quşçu kənd tam orta ümumtəhsil məktəbi">Quşçu kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Bayan kənd tam orta ümumtəhsil məktəbi">Bayan kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Əhmədli kənd tam orta ümumtəhsil məktəbi">Əhmədli kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Alaxançallı kənd tam orta ümumtəhsil məktəbi">Alaxançallı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Zivlan kənd tam orta ümumtəhsil məktəbi">Zivlan kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Gurbulaq kənd tam orta ümumtəhsil məktəbi">Gurbulaq kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Xoşbulaq kənd tam orta ümumtəhsil məktəbi">Xoşbulaq kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Almalı kənd ümumi orta məktəbi">Almalı kənd ümumi orta məktəbi</option>
-                            <option value="Astaf kənd tam orta ümumtəhsil məktəbi">Astaf kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Çaykənd kənd tam orta ümumtəhsil məktəbi">Çaykənd kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Çıraqlı kənd tam orta ümumtəhsil məktəbi">Çıraqlı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Daşkəsən kənd tam orta ümumtəhsil məktəbi">Daşkəsən kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Emilli kənd tam orta ümumtəhsil məktəbi">Emilli kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Göyvilyurd kənd tam orta ümumtəhsil məktəbi">Göyvilyurd kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Xaçbulaq kənd tam orta ümumtəhsil məktəbi">Xaçbulaq kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Qabaqtəpə kənd tam orta ümumtəhsil məktəbi">Qabaqtəpə kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Qarataq kənd ümumi orta məktəbi">Qarataq kənd ümumi orta məktəbi</option>
-                            <option value="Mollahasanlı kənd tam orta ümumtəhsil məktəbi">Mollahasanlı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Muganlı kənd tam orta ümumtəhsil məktəbi">Muganlı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Pirverdilər kənd tam orta ümumtəhsil məktəbi">Pirverdilər kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Quşçu qəsəbə tam orta ümumtəhsil məktəbi">Quşçu qəsəbə tam orta ümumtəhsil məktəbi</option>
-                            <option value="Səbətkeçməz kənd tam orta ümumtəhsil məktəbi">Səbətkeçməz kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Şahvələdli kənd tam orta ümumtəhsil məktəbi">Şahvələdli kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Tazakənd kənd tam orta ümumtəhsil məktəbi">Tazakənd kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Yenikənd kənd tam orta ümumtəhsil məktəbi">Yenikənd kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Yolqullar kənd tam orta ümumtəhsil məktəbi">Yolqullar kənd tam orta ümumtəhsil məktəbi</option>
-                        </optgroup>
-                        <optgroup label="📍 Goranboy rayonu">
-                            <option value="Goranboy şəhər 1 nömrəli tam orta ümumtəhsil məktəbi">Goranboy şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Goranboy şəhər 2 nömrəli tam orta ümumtəhsil məktəbi">Goranboy şəhər 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Dəliməmmədli şəhər tam orta ümumtəhsil məktəbi">Dəliməmmədli şəhər tam orta ümumtəhsil məktəbi</option>
-                            <option value="Aşağı Ağcakənd qəsəbə tam orta ümumtəhsil məktəbi">Aşağı Ağcakənd qəsəbə tam orta ümumtəhsil məktəbi</option>
-                            <option value="Qazanbulaq qəsəbə tam orta ümumtəhsil məktəbi">Qazanbulaq qəsəbə tam orta ümumtəhsil məktəbi</option>
-                            <option value="Goran qəsəbə tam orta ümumtəhsil məktəbi">Goran qəsəbə tam orta ümumtəhsil məktəbi</option>
-                            <option value="Xan Qərvənd kənd tam orta ümumtəhsil məktəbi">Xan Qərvənd kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Səfikürd kənd tam orta ümumtəhsil məktəbi">Səfikürd kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Tap Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi">Tap Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Borsunlu kənd tam orta ümumtəhsil məktəbi">Borsunlu kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Qızılhacılı kənd 1 nömrəli tam orta ümumtəhsil məktəbi">Qızılhacılı kənd 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Qızılhacılı kənd 2 nömrəli tam orta ümumtəhsil məktəbi">Qızılhacılı kənd 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Boluslu kənd tam orta ümumtəhsil məktəbi">Boluslu kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Nadir kənd tam orta ümumtəhsil məktəbi">Nadir kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Veyisli kənd tam orta ümumtəhsil məktəbi">Veyisli kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Alpout kənd tam orta ümumtəhsil məktəbi">Alpout kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Baxçakürd kənd tam orta ümumtəhsil məktəbi">Baxçakürd kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Abram kənd tam orta ümumtəhsil məktəbi">Abram kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Buzluq kənd ümumi orta məktəbi">Buzluq kənd ümumi orta məktəbi</option>
-                            <option value="Gülüstan kənd tam orta ümumtəhsil məktəbi">Gülüstan kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Ərzuman kənd tam orta ümumtəhsil məktəbi">Ərzuman kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Fəxralı kənd tam orta ümumtəhsil məktəbi">Fəxralı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Qaradağlı kənd tam orta ümumtəhsil məktəbi">Qaradağlı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Qaraməmmədli kənd tam orta ümumtəhsil məktəbi">Qaraməmmədli kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Qazan kənd tam orta ümumtəhsil məktəbi">Qazan kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Quşçular kənd tam orta ümumtəhsil məktəbi">Quşçular kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Meşəli kənd ümumi orta məktəbi">Meşəli kənd ümumi orta məktəbi</option>
-                            <option value="Sarısu kənd tam orta ümumtəhsil məktəbi">Sarısu kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Semax kənd ümumi orta məktəbi">Semax kənd ümumi orta məktəbi</option>
-                            <option value="Toly kənd tam orta ümumtəhsil məktəbi">Toly kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Xoylunlu kənd tam orta ümumtəhsil məktəbi">Xoylunlu kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Zeyva kənd tam orta ümumtəhsil məktəbi">Zeyva kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Goranboy rayon İnteqrasiya təlimli İnternat Tipli Gimnaziya">Goranboy rayon İnteqrasiya təlimli İnternat Tipli Gimnaziya</option>
-                        </optgroup>
-                        <optgroup label="📍 Samux rayonu">
-                            <option value="Samux şəhər 1 nömrəli tam orta ümumtəhsil məktəbi">Samux şəhər 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux şəhər 2 nömrəli tam orta ümumtəhsil məktəbi">Samux şəhər 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Alıuşağı kənd tam orta ümumtəhsil məktəbi">Samux rayon Alıuşağı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Burunqovaq kənd tam orta ümumtəhsil məktəbi">Samux rayon Burunqovaq kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Çobanddağ kənd ümumi orta məktəbi">Samux rayon Çobanddağ kənd ümumi orta məktəbi</option>
-                            <option value="Samux rayon Əhmədbəyli kənd tam orta ümumtəhsil məktəbi">Samux rayon Əhmədbəyli kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Əli Bayramlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Əli Bayramlı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Füzuli kənd tam orta ümumtəhsil məktəbi">Samux rayon Füzuli kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Göyüşlü kənd ümumi orta məktəbi">Samux rayon Göyüşlü kənd ümumi orta məktəbi</option>
-                            <option value="Samux rayon Hacıalılı kənd tam orta ümumtəhsil məktəbi">Samux rayon Hacıalılı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon İnstitut qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon İnstitut qəsəbə tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Kəsəmən kənd tam orta ümumtəhsil məktəbi">Samux rayon Kəsəmən kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Kolayır kənd tam orta ümumtəhsil məktəbi">Samux rayon Kolayır kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Qarabağlar kənd 1 nömrəli tam orta ümumtəhsil məktəbi">Samux rayon Qarabağlar kənd 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Qarabağlar kənd 2 nömrəli tam orta ümumtəhsil məktəbi">Samux rayon Qarabağlar kənd 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Qarabağlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Qarabağlı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Qədili kənd ümumi orta məktəbi">Samux rayon Qədili kənd ümumi orta məktəbi</option>
-                            <option value="Samux rayon Qırıqlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Qırıqlı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Qobustu kənd əsas məktəbi">Samux rayon Qobustu kənd əsas məktəbi</option>
-                            <option value="Samux rayon Ləki kənd tam orta ümumtəhsil məktəbi">Samux rayon Ləki kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Poylu kənd tam orta ümumtəhsil məktəbi">Samux rayon Poylu kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Poylu qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon Poylu qəsəbə tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Salahlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Salahlı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Səfərliyev adına qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon Səfərliyev adına qəsəbə tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Sərkar kənd tam orta ümumtəhsil məktəbi">Samux rayon Sərkar kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Seyidlər kənd tam orta ümumtəhsil məktəbi">Samux rayon Seyidlər kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Tatlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Tatlı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Yenikənd kənd tam orta ümumtəhsil məktəbi">Samux rayon Yenikənd kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Yenidövran qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon Yenidövran qəsəbə tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Ziyadlı kənd tam orta ümumtəhsil məktəbi">Samux rayon Ziyadlı kənd tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon İstixana qəsəbə ümumi orta məktəbi">Samux rayon İstixana qəsəbə ümumi orta məktəbi</option>
-                            <option value="Samux rayon Ləki kənd ümumi orta məktəbi">Samux rayon Ləki kənd ümumi orta məktəbi</option>
-                            <option value="Samux rayon Poylu kənd ümumi orta məktəbi">Samux rayon Poylu kənd ümumi orta məktəbi</option>
-                            <option value="Samux rayon Qəsəbə tam orta ümumtəhsil məktəbi">Samux rayon Qəsəbə tam orta ümumtəhsil məktəbi</option>
-                            <option value="Samux rayon Kolayır kənd əsas məktəbi">Samux rayon Kolayır kənd əsas məktəbi</option>
-                        </optgroup>
-                        <optgroup label="📍 Naftalan şəhəri">
-                            <option value="Naftalan şəhər İ.Nəsimi adına 1 nömrəli tam orta ümumtəhsil məktəbi">Naftalan şəhər İ.Nəsimi adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Naftalan şəhər Z.Rüstəmov adına 2 nömrəli tam orta ümumtəhsil məktəbi">Naftalan şəhər Z.Rüstəmov adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
-                            <option value="Naftalan şəhər Qaşaltı Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi">Naftalan şəhər Qaşaltı Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi</option>
-                        </optgroup>
-                    </select>
-                </div>
-
-                <div class="field">
-                    <label>Müraciət Növü <span class="req">*</span></label>
-                    <select id="applicationType" name="applicationType" required onchange="updateProgress()">
-                        <option value="" disabled selected>Seçin...</option>
-                        <option value="Yeni">Yeni müraciət</option>
-                        <option value="Təkrar">Təkrar müraciət</option>
-                    </select>
-                </div>
-
-                <div class="field">
-                    <label>Tədris İli <span class="req">*</span></label>
-                    <select id="academicYear" name="academicYear" required onchange="updateProgress()">
-                        <option value="2025/2026">2025 / 2026</option>
-                        <option value="2026/2027">2026 / 2027</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- SECTION 2 -->
-            <div class="sec-head">
-                <div class="sec-icon gold">
-                    <i class="fa-solid fa-folder-open"></i>
-                </div>
-                <div>
-                    <h2>Tələb Olunan Sənədlər</h2>
-                    <p>6 sənədin hamısı yüklənməlidir</p>
-                </div>
-            </div>
-
-            <div class="docs-grid">
-                <div class="doc-card" id="card-coverLetter" onclick="document.getElementById('coverLetter').click()">
-                    <div class="doc-top">
-                        <div class="doc-num">1</div>
-                        <div class="doc-label-text">Məktəbin müşayiət məktubu</div>
-                    </div>
-                    <div class="doc-bottom">
-                        <div class="doc-file-input">
-                            <input type="file" id="coverLetter" name="coverLetter" required onchange="handleFile('coverLetter','card-coverLetter','name-coverLetter')">
-                        </div>
-                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('coverLetter').click()">
-                            <i class="fa-solid fa-upload" style="font-size:10px;"></i> Fayl seç
-                        </button>
-                        <span class="file-name" id="name-coverLetter">Seçilməyib</span>
-                    </div>
-                </div>
-
-                <div class="doc-card" id="card-residenceCertificate" onclick="document.getElementById('residenceCertificate').click()">
-                    <div class="doc-top">
-                        <div class="doc-num">2</div>
-                        <div class="doc-label-text">Yaşayış yerindən arayış</div>
-                    </div>
-                    <div class="doc-bottom">
-                        <div class="doc-file-input">
-                            <input type="file" id="residenceCertificate" name="residenceCertificate" required onchange="handleFile('residenceCertificate','card-residenceCertificate','name-residenceCertificate')">
-                        </div>
-                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('residenceCertificate').click()">
-                            <i class="fa-solid fa-upload" style="font-size:10px;"></i> Fayl seç
-                        </button>
-                        <span class="file-name" id="name-residenceCertificate">Seçilməyib</span>
-                    </div>
-                </div>
-
-                <div class="doc-card" id="card-xasiyyetname" onclick="document.getElementById('xasiyyetname').click()">
-                    <div class="doc-top">
-                        <div class="doc-num">3</div>
-                        <div class="doc-label-text">Xasiyyətnamə (məktəb tərəfindən)</div>
-                    </div>
-                    <div class="doc-bottom">
-                        <div class="doc-file-input">
-                            <input type="file" id="xasiyyetname" name="xasiyyetname" required onchange="handleFile('xasiyyetname','card-xasiyyetname','name-xasiyyetname')">
-                        </div>
-                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('xasiyyetname').click()">
-                            <i class="fa-solid fa-upload" style="font-size:10px;"></i> Fayl seç
-                        </button>
-                        <span class="file-name" id="name-xasiyyetname">Seçilməyib</span>
-                    </div>
-                </div>
-
-                <div class="doc-card" id="card-idCopies" onclick="document.getElementById('idCopies').click()">
-                    <div class="doc-top">
-                        <div class="doc-num">4</div>
-                        <div class="doc-label-text">Valideyn və şagirdin ŞV surətləri</div>
-                    </div>
-                    <div class="doc-bottom">
-                        <div class="doc-file-input">
-                            <input type="file" id="idCopies" name="idCopies" required onchange="handleFile('idCopies','card-idCopies','name-idCopies')">
-                        </div>
-                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('idCopies').click()">
-                            <i class="fa-solid fa-upload" style="font-size:10px;"></i> Fayl seç
-                        </button>
-                        <span class="file-name" id="name-idCopies">Seçilməyib</span>
-                    </div>
-                </div>
-
-                <div class="doc-card" id="card-tabel" onclick="document.getElementById('tabel').click()">
-                    <div class="doc-top">
-                        <div class="doc-num">5</div>
-                        <div class="doc-label-text">Qiymət cədvəli / tabel (məktəb tərəfindən)</div>
-                    </div>
-                    <div class="doc-bottom">
-                        <div class="doc-file-input">
-                            <input type="file" id="tabel" name="tabel" required onchange="handleFile('tabel','card-tabel','name-tabel')">
-                        </div>
-                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('tabel').click()">
-                            <i class="fa-solid fa-upload" style="font-size:10px;"></i> Fayl seç
-                        </button>
-                        <span class="file-name" id="name-tabel">Seçilməyib</span>
-                    </div>
-                </div>
-
-                <div class="doc-card" id="card-forma027" onclick="document.getElementById('forma027').click()">
-                    <div class="doc-top">
-                        <div class="doc-num">6</div>
-                        <div class="doc-label-text">Tibb müəssisəsindən çıxarış (Forma 027)</div>
-                    </div>
-                    <div class="doc-bottom">
-                        <div class="doc-file-input">
-                            <input type="file" id="forma027" name="forma027" required onchange="handleFile('forma027','card-forma027','name-forma027')">
-                        </div>
-                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('forma027').click()">
-                            <i class="fa-solid fa-upload" style="font-size:10px;"></i> Fayl seç
-                        </button>
-                        <span class="file-name" id="name-forma027">Seçilməyib</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ACTIONS -->
-            <div class="action-row">
-                <button type="button" class="btn-submit" id="btn-submit" onclick="submitForm()">
-                    <i class="fa-solid fa-paper-plane"></i>
-                    Sənədləri Portala Göndər
-                </button>
-                <a href="/mekteb.html" class="btn-secondary">
-                    <i class="fa-solid fa-school"></i>
-                    Məktəb Portalı
-                </a>
-            </div>
-        </form>
-    </div>
-
-    <!-- FOOTER -->
-    <div class="card-footer">
-        <div class="footer-links">
-            <a href="#"><i class="fa-solid fa-circle-question" style="font-size:11px;"></i> Təlimat</a>
-            <a href="#"><i class="fa-solid fa-file-contract" style="font-size:11px;"></i> Razılaşma</a>
-            <a href="#"><i class="fa-solid fa-headset" style="font-size:11px;"></i> Dəstək</a>
-        </div>
-        <div class="footer-status">
-            <div class="status-dot"></div>
-            Sistem aktiv
-        </div>
-    </div>
-
-</div>
-
-<div class="page-footer">
-    © 2026 Psixoloji-Tibbi-Pedaqoji Komissiya &nbsp;·&nbsp; by F.Alakbarov
-</div>
-
-<script>
 function handleFile(inputId, cardId, nameId) {
     const input = document.getElementById(inputId);
     const card  = document.getElementById(cardId);
     const nameEl= document.getElementById(nameId);
     if (input.files && input.files.length > 0) {
         const fname = input.files[0].name;
-        nameEl.textContent = fname.length > 22 ? fname.substring(0,20) + '…' : fname;
+        nameEl.textContent = fname.length > 20 ? fname.substring(0,18) + '…' : fname;
         card.classList.add('has-file');
     } else {
         nameEl.textContent = 'Seçilməyib';
@@ -1134,29 +1031,23 @@ function updateProgress() {
     ];
     const fileIds = ['coverLetter','residenceCertificate','xasiyyetname','idCopies','tabel','forma027'];
     let done = fields.filter(Boolean).length;
-    fileIds.forEach(id => {
-        if (document.getElementById(id).files.length > 0) done++;
-    });
+    fileIds.forEach(id => { if (document.getElementById(id).files.length > 0) done++; });
     const total = 9;
     const pct = Math.round((done / total) * 100);
     document.getElementById('prog-bar').style.width = pct + '%';
-    document.getElementById('prog-text').textContent = done + ' / ' + total + ' tamamlandı';
+    document.getElementById('prog-text').textContent = done + ' / ' + total;
 
-    const pi1 = document.getElementById('pi-1');
-    const pi2 = document.getElementById('pi-2');
-    const pi3 = document.getElementById('pi-3');
     const fieldsDone = fields.filter(Boolean).length;
     const filesDone  = fileIds.filter(id => document.getElementById(id).files.length > 0).length;
-
-    pi1.className = 'prog-item' + (fieldsDone === 5 ? ' done' : fieldsDone > 0 ? ' active' : '');
-    pi2.className = 'prog-item' + (filesDone === 6 ? ' done' : filesDone > 0 ? ' active' : '');
-    pi3.className = 'prog-item' + (done === total ? ' active' : '');
+    document.getElementById('pi-1').className = 'prog-item' + (fieldsDone === 5 ? ' done' : fieldsDone > 0 ? ' active' : '');
+    document.getElementById('pi-2').className = 'prog-item' + (filesDone === 6 ? ' done' : filesDone > 0 ? ' active' : '');
+    document.getElementById('pi-3').className = 'prog-item' + (done === total ? ' active' : '');
 }
 
 function showAlert(msg, type) {
     const el = document.getElementById('alert-box');
-    el.className = 'alert ' + type;
     const icons = { error:'fa-circle-exclamation', success:'fa-circle-check', info:'fa-circle-info' };
+    el.className = 'alert ' + type;
     el.innerHTML = '<i class="fa-solid ' + icons[type] + '"></i> ' + msg;
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -1169,15 +1060,12 @@ async function submitForm() {
     const school = document.getElementById('schoolSelect').value;
     const type   = document.getElementById('applicationType').value;
 
-    if (!fin || !name || !school || !type) {
-        showAlert('Zəhmət olmasa tələb olunan xanaları tam doldurun!', 'error');
-        return;
-    }
+    if (!fin || !name || !school || !type) { showAlert('Zəhmət olmasa tələb olunan xanaları tam doldurun!', 'error'); return; }
+
     const reqFiles = ['coverLetter','residenceCertificate','xasiyyetname','idCopies','tabel','forma027'];
     for (let id of reqFiles) {
         if (document.getElementById(id).files.length === 0) {
-            showAlert('Zəhmət olmasa tələb olunan 6 sənədin hər birini tam yükləyin!', 'error');
-            return;
+            showAlert('Zəhmət olmasa tələb olunan 6 sənədin hər birini tam yükləyin!', 'error'); return;
         }
     }
 
@@ -1188,10 +1076,7 @@ async function submitForm() {
 
     const formData = new FormData(form);
     try {
-        const response = await fetch('/api/school/submit-student', {
-            method: 'POST',
-            body: formData
-        });
+        const response = await fetch('/api/school/submit-student', { method: 'POST', body: formData });
         if (response.ok) {
             showAlert('Uğurlu əməliyyat! Sənədlər rəsmi verilənlər bazasına yazıldı.', 'success');
             form.reset();
@@ -1206,7 +1091,7 @@ async function submitForm() {
     }
 
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Sənədləri Portala Göndər';
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane" style="font-size:13px;"></i> Sənədləri Portala Göndər';
 }
 </script>
 </body>
