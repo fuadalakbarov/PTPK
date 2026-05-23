@@ -480,7 +480,7 @@
         const role  = localStorage.getItem('ptpk_role');
         if (token && role === THIS_ROLE) {
             const valid = await checkToken(token);
-            if (valid) { window.location.href = REDIRECT_URL; return; }
+            if (valid) { return; } // Token keçərlidir, yönləndirmə yoxdur (artıq bu səhifədəyik)
         }
         localStorage.removeItem('ptpk_token');
         localStorage.removeItem('ptpk_role');
@@ -520,10 +520,14 @@
         btn.innerHTML = '<div class="spinner"></div> Göndərilir...';
         hideAlert();
         try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 10000);
             const res  = await fetch('/api/auth/send-otp', {
                 method: 'POST', headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({email})
+                body: JSON.stringify({email}),
+                signal: controller.signal
             });
+            clearTimeout(timeout);
             const data = await res.json();
             if (data.status === 'success') {
                 if (data.role !== THIS_ROLE) {
@@ -541,7 +545,7 @@
             } else {
                 SFX.error(); showAlert(data.message || 'Xəta baş verdi.', 'error');
             }
-        } catch { SFX.error(); showAlert('Serverə qoşulmaq mümkün olmadı!', 'error'); }
+        } catch (err) { SFX.error(); showAlert(err.name === 'AbortError' ? 'Server cavab vermir, yenidən cəhd edin.' : 'Serverə qoşulmaq mümkün olmadı!', 'error'); }
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kod Göndər';
     }
