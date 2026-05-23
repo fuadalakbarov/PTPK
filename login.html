@@ -26,7 +26,7 @@
             min-height: 100dvh;
             font-family: 'DM Sans', sans-serif;
             overflow: hidden;
-            background: #0d1b2a;
+            background: linear-gradient(135deg, #0d1b2a 0%, #1a3550 40%, #0f2d1f 70%, #1a2e45 100%);
         }
 
         /* ── VIDEO FULLSCREEN BG ── */
@@ -69,9 +69,9 @@
         .page-layout {
             position: relative;
             z-index: 2;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
             min-height: 100dvh;
             padding: 40px 20px;
         }
@@ -82,14 +82,14 @@
             max-width: 420px;
             border-radius: 20px;
             overflow: hidden;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(14px) saturate(140%);
-            -webkit-backdrop-filter: blur(14px) saturate(140%);
-            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(13, 27, 42, 0.28) !important;
+            backdrop-filter: blur(12px) saturate(130%);
+            -webkit-backdrop-filter: blur(12px) saturate(130%);
+            border: 1px solid rgba(255,255,255,0.10);
             box-shadow:
-                0 8px 40px rgba(0,0,0,0.35),
+                0 8px 40px rgba(0,0,0,0.30),
                 inset 0 1px 0 rgba(255,255,255,0.08),
-                inset 0 -1px 0 rgba(0,0,0,0.08);
+                inset 0 -1px 0 rgba(0,0,0,0.06);
             animation: fadeUp 0.6s cubic-bezier(.22,.68,0,1.15) both;
         }
         @keyframes fadeUp {
@@ -103,7 +103,7 @@
             text-align: center;
             position: relative;
             border-bottom: 1px solid rgba(201,168,76,0.2);
-            background: rgba(13,27,42,0.20);
+            background: rgba(255,255,255,0.04);
         }
         .card-header::after {
             content: '';
