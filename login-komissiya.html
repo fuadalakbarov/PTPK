@@ -475,13 +475,8 @@
     let timerSeconds  = 600;
     let currentEmail  = '';
 
-    window.addEventListener('DOMContentLoaded', async () => {
-        const token = localStorage.getItem('ptpk_token');
-        const role  = localStorage.getItem('ptpk_role');
-        if (token && role === THIS_ROLE) {
-            const valid = await checkToken(token);
-            if (valid) { window.location.href = REDIRECT_URL; return; }
-        }
+    window.addEventListener('DOMContentLoaded', () => {
+        // Hər dəfə login səhifəsi açılanda tokeni sil - yönləndirmə dövrünün qarşısını al
         localStorage.removeItem('ptpk_token');
         localStorage.removeItem('ptpk_role');
         localStorage.removeItem('ptpk_email');
