@@ -492,10 +492,14 @@
 
     async function checkToken(token) {
         try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000);
             const res  = await fetch('/api/auth/check-session', {
                 method: 'POST', headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({token})
+                body: JSON.stringify({token}),
+                signal: controller.signal
             });
+            clearTimeout(timeout);
             const data = await res.json();
             return data.status === 'valid' && data.role === THIS_ROLE;
         } catch { return false; }
