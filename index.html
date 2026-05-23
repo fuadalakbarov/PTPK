@@ -37,87 +37,88 @@ window.addEventListener('DOMContentLoaded', () => {
     const email = localStorage.getItem('ptpk_email') || '';
     const el = document.getElementById('user-name-display');
     if (el && email) el.textContent = email;
+    updateProgress();
 });
 </script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PTPK | Rəqəmsal Sənəd Qəbulu Sistemi</title>
+    <title>PTPK | Rəqəmsal Sənəd Qəbulu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
     <style>
         :root {
-            --ink: #0a0e1a;
-            --ink-muted: #4a5568;
-            --ink-faint: #8896a8;
-            --azure: #0057b8;
-            --azure-dark: #003d85;
-            --azure-light: #e8f0fb;
-            --azure-mid: #4a90d9;
-            --gold: #c8973a;
-            --gold-light: #fdf4e3;
-            --surface: #ffffff;
-            --surface-2: #f5f7fa;
-            --surface-3: #edf0f5;
-            --border: #d6dce6;
-            --border-strong: #b0bac8;
-            --success: #1a7a4a;
-            --success-bg: #edf7f2;
-            --danger: #c0392b;
-            --danger-bg: #fdf0ef;
-            --radius: 10px;
-            --radius-lg: 16px;
-            --shadow-sm: 0 1px 3px rgba(10,14,26,0.08), 0 1px 2px rgba(10,14,26,0.04);
-            --shadow-md: 0 4px 12px rgba(10,14,26,0.10), 0 2px 4px rgba(10,14,26,0.06);
-            --shadow-lg: 0 12px 40px rgba(10,14,26,0.14), 0 4px 12px rgba(10,14,26,0.08);
+            --navy:     #0b1829;
+            --navy2:    #132238;
+            --navy3:    #1c3352;
+            --accent:   #c9a84c;
+            --accent2:  #f0d080;
+            --accent3:  #fdf0c4;
+            --blue:     #2563eb;
+            --blue-lt:  #dbeafe;
+            --green:    #16a34a;
+            --green-lt: #dcfce7;
+            --red:      #dc2626;
+            --red-lt:   #fee2e2;
+            --muted:    #64748b;
+            --border:   rgba(255,255,255,0.09);
+            --border2:  rgba(255,255,255,0.15);
+            --text:     #f1f5f9;
+            --text2:    rgba(241,245,249,0.65);
+            --text3:    rgba(241,245,249,0.38);
+            --card-bg:  rgba(255,255,255,0.055);
+            --card-bg2: rgba(255,255,255,0.035);
+            --radius:   12px;
+            --radius-lg:20px;
         }
 
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
 
         body {
-            font-family: 'DM Sans', system-ui, sans-serif;
-            background-color: #e8edf5;
+            font-family: 'Outfit', sans-serif;
+            min-height: 100dvh;
+            background: var(--navy);
             background-image:
-                radial-gradient(ellipse 80% 60% at 20% 0%, rgba(0,87,184,0.08) 0%, transparent 60%),
-                radial-gradient(ellipse 60% 50% at 80% 100%, rgba(0,87,184,0.06) 0%, transparent 60%);
-            min-height: 100vh;
+                radial-gradient(ellipse 70% 50% at 15% 0%, rgba(37,99,235,0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 85% 100%, rgba(201,168,76,0.12) 0%, transparent 55%),
+                radial-gradient(ellipse 40% 60% at 50% 50%, rgba(11,24,41,0) 0%, var(--navy) 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 28px 16px 40px;
+            padding: 20px 16px 48px;
         }
 
-        /* TOP GOV BAR */
-        .gov-bar {
+        /* ── TOPBAR ── */
+        .topbar {
             width: 100%;
-            max-width: 980px;
+            max-width: 1000px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
-            padding: 0 4px;
+            padding: 10px 0 18px;
         }
-        .gov-bar-left {
+        .topbar-brand {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 11.5px;
+            gap: 10px;
+        }
+        .topbar-brand .flag {
+            height: 3px;
+            width: 36px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, #0092BC 33.33%, #EF3340 33.33% 66.66%, #00AF66 66.66%);
+        }
+        .topbar-brand span {
+            font-size: 11px;
             font-weight: 600;
-            color: var(--ink-muted);
-            letter-spacing: 0.02em;
+            color: var(--text3);
+            letter-spacing: 0.08em;
             text-transform: uppercase;
         }
-        .gov-bar-left i { color: var(--azure); font-size: 13px; }
-        .gov-bar-right {
+        .topbar-right {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -125,606 +126,548 @@ window.addEventListener('DOMContentLoaded', () => {
         .user-chip {
             display: flex;
             align-items: center;
-            gap: 7px;
-            background: rgba(255,255,255,0.7);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 5px 12px 5px 7px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--ink);
-            backdrop-filter: blur(4px);
-        }
-        .user-chip .avatar {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: var(--azure);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 10px;
-        }
-        .btn-exit {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(255,255,255,0.7);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--ink-muted);
-            cursor: pointer;
-            transition: all 0.18s;
-            font-family: inherit;
-            backdrop-filter: blur(4px);
-        }
-        .btn-exit:hover {
-            background: var(--danger-bg);
-            border-color: #e8b4b0;
-            color: var(--danger);
-        }
-
-        /* MAIN CARD */
-        .portal-card {
-            width: 100%;
-            max-width: 980px;
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-lg);
-            overflow: hidden;
-        }
-
-        /* HEADER STRIPE */
-        .card-header {
-            background: var(--azure);
-            background-image: linear-gradient(135deg, var(--azure-dark) 0%, var(--azure) 50%, #1a6fd4 100%);
-            padding: 24px 36px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-        .card-header::before {
-            content: '';
-            position: absolute;
-            right: -60px;
-            top: -60px;
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.05);
-            pointer-events: none;
-        }
-        .card-header::after {
-            content: '';
-            position: absolute;
-            right: 80px;
-            bottom: -80px;
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.04);
-            pointer-events: none;
-        }
-        .logo-wrap {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.25);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-        .logo-wrap img {
-            width: 48px;
-            height: 48px;
-            object-fit: contain;
-        }
-        .header-text { flex: 1; }
-        .header-text h1 {
-            font-size: 19px;
-            font-weight: 700;
-            color: #ffffff;
-            letter-spacing: -0.3px;
-            line-height: 1.3;
-        }
-        .header-text p {
+            gap: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border2);
+            border-radius: 30px;
+            padding: 6px 14px 6px 8px;
             font-size: 12.5px;
-            color: rgba(255,255,255,0.72);
-            margin-top: 3px;
-            font-weight: 400;
+            font-weight: 500;
+            color: var(--text2);
+            backdrop-filter: blur(10px);
         }
-        .header-badges {
+        .user-avatar {
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 700; color: #fff;
+        }
+        .btn-logout {
+            display: flex; align-items: center; gap: 6px;
+            background: var(--card-bg);
+            border: 1px solid var(--border2);
+            border-radius: 30px;
+            padding: 6px 14px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text3);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Outfit', sans-serif;
+            backdrop-filter: blur(10px);
+        }
+        .btn-logout:hover {
+            color: #fca5a5;
+            border-color: rgba(220,38,38,0.4);
+            background: rgba(220,38,38,0.08);
+        }
+
+        /* ── MAIN WRAPPER ── */
+        .main-wrap {
+            width: 100%;
+            max-width: 1000px;
             display: flex;
             flex-direction: column;
-            align-items: flex-end;
-            gap: 6px;
-            flex-shrink: 0;
-        }
-        .badge-secure {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.25);
-            border-radius: 20px;
-            padding: 4px 10px;
-            font-size: 11px;
-            font-weight: 600;
-            color: rgba(255,255,255,0.9);
-            letter-spacing: 0.01em;
-        }
-        .badge-official {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            background: rgba(200,151,58,0.25);
-            border: 1px solid rgba(200,151,58,0.5);
-            border-radius: 20px;
-            padding: 4px 10px;
-            font-size: 11px;
-            font-weight: 700;
-            color: #ffd580;
-            letter-spacing: 0.02em;
-        }
-
-        /* SECTION TABS / PROGRESS */
-        .progress-bar {
-            background: var(--surface-3);
-            border-bottom: 1px solid var(--border);
-            padding: 0 36px;
-            display: flex;
-            align-items: center;
             gap: 0;
         }
-        .prog-step {
+
+        /* ── PORTAL HEADER ── */
+        .portal-header {
+            background: var(--card-bg);
+            border: 1px solid var(--border2);
+            border-bottom: none;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            padding: 28px 36px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 14px 0;
-            margin-right: 28px;
+            gap: 22px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+        }
+        .portal-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg,
+                rgba(37,99,235,0.12) 0%,
+                rgba(201,168,76,0.06) 50%,
+                transparent 100%);
+            pointer-events: none;
+        }
+        .portal-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent);
+        }
+        .logo-box {
+            width: 58px; height: 58px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            position: relative; z-index: 1;
+        }
+        .logo-box img { width: 44px; height: 44px; object-fit: contain; }
+        .header-text { flex: 1; position: relative; z-index: 1; }
+        .header-text h1 {
+            font-size: 20px; font-weight: 700;
+            color: #fff; letter-spacing: -0.3px; line-height: 1.3;
+        }
+        .header-text p {
+            font-size: 12.5px; color: var(--text2);
+            margin-top: 4px; font-weight: 400;
+        }
+        .header-badges {
+            display: flex; flex-direction: column;
+            align-items: flex-end; gap: 7px;
+            position: relative; z-index: 1;
+        }
+        .hbadge {
+            display: inline-flex; align-items: center; gap: 5px;
+            border-radius: 20px;
+            padding: 4px 11px;
+            font-size: 10.5px; font-weight: 700;
+            letter-spacing: 0.04em; text-transform: uppercase;
+        }
+        .hbadge.gold {
+            background: rgba(201,168,76,0.15);
+            border: 1px solid rgba(201,168,76,0.35);
+            color: var(--accent2);
+        }
+        .hbadge.blue {
+            background: rgba(37,99,235,0.15);
+            border: 1px solid rgba(37,99,235,0.3);
+            color: #93c5fd;
+        }
+
+        /* ── PROGRESS STRIP ── */
+        .prog-strip {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-top: none; border-bottom: none;
+            padding: 0 36px;
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            backdrop-filter: blur(16px);
+        }
+        .prog-item {
+            display: flex; align-items: center; gap: 9px;
+            padding: 13px 0;
+            margin-right: 32px;
             border-bottom: 2px solid transparent;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--ink-faint);
-            transition: all 0.2s;
+            font-size: 12.5px; font-weight: 600;
+            color: var(--text3);
+            transition: all 0.25s;
             cursor: default;
         }
-        .prog-step.active {
-            color: var(--azure);
-            border-bottom-color: var(--azure);
+        .prog-item.active {
+            color: var(--accent2);
+            border-bottom-color: var(--accent);
         }
-        .prog-step.done {
-            color: var(--success);
-            border-bottom-color: transparent;
-        }
+        .prog-item.done { color: #4ade80; }
         .prog-num {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: var(--border);
-            color: var(--ink-faint);
-            font-size: 11px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
+            width: 22px; height: 22px; border-radius: 50%;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: var(--text3);
+            font-size: 11px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.25s;
         }
-        .prog-step.active .prog-num {
-            background: var(--azure);
-            color: #fff;
+        .prog-item.active .prog-num {
+            background: rgba(201,168,76,0.2);
+            border-color: var(--accent);
+            color: var(--accent2);
         }
-        .prog-step.done .prog-num {
-            background: var(--success);
-            color: #fff;
+        .prog-item.done .prog-num {
+            background: rgba(22,163,74,0.2);
+            border-color: #22c55e;
+            color: #4ade80;
+        }
+        .prog-fill {
+            margin-left: auto;
+            display: flex; align-items: center; gap: 8px;
+            font-size: 11.5px; font-weight: 600; color: var(--text3);
+        }
+        .prog-fill-bar {
+            width: 80px; height: 3px;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+        .prog-fill-inner {
+            height: 100%; border-radius: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            transition: width 0.4s cubic-bezier(.22,.68,0,1.2);
         }
 
-        /* BODY */
+        /* ── CARD BODY ── */
         .card-body {
+            background: var(--card-bg2);
+            border: 1px solid var(--border);
+            border-top: none;
             padding: 32px 36px;
+            backdrop-filter: blur(16px);
         }
 
-        /* SECTION HEADERS */
-        .section-head {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
+        /* ── SECTION HEADS ── */
+        .sec-head {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 22px; padding-bottom: 14px;
             border-bottom: 1px solid var(--border);
         }
-        .section-icon {
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
-            background: var(--azure-light);
-            color: var(--azure);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            flex-shrink: 0;
+        .sec-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: rgba(37,99,235,0.15);
+            border: 1px solid rgba(37,99,235,0.25);
+            color: #93c5fd;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; flex-shrink: 0;
         }
-        .section-head h2 {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--ink);
-            letter-spacing: 0.01em;
+        .sec-icon.gold {
+            background: rgba(201,168,76,0.12);
+            border-color: rgba(201,168,76,0.25);
+            color: var(--accent2);
         }
-        .section-head p {
-            font-size: 12px;
-            color: var(--ink-faint);
-            margin-top: 1px;
-        }
+        .sec-head h2 { font-size: 14.5px; font-weight: 700; color: var(--text); }
+        .sec-head p { font-size: 12px; color: var(--text3); margin-top: 2px; }
 
-        /* FORM GRID */
+        /* ── FORM GRID ── */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px 20px;
-            margin-bottom: 28px;
+            margin-bottom: 32px;
         }
-        .field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
+        .field { display: flex; flex-direction: column; gap: 7px; }
         .field.span2 { grid-column: span 2; }
 
         .field label {
-            font-size: 11.5px;
-            font-weight: 700;
-            color: var(--ink);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            font-size: 11px; font-weight: 700;
+            color: var(--text3);
+            text-transform: uppercase; letter-spacing: 0.08em;
+            display: flex; align-items: center; gap: 5px;
         }
-        .field label .req {
-            color: var(--azure);
-            font-size: 14px;
-            font-weight: 700;
-            line-height: 1;
-        }
+        .field label .req { color: var(--accent); font-size: 14px; line-height: 1; }
 
         .field input,
         .field select {
-            width: 100%;
-            height: 44px;
+            width: 100%; height: 46px;
             padding: 0 14px;
-            font-size: 14px;
-            font-weight: 500;
-            font-family: inherit;
-            color: var(--ink);
-            background: var(--surface);
-            border: 1.5px solid var(--border);
+            font-size: 14px; font-weight: 500;
+            font-family: 'Outfit', sans-serif;
+            color: var(--text);
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
             border-radius: var(--radius);
             outline: none;
-            transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
-            appearance: none;
-            -webkit-appearance: none;
+            transition: all 0.2s;
+            appearance: none; -webkit-appearance: none;
         }
         .field select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%234a5568' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%2394a3b8' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
+            background-color: rgba(255,255,255,0.06);
             padding-right: 36px;
+        }
+        .field select option,
+        .field select optgroup {
+            background: #1c3352;
+            color: #f1f5f9;
         }
         .field input:focus,
         .field select:focus {
-            border-color: var(--azure);
-            box-shadow: 0 0 0 3px rgba(0,87,184,0.10);
-            background: var(--surface);
+            border-color: rgba(201,168,76,0.5);
+            background: rgba(255,255,255,0.09);
+            box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
         }
-        .field input::placeholder {
-            color: var(--ink-faint);
-            font-weight: 400;
-        }
-        .field select option { font-weight: 400; }
-        .field select optgroup { font-weight: 700; color: var(--azure); }
+        .field input::placeholder { color: var(--text3); font-weight: 400; }
 
-        /* FIN CODE — monospace */
         #finCode {
-            font-family: 'DM Mono', monospace;
-            font-size: 15px;
-            letter-spacing: 0.12em;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px; letter-spacing: 0.14em;
             text-transform: uppercase;
         }
 
-        /* FILE UPLOAD CARDS */
+        /* ── DOCS GRID ── */
         .docs-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 28px;
         }
         .doc-card {
-            background: var(--surface-2);
-            border: 1.5px dashed var(--border);
+            background: rgba(255,255,255,0.04);
+            border: 1px dashed rgba(255,255,255,0.12);
             border-radius: var(--radius);
             padding: 14px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            transition: border-color 0.18s, background 0.18s;
+            display: flex; flex-direction: column; gap: 10px;
+            transition: all 0.2s;
+            cursor: pointer;
             position: relative;
         }
         .doc-card:hover {
-            border-color: var(--azure-mid);
-            background: var(--azure-light);
+            border-color: rgba(201,168,76,0.35);
+            background: rgba(201,168,76,0.05);
         }
         .doc-card.has-file {
             border-style: solid;
-            border-color: var(--success);
-            background: var(--success-bg);
+            border-color: rgba(22,163,74,0.4);
+            background: rgba(22,163,74,0.06);
         }
-        .doc-label {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
+        .doc-top {
+            display: flex; align-items: flex-start; gap: 10px;
         }
         .doc-num {
-            width: 22px;
-            height: 22px;
-            border-radius: 6px;
-            background: var(--azure);
-            color: #fff;
-            font-size: 11px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 24px; height: 24px; border-radius: 7px;
+            background: rgba(37,99,235,0.2);
+            border: 1px solid rgba(37,99,235,0.3);
+            color: #93c5fd;
+            font-size: 11px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
-            margin-top: 1px;
         }
         .doc-card.has-file .doc-num {
-            background: var(--success);
+            background: rgba(22,163,74,0.2);
+            border-color: rgba(22,163,74,0.4);
+            color: #4ade80;
         }
         .doc-label-text {
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--ink);
-            line-height: 1.4;
+            font-size: 12.5px; font-weight: 600;
+            color: var(--text2); line-height: 1.45;
         }
-        .doc-file-input {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .doc-bottom {
+            display: flex; align-items: center; gap: 8px;
         }
-        .doc-file-input input[type="file"] {
-            display: none;
-        }
+        .doc-file-input input[type="file"] { display: none; }
         .btn-choose {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--surface);
-            border: 1.5px solid var(--border);
-            border-radius: 7px;
-            padding: 7px 12px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--ink-muted);
-            cursor: pointer;
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 8px;
+            padding: 6px 11px;
+            font-size: 11.5px; font-weight: 600;
+            color: var(--text2); cursor: pointer;
             transition: all 0.18s;
-            font-family: inherit;
+            font-family: 'Outfit', sans-serif;
             white-space: nowrap;
         }
         .btn-choose:hover {
-            border-color: var(--azure);
-            color: var(--azure);
-            background: var(--azure-light);
+            border-color: rgba(201,168,76,0.4);
+            color: var(--accent2);
+            background: rgba(201,168,76,0.08);
         }
         .doc-card.has-file .btn-choose {
-            border-color: var(--success);
-            color: var(--success);
-            background: var(--success-bg);
+            border-color: rgba(22,163,74,0.35);
+            color: #4ade80;
+            background: rgba(22,163,74,0.08);
         }
-        .file-name-display {
-            font-size: 11.5px;
-            color: var(--ink-faint);
-            font-weight: 500;
-            font-family: 'DM Mono', monospace;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 140px;
+        .file-name {
+            font-size: 11px; font-weight: 500;
+            color: var(--text3);
+            font-family: 'JetBrains Mono', monospace;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            max-width: 160px;
         }
-        .doc-card.has-file .file-name-display {
-            color: var(--success);
-        }
+        .doc-card.has-file .file-name { color: #4ade80; }
 
-        /* ACTION ROW */
+        /* ── ALERT ── */
+        .alert {
+            padding: 12px 16px; border-radius: var(--radius);
+            font-size: 13.5px; font-weight: 600;
+            display: none; gap: 10px; align-items: center;
+            margin-bottom: 20px;
+        }
+        .alert.error   { background: rgba(220,38,38,0.12); color: #fca5a5; border: 1px solid rgba(220,38,38,0.25); display: flex; }
+        .alert.success { background: rgba(22,163,74,0.12); color: #86efac; border: 1px solid rgba(22,163,74,0.25); display: flex; }
+        .alert.info    { background: rgba(37,99,235,0.12); color: #93c5fd; border: 1px solid rgba(37,99,235,0.25); display: flex; }
+
+        /* ── ACTION ROW ── */
         .action-row {
-            display: flex;
-            gap: 12px;
-            align-items: stretch;
+            display: flex; gap: 12px; align-items: stretch;
         }
         .btn-submit {
-            flex: 1;
-            height: 52px;
-            background: var(--azure);
-            background-image: linear-gradient(135deg, var(--azure-dark) 0%, var(--azure) 100%);
-            color: #ffffff;
-            border: none;
+            flex: 1; height: 54px;
+            background: rgba(201,168,76,0.18);
+            border: 1px solid rgba(201,168,76,0.4);
             border-radius: var(--radius);
-            font-size: 15px;
-            font-weight: 700;
-            font-family: inherit;
+            color: var(--accent2);
+            font-size: 15px; font-weight: 700;
+            font-family: 'Outfit', sans-serif;
             cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 14px rgba(0,87,184,0.35);
+            display: flex; justify-content: center; align-items: center; gap: 10px;
             transition: all 0.2s;
             letter-spacing: 0.01em;
+            backdrop-filter: blur(8px);
         }
         .btn-submit:hover {
-            background-image: linear-gradient(135deg, #002f66 0%, var(--azure-dark) 100%);
-            box-shadow: 0 6px 20px rgba(0,87,184,0.45);
+            background: rgba(201,168,76,0.26);
+            box-shadow: 0 4px 20px rgba(201,168,76,0.2);
             transform: translateY(-1px);
         }
-        .btn-submit:active { transform: translateY(0); }
-        .btn-school {
-            height: 52px;
-            padding: 0 22px;
-            background: var(--surface);
-            border: 1.5px solid var(--azure);
+        .btn-submit:active { transform: translateY(0) scale(0.99); }
+        .btn-submit:disabled {
+            background: rgba(255,255,255,0.05);
+            color: var(--text3);
+            border-color: rgba(255,255,255,0.08);
+            cursor: not-allowed; transform: none; box-shadow: none;
+        }
+        .btn-secondary {
+            height: 54px; padding: 0 22px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.14);
             border-radius: var(--radius);
-            font-size: 14px;
-            font-weight: 700;
-            font-family: inherit;
-            color: var(--azure);
+            font-size: 14px; font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            color: var(--text2);
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            display: flex; align-items: center; gap: 8px;
             text-decoration: none;
             transition: all 0.18s;
             white-space: nowrap;
         }
-        .btn-school:hover {
-            background: var(--azure-light);
-            box-shadow: 0 2px 8px rgba(0,87,184,0.15);
+        .btn-secondary:hover {
+            border-color: rgba(255,255,255,0.25);
+            color: #fff;
+            background: rgba(255,255,255,0.09);
         }
 
-        /* FOOTER */
+        /* ── CARD FOOTER ── */
         .card-footer {
-            background: var(--surface-2);
-            border-top: 1px solid var(--border);
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
             padding: 14px 36px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            display: flex; align-items: center; justify-content: space-between;
+            backdrop-filter: blur(16px);
         }
         .footer-links {
-            display: flex;
-            gap: 20px;
+            display: flex; gap: 20px;
         }
         .footer-links a {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--ink-faint);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            font-size: 12px; font-weight: 600;
+            color: var(--text3); text-decoration: none;
+            display: flex; align-items: center; gap: 5px;
             transition: color 0.15s;
         }
-        .footer-links a:hover { color: var(--azure); }
+        .footer-links a:hover { color: var(--accent2); }
         .footer-status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11.5px;
-            font-weight: 600;
-            color: var(--success);
+            display: flex; align-items: center; gap: 7px;
+            font-size: 11.5px; font-weight: 600;
+            color: #4ade80;
         }
         .status-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: var(--success);
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #22c55e;
             animation: pulse 2s ease-in-out infinite;
         }
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(34,197,94,0); }
         }
 
-        /* BOTTOM COPYRIGHT */
+        /* ── PAGE FOOTER ── */
         .page-footer {
-            margin-top: 18px;
-            font-size: 12px;
-            color: rgba(10,14,26,0.45);
-            font-weight: 500;
-            text-align: center;
+            margin-top: 20px;
+            font-size: 11.5px; color: var(--text3);
+            font-weight: 500; text-align: center;
         }
 
-        /* RESPONSIVE */
-        @media (max-width: 700px) {
+        /* ── SPINNER ── */
+        .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid rgba(201,168,76,0.3);
+            border-top-color: var(--accent2);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 720px) {
             body { padding: 12px 8px 32px; }
-            .card-header { padding: 18px 20px; }
+            .portal-header { padding: 20px; gap: 14px; }
             .header-badges { display: none; }
-            .progress-bar { padding: 0 20px; overflow-x: auto; }
+            .prog-strip { padding: 0 20px; overflow-x: auto; }
+            .prog-fill { display: none; }
             .card-body { padding: 24px 20px; }
             .form-grid { grid-template-columns: 1fr; }
             .field.span2 { grid-column: span 1; }
             .docs-grid { grid-template-columns: 1fr; }
             .action-row { flex-direction: column; }
             .card-footer { flex-direction: column; gap: 10px; padding: 14px 20px; }
-            .gov-bar { display: none; }
+            .topbar-brand span { display: none; }
         }
     </style>
 </head>
 <body>
 
-<!-- GOV TOP BAR -->
-<div class="gov-bar">
-    <div class="gov-bar-left">
-        <i class="fa-solid fa-landmark"></i>
-        Gəncə-Daşkəsən Regional Təhsil İdarəsi
+<!-- TOPBAR -->
+<div class="topbar">
+    <div class="topbar-brand">
+        <div class="flag"></div>
+        <span>Gəncə-Daşkəsən Regional Təhsil İdarəsi</span>
     </div>
-    <div class="gov-bar-right">
+    <div class="topbar-right">
         <div class="user-chip">
-            <div class="avatar"><i class="fa-solid fa-user" style="font-size:9px;"></i></div>
+            <div class="user-avatar"><i class="fa-solid fa-user" style="font-size:9px;"></i></div>
             <span id="user-name-display">İstifadəçi</span>
         </div>
-        <button class="btn-exit" onclick="logout()">
-            <i class="fa-solid fa-right-from-bracket"></i> Çıxış
+        <button class="btn-logout" onclick="logout()">
+            <i class="fa-solid fa-right-from-bracket" style="font-size:11px;"></i> Çıxış
         </button>
     </div>
 </div>
 
-<!-- MAIN CARD -->
-<div class="portal-card">
+<div class="main-wrap">
 
     <!-- HEADER -->
-    <div class="card-header">
-        <div class="logo-wrap">
-            <img src="image.png" alt="PTPK Loqo">
+    <div class="portal-header">
+        <div class="logo-box">
+            <img src="image.png" alt="PTPK">
         </div>
         <div class="header-text">
             <h1>Rəqəmsal Sənəd Qəbulu Sistemi</h1>
-            <p>Psixoloji-Tibbi-Pedaqoji Komissiya</p>
+            <p>Psixoloji-Tibbi-Pedaqoji Komissiya · Gəncə-Daşkəsən Regional Təhsil İdarəsi</p>
         </div>
         <div class="header-badges">
-            <div class="badge-official">
-                <i class="fa-solid fa-shield-halved" style="font-size:10px;"></i>
-                RƏSMİ PORTAL
+            <div class="hbadge gold">
+                <i class="fa-solid fa-shield-halved" style="font-size:9px;"></i>
+                Rəsmi Portal
             </div>
-            <div class="badge-secure">
-                <i class="fa-solid fa-lock" style="font-size:10px;"></i>
+            <div class="hbadge blue">
+                <i class="fa-solid fa-lock" style="font-size:9px;"></i>
                 Şifrəli bağlantı
             </div>
         </div>
     </div>
 
-    <!-- PROGRESS STEPS -->
-    <div class="progress-bar">
-        <div class="prog-step active">
+    <!-- PROGRESS -->
+    <div class="prog-strip">
+        <div class="prog-item active" id="pi-1">
             <div class="prog-num">1</div>
             Şagird məlumatları
         </div>
-        <div class="prog-step">
+        <div class="prog-item" id="pi-2">
             <div class="prog-num">2</div>
             Sənədlər
         </div>
-        <div class="prog-step">
+        <div class="prog-item" id="pi-3">
             <div class="prog-num">3</div>
             Göndəriş
+        </div>
+        <div class="prog-fill">
+            <span id="prog-text">0 / 9 tamamlandı</span>
+            <div class="prog-fill-bar">
+                <div class="prog-fill-inner" id="prog-bar" style="width:0%"></div>
+            </div>
         </div>
     </div>
 
@@ -732,31 +675,33 @@ window.addEventListener('DOMContentLoaded', () => {
     <div class="card-body">
         <form id="studentForm">
 
-            <!-- SECTION 1: Student Info -->
-            <div class="section-head">
-                <div class="section-icon">
+            <div id="alert-box" class="alert"></div>
+
+            <!-- SECTION 1 -->
+            <div class="sec-head">
+                <div class="sec-icon">
                     <i class="fa-solid fa-user-graduate"></i>
                 </div>
                 <div>
                     <h2>Şagird Məlumatları</h2>
-                    <p>Zəhmət olmasa bütün xanaları dəqiq doldurun</p>
+                    <p>Bütün xanaları dəqiq doldurun</p>
                 </div>
             </div>
 
             <div class="form-grid">
                 <div class="field">
                     <label>Soyadı, Adı, Atasının adı <span class="req">*</span></label>
-                    <input type="text" id="studentName" name="studentName" placeholder="S.A.A. tam formada" required>
+                    <input type="text" id="studentName" name="studentName" placeholder="Tam ad (S.A.A.)" required oninput="updateProgress()">
                 </div>
 
                 <div class="field">
                     <label>FİN Kod <span class="req">*</span></label>
-                    <input type="text" id="finCode" name="finCode" placeholder="0000000" maxlength="7" style="text-transform: uppercase;" required>
+                    <input type="text" id="finCode" name="finCode" placeholder="0000000" maxlength="7" style="text-transform:uppercase;" required oninput="updateProgress()">
                 </div>
 
                 <div class="field span2">
                     <label>Ümumtəhsil Müəssisəsi <span class="req">*</span></label>
-                    <select id="schoolSelect" name="schoolSelect" required>
+                    <select id="schoolSelect" onchange="updateProgress()" name="schoolSelect" required>
                         <option value="" disabled selected>— Məktəbi seçin —</option>
                         <optgroup label="📍 Gəncə şəhəri">
                             <option value="Gəncə şəhər İ.Qayıbov adına 1 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər İ.Qayıbov adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
@@ -945,7 +890,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 <div class="field">
                     <label>Müraciət Növü <span class="req">*</span></label>
-                    <select id="applicationType" name="applicationType" required>
+                    <select id="applicationType" name="applicationType" required onchange="updateProgress()">
                         <option value="" disabled selected>Seçin...</option>
                         <option value="Yeni">Yeni müraciət</option>
                         <option value="Təkrar">Təkrar müraciət</option>
@@ -954,16 +899,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 <div class="field">
                     <label>Tədris İli <span class="req">*</span></label>
-                    <select id="academicYear" name="academicYear" required>
+                    <select id="academicYear" name="academicYear" required onchange="updateProgress()">
                         <option value="2025/2026">2025 / 2026</option>
                         <option value="2026/2027">2026 / 2027</option>
                     </select>
                 </div>
             </div>
 
-            <!-- SECTION 2: Documents -->
-            <div class="section-head">
-                <div class="section-icon">
+            <!-- SECTION 2 -->
+            <div class="sec-head">
+                <div class="sec-icon gold">
                     <i class="fa-solid fa-folder-open"></i>
                 </div>
                 <div>
@@ -973,112 +918,123 @@ window.addEventListener('DOMContentLoaded', () => {
             </div>
 
             <div class="docs-grid">
-                <div class="doc-card" id="card-coverLetter">
-                    <div class="doc-label">
+                <div class="doc-card" id="card-coverLetter" onclick="document.getElementById('coverLetter').click()">
+                    <div class="doc-top">
                         <div class="doc-num">1</div>
                         <div class="doc-label-text">Məktəbin müşayiət məktubu</div>
                     </div>
-                    <div class="doc-file-input">
-                        <input type="file" id="coverLetter" name="coverLetter" required onchange="handleFile('coverLetter','card-coverLetter','name-coverLetter')">
-                        <button type="button" class="btn-choose" onclick="document.getElementById('coverLetter').click()">
-                            <i class="fa-solid fa-upload" style="font-size:11px;"></i> Fayl seç
+                    <div class="doc-bottom">
+                        <div class="doc-file-input">
+                            <input type="file" id="coverLetter" name="coverLetter" required onchange="handleFile('coverLetter','card-coverLetter','name-coverLetter')">
+                        </div>
+                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('coverLetter').click()">
+                            <i class="fa-solid fa-upload" style="font-size:10px;"></i> Fayl seç
                         </button>
-                        <span class="file-name-display" id="name-coverLetter">Seçilməyib</span>
+                        <span class="file-name" id="name-coverLetter">Seçilməyib</span>
                     </div>
                 </div>
 
-                <div class="doc-card" id="card-residenceCertificate">
-                    <div class="doc-label">
+                <div class="doc-card" id="card-residenceCertificate" onclick="document.getElementById('residenceCertificate').click()">
+                    <div class="doc-top">
                         <div class="doc-num">2</div>
                         <div class="doc-label-text">Yaşayış yerindən arayış</div>
                     </div>
-                    <div class="doc-file-input">
-                        <input type="file" id="residenceCertificate" name="residenceCertificate" required onchange="handleFile('residenceCertificate','card-residenceCertificate','name-residenceCertificate')">
-                        <button type="button" class="btn-choose" onclick="document.getElementById('residenceCertificate').click()">
-                            <i class="fa-solid fa-upload" style="font-size:11px;"></i> Fayl seç
+                    <div class="doc-bottom">
+                        <div class="doc-file-input">
+                            <input type="file" id="residenceCertificate" name="residenceCertificate" required onchange="handleFile('residenceCertificate','card-residenceCertificate','name-residenceCertificate')">
+                        </div>
+                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('residenceCertificate').click()">
+                            <i class="fa-solid fa-upload" style="font-size:10px;"></i> Fayl seç
                         </button>
-                        <span class="file-name-display" id="name-residenceCertificate">Seçilməyib</span>
+                        <span class="file-name" id="name-residenceCertificate">Seçilməyib</span>
                     </div>
                 </div>
 
-                <div class="doc-card" id="card-xasiyyetname">
-                    <div class="doc-label">
+                <div class="doc-card" id="card-xasiyyetname" onclick="document.getElementById('xasiyyetname').click()">
+                    <div class="doc-top">
                         <div class="doc-num">3</div>
                         <div class="doc-label-text">Xasiyyətnamə (məktəb tərəfindən)</div>
                     </div>
-                    <div class="doc-file-input">
-                        <input type="file" id="xasiyyetname" name="xasiyyetname" required onchange="handleFile('xasiyyetname','card-xasiyyetname','name-xasiyyetname')">
-                        <button type="button" class="btn-choose" onclick="document.getElementById('xasiyyetname').click()">
-                            <i class="fa-solid fa-upload" style="font-size:11px;"></i> Fayl seç
+                    <div class="doc-bottom">
+                        <div class="doc-file-input">
+                            <input type="file" id="xasiyyetname" name="xasiyyetname" required onchange="handleFile('xasiyyetname','card-xasiyyetname','name-xasiyyetname')">
+                        </div>
+                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('xasiyyetname').click()">
+                            <i class="fa-solid fa-upload" style="font-size:10px;"></i> Fayl seç
                         </button>
-                        <span class="file-name-display" id="name-xasiyyetname">Seçilməyib</span>
+                        <span class="file-name" id="name-xasiyyetname">Seçilməyib</span>
                     </div>
                 </div>
 
-                <div class="doc-card" id="card-idCopies">
-                    <div class="doc-label">
+                <div class="doc-card" id="card-idCopies" onclick="document.getElementById('idCopies').click()">
+                    <div class="doc-top">
                         <div class="doc-num">4</div>
                         <div class="doc-label-text">Valideyn və şagirdin ŞV surətləri</div>
                     </div>
-                    <div class="doc-file-input">
-                        <input type="file" id="idCopies" name="idCopies" required onchange="handleFile('idCopies','card-idCopies','name-idCopies')">
-                        <button type="button" class="btn-choose" onclick="document.getElementById('idCopies').click()">
-                            <i class="fa-solid fa-upload" style="font-size:11px;"></i> Fayl seç
+                    <div class="doc-bottom">
+                        <div class="doc-file-input">
+                            <input type="file" id="idCopies" name="idCopies" required onchange="handleFile('idCopies','card-idCopies','name-idCopies')">
+                        </div>
+                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('idCopies').click()">
+                            <i class="fa-solid fa-upload" style="font-size:10px;"></i> Fayl seç
                         </button>
-                        <span class="file-name-display" id="name-idCopies">Seçilməyib</span>
+                        <span class="file-name" id="name-idCopies">Seçilməyib</span>
                     </div>
                 </div>
 
-                <div class="doc-card" id="card-tabel">
-                    <div class="doc-label">
+                <div class="doc-card" id="card-tabel" onclick="document.getElementById('tabel').click()">
+                    <div class="doc-top">
                         <div class="doc-num">5</div>
                         <div class="doc-label-text">Qiymət cədvəli / tabel (məktəb tərəfindən)</div>
                     </div>
-                    <div class="doc-file-input">
-                        <input type="file" id="tabel" name="tabel" required onchange="handleFile('tabel','card-tabel','name-tabel')">
-                        <button type="button" class="btn-choose" onclick="document.getElementById('tabel').click()">
-                            <i class="fa-solid fa-upload" style="font-size:11px;"></i> Fayl seç
+                    <div class="doc-bottom">
+                        <div class="doc-file-input">
+                            <input type="file" id="tabel" name="tabel" required onchange="handleFile('tabel','card-tabel','name-tabel')">
+                        </div>
+                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('tabel').click()">
+                            <i class="fa-solid fa-upload" style="font-size:10px;"></i> Fayl seç
                         </button>
-                        <span class="file-name-display" id="name-tabel">Seçilməyib</span>
+                        <span class="file-name" id="name-tabel">Seçilməyib</span>
                     </div>
                 </div>
 
-                <div class="doc-card" id="card-forma027">
-                    <div class="doc-label">
+                <div class="doc-card" id="card-forma027" onclick="document.getElementById('forma027').click()">
+                    <div class="doc-top">
                         <div class="doc-num">6</div>
                         <div class="doc-label-text">Tibb müəssisəsindən çıxarış (Forma 027)</div>
                     </div>
-                    <div class="doc-file-input">
-                        <input type="file" id="forma027" name="forma027" required onchange="handleFile('forma027','card-forma027','name-forma027')">
-                        <button type="button" class="btn-choose" onclick="document.getElementById('forma027').click()">
-                            <i class="fa-solid fa-upload" style="font-size:11px;"></i> Fayl seç
+                    <div class="doc-bottom">
+                        <div class="doc-file-input">
+                            <input type="file" id="forma027" name="forma027" required onchange="handleFile('forma027','card-forma027','name-forma027')">
+                        </div>
+                        <button type="button" class="btn-choose" onclick="event.stopPropagation();document.getElementById('forma027').click()">
+                            <i class="fa-solid fa-upload" style="font-size:10px;"></i> Fayl seç
                         </button>
-                        <span class="file-name-display" id="name-forma027">Seçilməyib</span>
+                        <span class="file-name" id="name-forma027">Seçilməyib</span>
                     </div>
                 </div>
             </div>
 
             <!-- ACTIONS -->
             <div class="action-row">
-                <button type="button" class="btn-submit" onclick="submitForm()">
+                <button type="button" class="btn-submit" id="btn-submit" onclick="submitForm()">
                     <i class="fa-solid fa-paper-plane"></i>
                     Sənədləri Portala Göndər
                 </button>
-                <a href="/mekteb.html" class="btn-school">
+                <a href="/mekteb.html" class="btn-secondary">
                     <i class="fa-solid fa-school"></i>
                     Məktəb Portalı
                 </a>
             </div>
-
         </form>
     </div>
 
     <!-- FOOTER -->
     <div class="card-footer">
         <div class="footer-links">
-            <a href="#"><i class="fa-solid fa-circle-question" style="font-size:12px;"></i> Təlimat</a>
-            <a href="#"><i class="fa-solid fa-file-contract" style="font-size:12px;"></i> Razılaşma</a>
-            <a href="#"><i class="fa-solid fa-headset" style="font-size:12px;"></i> Dəstək</a>
+            <a href="#"><i class="fa-solid fa-circle-question" style="font-size:11px;"></i> Təlimat</a>
+            <a href="#"><i class="fa-solid fa-file-contract" style="font-size:11px;"></i> Razılaşma</a>
+            <a href="#"><i class="fa-solid fa-headset" style="font-size:11px;"></i> Dəstək</a>
         </div>
         <div class="footer-status">
             <div class="status-dot"></div>
@@ -1095,59 +1051,103 @@ window.addEventListener('DOMContentLoaded', () => {
 <script>
 function handleFile(inputId, cardId, nameId) {
     const input = document.getElementById(inputId);
-    const card = document.getElementById(cardId);
-    const nameEl = document.getElementById(nameId);
+    const card  = document.getElementById(cardId);
+    const nameEl= document.getElementById(nameId);
     if (input.files && input.files.length > 0) {
         const fname = input.files[0].name;
-        nameEl.textContent = fname.length > 20 ? fname.substring(0,18) + '…' : fname;
+        nameEl.textContent = fname.length > 22 ? fname.substring(0,20) + '…' : fname;
         card.classList.add('has-file');
     } else {
         nameEl.textContent = 'Seçilməyib';
         card.classList.remove('has-file');
     }
+    updateProgress();
 }
 
-async function submitForm() {
-    const form = document.getElementById('studentForm');
-    const fin = document.getElementById('finCode').value.trim();
-    const name = document.getElementById('studentName').value.trim();
-    const schoolSelect = document.getElementById('schoolSelect');
+function updateProgress() {
+    const fields = [
+        document.getElementById('studentName').value.trim(),
+        document.getElementById('finCode').value.trim(),
+        document.getElementById('schoolSelect').value,
+        document.getElementById('applicationType').value,
+        document.getElementById('academicYear').value
+    ];
+    const fileIds = ['coverLetter','residenceCertificate','xasiyyetname','idCopies','tabel','forma027'];
+    let done = fields.filter(Boolean).length;
+    fileIds.forEach(id => {
+        if (document.getElementById(id).files.length > 0) done++;
+    });
+    const total = 9;
+    const pct = Math.round((done / total) * 100);
+    document.getElementById('prog-bar').style.width = pct + '%';
+    document.getElementById('prog-text').textContent = done + ' / ' + total + ' tamamlandı';
 
-    if (!fin || !name || schoolSelect.value === '') {
-        alert('Zəhmət olmasa tələb olunan xanaları tam doldurun!');
+    const pi1 = document.getElementById('pi-1');
+    const pi2 = document.getElementById('pi-2');
+    const pi3 = document.getElementById('pi-3');
+    const fieldsDone = fields.filter(Boolean).length;
+    const filesDone  = fileIds.filter(id => document.getElementById(id).files.length > 0).length;
+
+    pi1.className = 'prog-item' + (fieldsDone === 5 ? ' done' : fieldsDone > 0 ? ' active' : '');
+    pi2.className = 'prog-item' + (filesDone === 6 ? ' done' : filesDone > 0 ? ' active' : '');
+    pi3.className = 'prog-item' + (done === total ? ' active' : '');
+}
+
+function showAlert(msg, type) {
+    const el = document.getElementById('alert-box');
+    el.className = 'alert ' + type;
+    const icons = { error:'fa-circle-exclamation', success:'fa-circle-check', info:'fa-circle-info' };
+    el.innerHTML = '<i class="fa-solid ' + icons[type] + '"></i> ' + msg;
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function hideAlert() { document.getElementById('alert-box').className = 'alert'; }
+
+async function submitForm() {
+    const form   = document.getElementById('studentForm');
+    const fin    = document.getElementById('finCode').value.trim();
+    const name   = document.getElementById('studentName').value.trim();
+    const school = document.getElementById('schoolSelect').value;
+    const type   = document.getElementById('applicationType').value;
+
+    if (!fin || !name || !school || !type) {
+        showAlert('Zəhmət olmasa tələb olunan xanaları tam doldurun!', 'error');
         return;
     }
-
-    const reqFiles = ['coverLetter', 'residenceCertificate', 'xasiyyetname', 'idCopies', 'tabel', 'forma027'];
+    const reqFiles = ['coverLetter','residenceCertificate','xasiyyetname','idCopies','tabel','forma027'];
     for (let id of reqFiles) {
         if (document.getElementById(id).files.length === 0) {
-            alert('Zəhmət olmasa tələb olunan 6 sənədin hər birini tam yükləyin!');
+            showAlert('Zəhmət olmasa tələb olunan 6 sənədin hər birini tam yükləyin!', 'error');
             return;
         }
     }
 
-    const formData = new FormData(form);
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Göndərilir...';
+    hideAlert();
 
+    const formData = new FormData(form);
     try {
         const response = await fetch('/api/school/submit-student', {
             method: 'POST',
             body: formData
         });
-
         if (response.ok) {
-            alert('Uğurlu əməliyyat! Sənədlər rəsmi verilənlər bazasına yazıldı.');
+            showAlert('Uğurlu əməliyyat! Sənədlər rəsmi verilənlər bazasına yazıldı.', 'success');
             form.reset();
             document.querySelectorAll('.doc-card').forEach(c => c.classList.remove('has-file'));
-            document.querySelectorAll('.file-name-display').forEach(el => el.textContent = 'Seçilməyib');
+            document.querySelectorAll('.file-name').forEach(el => el.textContent = 'Seçilməyib');
+            updateProgress();
         } else {
-            alert('Server xətası baş verdi. Məlumat yazılmadı.');
+            showAlert('Server xətası baş verdi. Məlumat yazılmadı.', 'error');
         }
     } catch (error) {
-        console.error('Bağlantı xətası:', error);
-        alert('Python serverinə bağlanmaq mümkün olmadı! Terminalda main.py-ın işlədiyindən əmin olun.');
+        showAlert('Python serverinə bağlanmaq mümkün olmadı! Terminalda main.py-ın işlədiyindən əmin olun.', 'error');
     }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Sənədləri Portala Göndər';
 }
 </script>
-
 </body>
 </html>
