@@ -492,10 +492,14 @@
 
     async function checkToken(token) {
         try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000);
             const res  = await fetch('/api/auth/check-session', {
                 method: 'POST', headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({token})
+                body: JSON.stringify({token}),
+                signal: controller.signal
             });
+            clearTimeout(timeout);
             const data = await res.json();
             return data.status === 'valid' && data.role === THIS_ROLE;
         } catch { return false; }
@@ -520,10 +524,14 @@
         btn.innerHTML = '<div class="spinner"></div> Göndərilir...';
         hideAlert();
         try {
+            const controller2 = new AbortController();
+            const timeout2 = setTimeout(() => controller2.abort(), 12000);
             const res  = await fetch('/api/auth/send-otp', {
                 method: 'POST', headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({email})
+                body: JSON.stringify({email}),
+                signal: controller2.signal
             });
+            clearTimeout(timeout2);
             const data = await res.json();
             if (data.status === 'success') {
                 if (data.role !== THIS_ROLE) {
@@ -541,7 +549,7 @@
             } else {
                 SFX.error(); showAlert(data.message || 'Xəta baş verdi.', 'error');
             }
-        } catch { SFX.error(); showAlert('Serverə qoşulmaq mümkün olmadı!', 'error'); }
+        } catch (err) { SFX.error(); showAlert(err.name === 'AbortError' ? 'Server yuxudadır, 30 saniyə gözləyib yenidən cəhd edin.' : 'Serverə qoşulmaq mümkün olmadı!', 'error'); }
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Kod Göndər';
     }
@@ -556,10 +564,14 @@
         btn.innerHTML = '<div class="spinner"></div> Yoxlanılır...';
         hideAlert();
         try {
+            const ctrl = new AbortController();
+            const tmo = setTimeout(() => ctrl.abort(), 12000);
             const res  = await fetch('/api/auth/verify-otp', {
                 method: 'POST', headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({email: currentEmail, code})
+                body: JSON.stringify({email: currentEmail, code}),
+                signal: ctrl.signal
             });
+            clearTimeout(tmo);
             const data = await res.json();
             if (data.status === 'success') {
                 if (data.role !== THIS_ROLE) {
