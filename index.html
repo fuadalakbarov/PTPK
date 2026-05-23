@@ -63,13 +63,13 @@ window.addEventListener('DOMContentLoaded', () => {
             --red:      #dc2626;
             --red-lt:   #fee2e2;
             --muted:    #64748b;
-            --border:   rgba(255,255,255,0.28);
-            --border2:  rgba(255,255,255,0.36);
-            --text:     #ffffff;
-            --text2:    rgba(255,255,255,0.92);
-            --text3:    rgba(255,255,255,0.70);
-            --card-bg:  rgba(15, 40, 85, 0.55);
-            --card-bg2: rgba(10, 30, 65, 0.52);
+            --border:   rgba(15,23,42,0.12);
+            --border2:  rgba(15,23,42,0.18);
+            --text:     #0f172a;
+            --text2:    rgba(15,23,42,0.75);
+            --text3:    rgba(15,23,42,0.50);
+            --card-bg:  rgba(255, 255, 255, 0.72);
+            --card-bg2: rgba(255, 255, 255, 0.68);
             --radius:   12px;
             --radius-lg:20px;
         }
@@ -109,7 +109,7 @@ window.addEventListener('DOMContentLoaded', () => {
             content: '';
             position: absolute;
             inset: 0;
-            background: rgba(10, 20, 35, 0.28);
+            background: rgba(0, 0, 0, 0.20);
             z-index: 1;
         }
 
@@ -151,7 +151,7 @@ window.addEventListener('DOMContentLoaded', () => {
             display: flex;
             align-items: center;
             gap: 8px;
-            background: rgba(15, 40, 85, 0.60);
+            background: rgba(255, 255, 255, 0.72);
             border: 1px solid var(--border2);
             border-radius: 30px;
             padding: 6px 14px 6px 8px;
@@ -169,7 +169,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         .btn-logout {
             display: flex; align-items: center; gap: 6px;
-            background: rgba(15, 40, 85, 0.60);
+            background: rgba(255, 255, 255, 0.72);
             border: 1px solid var(--border2);
             border-radius: 30px;
             padding: 6px 14px;
@@ -200,7 +200,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         /* ── PORTAL HEADER ── */
         .portal-header {
-            background: rgba(15, 40, 80, 0.55);
+            background: rgba(255, 255, 255, 0.72);
             border: 1px solid var(--border2);
             border-bottom: none;
             border-radius: var(--radius-lg) var(--radius-lg) 0 0;
@@ -226,12 +226,12 @@ window.addEventListener('DOMContentLoaded', () => {
             content: '';
             position: absolute;
             bottom: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(201,168,76,0.4), transparent);
+            background: linear-gradient(90deg, transparent, rgba(180,130,20,0.4), transparent);
         }
         .logo-box {
             width: 58px; height: 58px;
             border-radius: 14px;
-            background: rgba(10, 30, 70, 0.40);
+            background: rgba(255, 255, 255, 0.50);
             border: 1px solid rgba(255,255,255,0.15);
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
@@ -272,7 +272,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         /* ── PROGRESS STRIP ── */
         .prog-strip {
-            background: rgba(8, 25, 60, 0.50);
+            background: rgba(255, 255, 255, 0.65);
             border: 1px solid var(--border);
             border-top: none; border-bottom: none;
             padding: 0 36px;
@@ -298,9 +298,9 @@ window.addEventListener('DOMContentLoaded', () => {
         .prog-item.done { color: #4ade80; }
         .prog-num {
             width: 22px; height: 22px; border-radius: 50%;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.12);
-            color: var(--text3);
+            background: rgba(15,23,42,0.08);
+            border: 1px solid rgba(15,23,42,0.14);
+            color: #64748b;
             font-size: 11px; font-weight: 700;
             display: flex; align-items: center; justify-content: center;
             transition: all 0.25s;
@@ -334,7 +334,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         /* ── CARD BODY ── */
         .card-body {
-            background: rgba(10, 30, 70, 0.60);
+            background: rgba(255, 255, 255, 0.62);
             border: 1px solid var(--border);
             border-top: none;
             padding: 32px 36px;
@@ -387,9 +387,9 @@ window.addEventListener('DOMContentLoaded', () => {
             padding: 0 14px;
             font-size: 14px; font-weight: 500;
             font-family: 'Outfit', sans-serif;
-            color: var(--text);
-            background: rgba(10, 30, 70, 0.50);
-            border: 1px solid rgba(255,255,255,0.12);
+            color: #0f172a;
+            background: rgba(255, 255, 255, 0.55);
+            border: 1px solid rgba(15,23,42,0.15);
             border-radius: var(--radius);
             outline: none;
             transition: all 0.2s;
@@ -399,18 +399,18 @@ window.addEventListener('DOMContentLoaded', () => {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%2394a3b8' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
-            background-color: rgba(10, 30, 70, 0.50);
+            background-color: rgba(255, 255, 255, 0.55);
             padding-right: 36px;
         }
         .field select option,
         .field select optgroup {
-            background: #2f5a82;
+            background: #f1f5f9;
             color: #f1f5f9;
         }
         .field input:focus,
         .field select:focus {
             border-color: rgba(201,168,76,0.5);
-            background: rgba(10, 30, 70, 0.60);
+            background: rgba(255, 255, 255, 0.62);
             box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
         }
         .field input::placeholder { color: var(--text3); font-weight: 400; }
@@ -429,8 +429,8 @@ window.addEventListener('DOMContentLoaded', () => {
             margin-bottom: 28px;
         }
         .doc-card {
-            background: rgba(10, 30, 70, 0.40);
-            border: 1px dashed rgba(255,255,255,0.12);
+            background: rgba(255, 255, 255, 0.50);
+            border: 1px dashed rgba(15,23,42,0.18);
             border-radius: var(--radius);
             padding: 14px 16px;
             display: flex; flex-direction: column; gap: 10px;
@@ -439,12 +439,12 @@ window.addEventListener('DOMContentLoaded', () => {
             position: relative;
         }
         .doc-card:hover {
-            border-color: rgba(201,168,76,0.35);
+            border-color: rgba(180,130,20,0.50);
             background: rgba(201,168,76,0.05);
         }
         .doc-card.has-file {
             border-style: solid;
-            border-color: rgba(22,163,74,0.4);
+            border-color: rgba(22,163,74,0.5);
             background: rgba(22,163,74,0.06);
         }
         .doc-top {
@@ -461,7 +461,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         .doc-card.has-file .doc-num {
             background: rgba(22,163,74,0.2);
-            border-color: rgba(22,163,74,0.4);
+            border-color: rgba(22,163,74,0.5);
             color: #4ade80;
         }
         .doc-label-text {
@@ -474,12 +474,12 @@ window.addEventListener('DOMContentLoaded', () => {
         .doc-file-input input[type="file"] { display: none; }
         .btn-choose {
             display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.80);
+            border: 1px solid rgba(15,23,42,0.18);
             border-radius: 8px;
             padding: 6px 11px;
             font-size: 11.5px; font-weight: 600;
-            color: var(--text2); cursor: pointer;
+            color: #334155; cursor: pointer;
             transition: all 0.18s;
             font-family: 'Outfit', sans-serif;
             white-space: nowrap;
@@ -561,12 +561,12 @@ window.addEventListener('DOMContentLoaded', () => {
         .btn-secondary:hover {
             border-color: rgba(255,255,255,0.25);
             color: #fff;
-            background: rgba(10, 30, 70, 0.60);
+            background: rgba(255, 255, 255, 0.62);
         }
 
         /* ── CARD FOOTER ── */
         .card-footer {
-            background: rgba(8, 25, 60, 0.55);
+            background: rgba(255, 255, 255, 0.65);
             border: 1px solid var(--border);
             border-top: none;
             border-radius: 0 0 var(--radius-lg) var(--radius-lg);
@@ -579,7 +579,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         .footer-links a {
             font-size: 12px; font-weight: 600;
-            color: var(--text3); text-decoration: none;
+            color: #64748b; text-decoration: none;
             display: flex; align-items: center; gap: 5px;
             transition: color 0.15s;
         }
@@ -605,6 +605,7 @@ window.addEventListener('DOMContentLoaded', () => {
             font-size: 11.5px; color: var(--text3);
             font-weight: 500; text-align: center;
             position: relative; z-index: 2;
+            color: rgba(255,255,255,0.7);
         }
 
         /* ── SPINNER ── */
