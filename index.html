@@ -50,9 +50,9 @@ window.addEventListener('DOMContentLoaded', () => {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
-            --navy:     #0b1829;
-            --navy2:    #132238;
-            --navy3:    #1c3352;
+            --navy:     #1e3a5f;
+            --navy2:    #264a72;
+            --navy3:    #2f5a82;
             --accent:   #c9a84c;
             --accent2:  #f0d080;
             --accent3:  #fdf0c4;
@@ -63,13 +63,13 @@ window.addEventListener('DOMContentLoaded', () => {
             --red:      #dc2626;
             --red-lt:   #fee2e2;
             --muted:    #64748b;
-            --border:   rgba(255,255,255,0.09);
-            --border2:  rgba(255,255,255,0.15);
+            --border:   rgba(255,255,255,0.16);
+            --border2:  rgba(255,255,255,0.24);
             --text:     #f1f5f9;
-            --text2:    rgba(241,245,249,0.65);
-            --text3:    rgba(241,245,249,0.38);
-            --card-bg:  rgba(255,255,255,0.055);
-            --card-bg2: rgba(255,255,255,0.035);
+            --text2:    rgba(241,245,249,0.82);
+            --text3:    rgba(241,245,249,0.55);
+            --card-bg:  rgba(255,255,255,0.13);
+            --card-bg2: rgba(255,255,255,0.09);
             --radius:   12px;
             --radius-lg:20px;
         }
@@ -82,9 +82,9 @@ window.addEventListener('DOMContentLoaded', () => {
             min-height: 100dvh;
             background: var(--navy);
             background-image:
-                radial-gradient(ellipse 70% 50% at 15% 0%, rgba(37,99,235,0.18) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 40% at 85% 100%, rgba(201,168,76,0.12) 0%, transparent 55%),
-                radial-gradient(ellipse 40% 60% at 50% 50%, rgba(11,24,41,0) 0%, var(--navy) 100%);
+                radial-gradient(ellipse 70% 50% at 15% 0%, rgba(96,165,250,0.30) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 85% 100%, rgba(201,168,76,0.22) 0%, transparent 55%),
+                radial-gradient(ellipse 40% 60% at 50% 50%, rgba(30,58,95,0) 0%, var(--navy) 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -191,8 +191,8 @@ window.addEventListener('DOMContentLoaded', () => {
             position: absolute;
             inset: 0;
             background: linear-gradient(135deg,
-                rgba(37,99,235,0.12) 0%,
-                rgba(201,168,76,0.06) 50%,
+                rgba(37,99,235,0.22) 0%,
+                rgba(201,168,76,0.10) 50%,
                 transparent 100%);
             pointer-events: none;
         }
@@ -246,7 +246,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         /* ── PROGRESS STRIP ── */
         .prog-strip {
-            background: rgba(255,255,255,0.03);
+            background: rgba(255,255,255,0.08);
             border: 1px solid var(--border);
             border-top: none; border-bottom: none;
             padding: 0 36px;
@@ -308,7 +308,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         /* ── CARD BODY ── */
         .card-body {
-            background: var(--card-bg2);
+            background: rgba(255,255,255,0.10);
             border: 1px solid var(--border);
             border-top: none;
             padding: 32px 36px;
@@ -362,7 +362,7 @@ window.addEventListener('DOMContentLoaded', () => {
             font-size: 14px; font-weight: 500;
             font-family: 'Outfit', sans-serif;
             color: var(--text);
-            background: rgba(255,255,255,0.06);
+            background: rgba(255,255,255,0.12);
             border: 1px solid rgba(255,255,255,0.12);
             border-radius: var(--radius);
             outline: none;
@@ -373,18 +373,18 @@ window.addEventListener('DOMContentLoaded', () => {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%2394a3b8' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 12px center;
-            background-color: rgba(255,255,255,0.06);
+            background-color: rgba(255,255,255,0.12);
             padding-right: 36px;
         }
         .field select option,
         .field select optgroup {
-            background: #1c3352;
+            background: #2f5a82;
             color: #f1f5f9;
         }
         .field input:focus,
         .field select:focus {
             border-color: rgba(201,168,76,0.5);
-            background: rgba(255,255,255,0.09);
+            background: rgba(255,255,255,0.18);
             box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
         }
         .field input::placeholder { color: var(--text3); font-weight: 400; }
@@ -403,7 +403,7 @@ window.addEventListener('DOMContentLoaded', () => {
             margin-bottom: 28px;
         }
         .doc-card {
-            background: rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.09);
             border: 1px dashed rgba(255,255,255,0.12);
             border-radius: var(--radius);
             padding: 14px 16px;
@@ -535,7 +535,7 @@ window.addEventListener('DOMContentLoaded', () => {
         .btn-secondary:hover {
             border-color: rgba(255,255,255,0.25);
             color: #fff;
-            background: rgba(255,255,255,0.09);
+            background: rgba(255,255,255,0.18);
         }
 
         /* ── CARD FOOTER ── */
