@@ -1,0 +1,26 @@
+{
+  "name": "PTPK - Rəqəmsal Sənəd Qəbulu",
+  "short_name": "PTPK",
+  "description": "Psixoloji-Tibbi-Pedaqoji Komissiya Portalı",
+  "start_url": "/login.html",
+  "display": "standalone",
+  "background_color": "#0d1b2a",
+  "theme_color": "#0284c7",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "image.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "image.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "lang": "az"
+}
