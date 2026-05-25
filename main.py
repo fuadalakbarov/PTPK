@@ -349,3 +349,7 @@ async def resubmit_docs(
         )
 
     return {"status": "success", "updated": list(payload.keys())}
+
+@app.get("/mobile")
+async def mobile():
+    return FileResponse("ptpk-mobile.html")
