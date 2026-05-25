@@ -2,8 +2,15 @@
 <html lang="az">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PTPK | Giriş</title>
+    <meta name="theme-color" content="#0d1b2a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PTPK">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="image.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -293,8 +300,20 @@
         .step-panel.active { display: block; }
 
         @media (max-width: 600px) {
-            .page-layout { justify-content: center; padding: 20px; }
-            .login-card { max-width: 100%; }
+            .page-layout { justify-content: flex-start; padding: 16px; padding-top: max(16px, env(safe-area-inset-top)); }
+            .login-card { max-width: 100%; border-radius: 16px; }
+            .card-header { padding: 20px 20px 16px; }
+            .card-header img { height: 44px; }
+            .card-header h1 { font-size: 14.5px; }
+            .card-body { padding: 20px 20px 24px; }
+            .otp-cell { width: 40px; height: 50px; font-size: 20px; border-radius: 8px; }
+            .otp-wrapper { gap: 6px; }
+            .steps { gap: 0; }
+            .step-line { flex: 0 0 20px; }
+        }
+        @media (max-width: 380px) {
+            .otp-cell { width: 34px; height: 44px; font-size: 18px; }
+            .otp-wrapper { gap: 4px; }
         }
     </style>
     <script>
@@ -450,7 +469,59 @@
 
 <div class="copyright">© 2026 Psixoloji-Tibbi-Pedaqoji Komissiya · by F.Alakbarov</div>
 
+<!-- PWA Yükləmə Banneri -->
+<div id="install-banner" style="display:none; position:fixed; bottom:0; left:0; right:0; z-index:100;
+     background:rgba(13,27,42,0.95); backdrop-filter:blur(12px); border-top:1px solid rgba(201,168,76,0.3);
+     padding:12px 20px; padding-bottom:max(12px, env(safe-area-inset-bottom));
+     align-items:center; gap:12px; justify-content:space-between;">
+    <div style="display:flex; align-items:center; gap:10px;">
+        <img src="image.png" style="height:36px; border-radius:8px;">
+        <div>
+            <div style="color:#fff; font-size:13px; font-weight:700;">PTPK Portalını yüklə</div>
+            <div style="color:rgba(255,255,255,0.5); font-size:11px;">Tez giriş üçün telefona əlavə et</div>
+        </div>
+    </div>
+    <div style="display:flex; gap:8px; flex-shrink:0;">
+        <button onclick="document.getElementById('install-banner').style.display='none'"
+            style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.6);
+                   border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif;">
+            Sonra
+        </button>
+        <button onclick="installApp()"
+            style="background:rgba(201,168,76,0.2); border:1px solid rgba(201,168,76,0.5); color:#f0d080;
+                   border-radius:8px; padding:8px 16px; font-size:12px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif;">
+            <i class="fa-solid fa-download"></i> Yüklə
+        </button>
+    </div>
+</div>
+
 <script>
+    // PWA: Service Worker qeydiyyatı
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+    }
+
+    // PWA: App yükləmə promtu
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const banner = document.getElementById('install-banner');
+        if (banner) banner.style.display = 'flex';
+    });
+    window.addEventListener('appinstalled', () => {
+        const banner = document.getElementById('install-banner');
+        if (banner) banner.style.display = 'none';
+        deferredPrompt = null;
+    });
+    function installApp() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+    }
+
     const THIS_ROLE    = 'user';
     const REDIRECT_URL = 'index.html';
     let timerInterval = null;
