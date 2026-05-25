@@ -1,0 +1,2518 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PTPK | Rəqəmsal Portal</title>
+<meta name="theme-color" content="#0d1b2a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root {
+  --navy:    #0a1628;
+  --navy2:   #111f35;
+  --navy3:   #192d47;
+  --gold:    #c8a44a;
+  --gold2:   #e8c96a;
+  --cyan:    #22d3ee;
+  --green:   #10b981;
+  --red:     #ef4444;
+  --amber:   #f59e0b;
+  --muted:   #64748b;
+  --border:  rgba(255,255,255,0.1);
+  --text:    #e2e8f0;
+  --text2:   #94a3b8;
+  --surface: rgba(255,255,255,0.05);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--text);
+  min-height: 100dvh;
+  overflow: hidden;
+  max-width: 430px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* ── SCREENS ── */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(30px);
+  transition: opacity 0.28s ease, transform 0.28s ease;
+}
+.screen.active {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateX(0);
+}
+.screen.slide-left {
+  transform: translateX(-30px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── SCROLLABLE BODY ── */
+.screen-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.screen-body::-webkit-scrollbar { display: none; }
+
+/* ══════════════════════════════
+   LOGIN SCREEN
+══════════════════════════════ */
+#screen-login {
+  background: linear-gradient(160deg, #0a1628 0%, #0f2240 50%, #0a1e10 100%);
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  padding: 24px;
+}
+
+.login-bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(200,164,74,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,164,74,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.login-orbs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.login-orbs::before {
+  content: '';
+  position: absolute;
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(200,164,74,0.12) 0%, transparent 70%);
+  top: -80px; left: -80px;
+  animation: orbFloat 8s ease-in-out infinite;
+}
+.login-orbs::after {
+  content: '';
+  position: absolute;
+  width: 240px; height: 240px;
+  background: radial-gradient(circle, rgba(16,185,129,0.1) 0%, transparent 70%);
+  bottom: 80px; right: -60px;
+  animation: orbFloat 10s ease-in-out infinite reverse;
+}
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0,0); }
+  50% { transform: translate(20px, 15px); }
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 360px;
+}
+
+.login-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 36px;
+}
+.login-icon-wrap {
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  color: var(--navy);
+  box-shadow: 0 8px 24px rgba(200,164,74,0.4);
+}
+.login-brand h1 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: 3px;
+  color: var(--gold2);
+}
+.login-brand p {
+  font-size: 10px;
+  color: var(--text2);
+  letter-spacing: 0.5px;
+  margin-top: 1px;
+}
+
+.login-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.login-sub {
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.field-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 8px;
+}
+.field-wrap {
+  position: relative;
+  margin-bottom: 16px;
+}
+.field-wrap i {
+  position: absolute;
+  left: 14px;
+  top: 50%; transform: translateY(-50%);
+  color: var(--text2);
+  font-size: 14px;
+  pointer-events: none;
+}
+.field-wrap input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 13px 14px 13px 40px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  -webkit-appearance: none;
+}
+.field-wrap input:focus {
+  border-color: var(--gold);
+  background: rgba(200,164,74,0.06);
+}
+.field-wrap input::placeholder { color: rgba(148,163,184,0.5); }
+
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border: none;
+  border-radius: 12px;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--navy);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 4px 20px rgba(200,164,74,0.35);
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-primary:active { transform: scale(0.98); opacity: 0.9; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* OTP Step */
+.otp-back {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text2);
+  margin-bottom: 24px;
+  cursor: pointer;
+  width: fit-content;
+  -webkit-tap-highlight-color: transparent;
+}
+.otp-back i { font-size: 12px; }
+
+.otp-inputs {
+  display: flex; gap: 8px; margin-bottom: 20px;
+}
+.otp-inputs input {
+  flex: 1;
+  height: 52px;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  text-align: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--gold2);
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+  caret-color: var(--gold);
+}
+.otp-inputs input:focus {
+  border-color: var(--gold);
+  background: rgba(200,164,74,0.06);
+}
+
+.otp-hint {
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+.otp-hint span { color: var(--gold2); font-weight: 600; }
+
+/* Role selector */
+.role-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.role-card {
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.role-card.selected {
+  border-color: var(--gold);
+  background: rgba(200,164,74,0.1);
+}
+.role-card i {
+  font-size: 22px;
+  color: var(--text2);
+  display: block;
+  margin-bottom: 8px;
+}
+.role-card.selected i { color: var(--gold2); }
+.role-card span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+}
+.role-card.selected span { color: var(--text); }
+
+/* ══════════════════════════════
+   TOP BAR
+══════════════════════════════ */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  padding-top: calc(14px + var(--safe-top));
+  background: var(--navy2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+.topbar-back {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text2);
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.topbar-title {
+  flex: 1;
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.topbar-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  background: rgba(200,164,74,0.15);
+  color: var(--gold2);
+  border: 1px solid rgba(200,164,74,0.3);
+  border-radius: 6px;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+.topbar-action {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text2);
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ══════════════════════════════
+   BOTTOM NAV
+══════════════════════════════ */
+.bottomnav {
+  display: flex;
+  padding: 8px 8px;
+  padding-bottom: calc(8px + var(--safe-bot));
+  background: var(--navy2);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 4px;
+}
+.bnav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+.bnav-item.active { background: rgba(200,164,74,0.12); }
+.bnav-item i {
+  font-size: 18px;
+  color: var(--text2);
+  transition: color 0.2s;
+}
+.bnav-item.active i { color: var(--gold2); }
+.bnav-item span {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text2);
+  transition: color 0.2s;
+}
+.bnav-item.active span { color: var(--gold2); }
+.bnav-dot {
+  position: absolute;
+  top: 6px; right: calc(50% - 14px);
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  border: 1.5px solid var(--navy2);
+  display: none;
+}
+.bnav-dot.show { display: block; }
+
+/* ══════════════════════════════
+   HOME / DASHBOARD
+══════════════════════════════ */
+.home-hero {
+  background: linear-gradient(135deg, var(--navy2), var(--navy3));
+  padding: 20px 16px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.home-hero::after {
+  content: 'PTPK';
+  position: absolute;
+  right: -10px; bottom: -20px;
+  font-family: 'Syne', sans-serif;
+  font-size: 80px;
+  font-weight: 800;
+  color: rgba(200,164,74,0.05);
+  letter-spacing: 4px;
+  pointer-events: none;
+}
+.hero-greeting {
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+.hero-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+.hero-name span { color: var(--gold2); }
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.stat-chip {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 12px 10px;
+  text-align: center;
+}
+.stat-chip-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+}
+.stat-chip-num.gold { color: var(--gold2); }
+.stat-chip-num.green { color: var(--green); }
+.stat-chip-num.amber { color: var(--amber); }
+.stat-chip-label {
+  font-size: 10px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 8px;
+}
+.section-head h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text);
+}
+.section-head a {
+  font-size: 12px;
+  color: var(--gold2);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Action tiles */
+.action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 0 16px 16px;
+}
+.action-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  overflow: hidden;
+}
+.action-tile::before {
+  content: '';
+  position: absolute;
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  opacity: 0.08;
+  top: -10px; right: -10px;
+}
+.action-tile.gold::before { background: var(--gold); }
+.action-tile.cyan::before { background: var(--cyan); }
+.action-tile.green::before { background: var(--green); }
+.action-tile.red::before { background: var(--red); }
+.action-tile:active { transform: scale(0.97); }
+.tile-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+.action-tile.gold .tile-icon { background: rgba(200,164,74,0.15); color: var(--gold2); }
+.action-tile.cyan .tile-icon { background: rgba(34,211,238,0.15); color: var(--cyan); }
+.action-tile.green .tile-icon { background: rgba(16,185,129,0.15); color: var(--green); }
+.action-tile.red .tile-icon { background: rgba(239,68,68,0.15); color: var(--red); }
+.tile-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+.tile-sub {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.4;
+}
+
+/* Recent activity */
+.activity-list {
+  padding: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.activity-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.activity-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.activity-dot.green { background: var(--green); }
+.activity-dot.amber { background: var(--amber); }
+.activity-dot.red { background: var(--red); }
+.activity-dot.cyan { background: var(--cyan); }
+.activity-info { flex: 1; min-width: 0; }
+.activity-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.activity-meta {
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+.activity-pill {
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 3px 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.activity-pill.green { background: rgba(16,185,129,0.15); color: var(--green); }
+.activity-pill.amber { background: rgba(245,158,11,0.15); color: var(--amber); }
+.activity-pill.red { background: rgba(239,68,68,0.15); color: var(--red); }
+.activity-pill.muted { background: rgba(100,116,139,0.15); color: var(--text2); }
+
+/* ══════════════════════════════
+   SUBMIT FORM SCREEN
+══════════════════════════════ */
+.form-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 24px;
+}
+
+.form-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 2px;
+}
+.form-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0 12px;
+}
+
+.finput-group { display: flex; flex-direction: column; gap: 6px; }
+.finput-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  display: flex; align-items: center; gap: 6px;
+}
+.finput-label i { font-size: 11px; color: var(--gold); }
+.finput-req { color: var(--red); font-size: 10px; }
+
+.finput {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.finput:focus { border-color: var(--gold); }
+.finput option { background: #1a2e45; color: var(--text); }
+.finput option:disabled { color: var(--muted); }
+.finput::placeholder { color: rgba(148,163,184,0.4); }
+
+.file-zone {
+  border: 1.5px dashed rgba(255,255,255,0.15);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  overflow: hidden;
+}
+.file-zone input[type=file] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 0;
+}
+.file-zone.has-file {
+  border-color: rgba(16,185,129,0.4);
+  background: rgba(16,185,129,0.05);
+}
+.file-zone-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  color: var(--text2);
+  flex-shrink: 0;
+}
+.file-zone.has-file .file-zone-icon { background: rgba(16,185,129,0.15); color: var(--green); }
+.file-zone-text { flex: 1; min-width: 0; }
+.file-zone-main {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.file-zone-sub {
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 1px;
+}
+.file-zone-check {
+  color: var(--green);
+  font-size: 16px;
+  display: none;
+}
+.file-zone.has-file .file-zone-check { display: block; }
+
+.submit-btn {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: none;
+  border-radius: 14px;
+  font-family: 'Syne', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: white;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+  -webkit-tap-highlight-color: transparent;
+  margin-top: 8px;
+}
+.submit-btn:active { transform: scale(0.98); }
+
+/* ══════════════════════════════
+   APPLICATIONS LIST SCREEN
+══════════════════════════════ */
+.search-bar {
+  padding: 12px 16px;
+  background: var(--navy2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.search-wrap {
+  position: relative;
+}
+.search-wrap i {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text2);
+  font-size: 13px;
+  pointer-events: none;
+}
+.search-wrap input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px 10px 36px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  -webkit-appearance: none;
+}
+.search-wrap input::placeholder { color: rgba(148,163,184,0.5); }
+
+.filter-chips {
+  display: flex;
+  gap: 6px;
+  padding: 10px 16px;
+  overflow-x: auto;
+  flex-shrink: 0;
+  scrollbar-width: none;
+}
+.filter-chips::-webkit-scrollbar { display: none; }
+.fchip {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+}
+.fchip.active {
+  background: rgba(200,164,74,0.15);
+  border-color: var(--gold);
+  color: var(--gold2);
+}
+
+.app-list {
+  padding: 8px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.app-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.app-card:active { transform: scale(0.99); }
+.app-card-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.app-avatar {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--navy3), var(--navy2));
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold2);
+  flex-shrink: 0;
+}
+.app-info { flex: 1; min-width: 0; }
+.app-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-fin {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--text2);
+}
+.status-pill {
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 3px 9px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.status-pill.waiting { background: rgba(100,116,139,0.2); color: var(--text2); }
+.status-pill.active { background: rgba(16,185,129,0.15); color: var(--green); }
+.status-pill.expired { background: rgba(239,68,68,0.15); color: var(--red); }
+.status-pill.warning { background: rgba(245,158,11,0.15); color: var(--amber); }
+.status-pill.new { background: rgba(34,211,238,0.15); color: var(--cyan); }
+
+.app-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+.app-meta-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px;
+  color: var(--text2);
+}
+.app-meta-item i { font-size: 10px; color: var(--gold); }
+
+/* ══════════════════════════════
+   APPLICATION DETAIL
+══════════════════════════════ */
+.detail-hero {
+  background: linear-gradient(160deg, var(--navy2), var(--navy3));
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.detail-avatar {
+  width: 56px; height: 56px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(200,164,74,0.2), rgba(200,164,74,0.05));
+  border: 1.5px solid rgba(200,164,74,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gold2);
+  margin-bottom: 12px;
+}
+.detail-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.detail-fin {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 12px;
+}
+.detail-pills {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+
+.detail-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+.info-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.info-block-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text2);
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 6px;
+}
+.info-block-title i { color: var(--gold); font-size: 10px; }
+
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  gap: 10px;
+}
+.info-row:last-child { border-bottom: none; }
+.info-key {
+  font-size: 12px;
+  color: var(--text2);
+  flex-shrink: 0;
+}
+.info-val {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: right;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Doc list */
+.doc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.doc-item:last-child { border-bottom: none; }
+.doc-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: rgba(200,164,74,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  color: var(--gold2);
+  flex-shrink: 0;
+}
+.doc-icon.ok { background: rgba(16,185,129,0.1); color: var(--green); }
+.doc-icon.missing { background: rgba(239,68,68,0.1); color: var(--red); }
+.doc-name {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text);
+}
+.doc-status { font-size: 11px; }
+.doc-status.ok { color: var(--green); }
+.doc-status.missing { color: var(--red); }
+
+/* Decision panel */
+.decision-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+.decision-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.decision-label i { color: var(--gold); font-size: 10px; }
+.decision-select {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  margin-bottom: 10px;
+  -webkit-appearance: none;
+}
+.decision-select option { background: #1a2e45; }
+.decision-textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  resize: none;
+  min-height: 70px;
+  margin-bottom: 10px;
+}
+.decision-textarea::placeholder { color: rgba(148,163,184,0.4); }
+.btn-save {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border: none;
+  border-radius: 10px;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: opacity 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-save:active { opacity: 0.85; }
+
+/* ══════════════════════════════
+   STATS SCREEN
+══════════════════════════════ */
+.stats-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+.stat-big-card {
+  background: linear-gradient(135deg, var(--navy2), var(--navy3));
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 18px;
+}
+.stat-big-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 42px;
+  font-weight: 600;
+  color: var(--gold2);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-big-label {
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.stat-bar-list { display: flex; flex-direction: column; gap: 10px; }
+.stat-bar-row { display: flex; flex-direction: column; gap: 5px; }
+.stat-bar-head {
+  display: flex; justify-content: space-between;
+  font-size: 12px;
+}
+.stat-bar-head span:first-child { color: var(--text); font-weight: 500; }
+.stat-bar-head span:last-child { font-family: 'IBM Plex Mono', monospace; color: var(--text2); }
+.stat-bar-track {
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.stat-bar-fill.gold { background: linear-gradient(90deg, var(--gold), var(--gold2)); }
+.stat-bar-fill.green { background: var(--green); }
+.stat-bar-fill.amber { background: var(--amber); }
+.stat-bar-fill.red { background: var(--red); }
+
+.region-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.region-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+}
+.region-name { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.region-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ══════════════════════════════
+   PROFILE SCREEN
+══════════════════════════════ */
+.profile-hero {
+  padding: 28px 16px 20px;
+  background: linear-gradient(160deg, var(--navy2), var(--navy3));
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.profile-avatar-big {
+  width: 64px; height: 64px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(200,164,74,0.25), rgba(200,164,74,0.05));
+  border: 2px solid rgba(200,164,74,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--gold2);
+  flex-shrink: 0;
+}
+.profile-info-hero { flex: 1; }
+.profile-name-big {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.profile-email {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 3px;
+}
+.profile-role-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-top: 8px;
+  background: rgba(200,164,74,0.15);
+  color: var(--gold2);
+  border: 1px solid rgba(200,164,74,0.25);
+}
+
+.profile-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.settings-group {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.settings-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s;
+}
+.settings-item:last-child { border-bottom: none; }
+.settings-item:active { background: rgba(255,255,255,0.03); }
+.settings-icon {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.settings-icon.gold { background: rgba(200,164,74,0.15); color: var(--gold2); }
+.settings-icon.blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
+.settings-icon.green { background: rgba(16,185,129,0.15); color: var(--green); }
+.settings-icon.red { background: rgba(239,68,68,0.15); color: var(--red); }
+.settings-text { flex: 1; }
+.settings-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.settings-desc { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.settings-arrow { color: var(--text2); font-size: 11px; }
+
+/* ══════════════════════════════
+   TOAST
+══════════════════════════════ */
+#toast {
+  position: fixed;
+  bottom: calc(80px + var(--safe-bot));
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(15, 30, 50, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+  display: flex; align-items: center; gap: 8px;
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+#toast i { font-size: 14px; }
+#toast.success i { color: var(--green); }
+#toast.error i { color: var(--red); }
+
+/* ══════════════════════════════
+   MODAL
+══════════════════════════════ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.modal-sheet {
+  width: 100%;
+  max-width: 430px;
+  background: var(--navy2);
+  border-radius: 20px 20px 0 0;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  padding: 20px 16px;
+  padding-bottom: calc(20px + var(--safe-bot));
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-height: 85dvh;
+  overflow-y: auto;
+}
+.modal-overlay.open .modal-sheet {
+  transform: translateY(0);
+}
+.modal-handle {
+  width: 36px; height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.15);
+  margin: 0 auto 16px;
+}
+.modal-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.modal-sub {
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 16px;
+}
+
+/* ══════════════════════════════
+   LOADING / SPLASH
+══════════════════════════════ */
+#screen-splash {
+  background: var(--navy);
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+}
+.splash-logo {
+  width: 72px; height: 72px;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+  color: var(--navy);
+  animation: splashPulse 1.5s ease-in-out infinite;
+  box-shadow: 0 0 40px rgba(200,164,74,0.4);
+}
+@keyframes splashPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+.splash-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  color: var(--gold2);
+}
+.splash-sub {
+  font-size: 11px;
+  color: var(--text2);
+  letter-spacing: 1px;
+  text-align: center;
+}
+.splash-loader {
+  width: 120px;
+  height: 3px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.splash-loader-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
+  border-radius: 2px;
+  animation: loaderFill 1.8s ease-in-out forwards;
+}
+@keyframes loaderFill {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+/* Empty state */
+.empty-state {
+  padding: 48px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.empty-icon {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  color: var(--text2);
+  margin-bottom: 4px;
+}
+.empty-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--text); }
+.empty-sub { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+/* Pulsar dot for live indicators */
+.pulsar {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  position: relative;
+}
+.pulsar::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: rgba(16,185,129,0.3);
+  animation: pulsarRing 1.5s ease-out infinite;
+}
+@keyframes pulsarRing {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div class="screen active" id="screen-splash">
+  <div class="splash-logo"><i class="fa-solid fa-graduation-cap"></i></div>
+  <div class="splash-title">PTPK</div>
+  <div class="splash-sub">Psixoloji-Tibbi-Pedaqoji<br>Komissiya Portalı</div>
+  <div class="splash-loader"><div class="splash-loader-fill"></div></div>
+</div>
+
+<!-- LOGIN -->
+<div class="screen" id="screen-login">
+  <div class="login-bg-grid"></div>
+  <div class="login-orbs"></div>
+  <div class="login-card">
+    <!-- Step 1: role + email -->
+    <div id="login-step1">
+      <div class="login-badge">
+        <div class="login-icon-wrap"><i class="fa-solid fa-graduation-cap"></i></div>
+        <div class="login-brand">
+          <h1>PTPK</h1>
+          <p>Rəqəmsal Sənəd Portalı</p>
+        </div>
+      </div>
+      <div class="login-title">Xoş gəldiniz</div>
+      <div class="login-sub">Sistemə daxil olmaq üçün rolunuzu seçin və e-poçt ünvanınızı daxil edin.</div>
+      <div class="role-grid">
+        <div class="role-card selected" onclick="selectRole('school',this)">
+          <i class="fa-solid fa-school"></i>
+          <span>Məktəb</span>
+        </div>
+        <div class="role-card" onclick="selectRole('komissiya',this)">
+          <i class="fa-solid fa-users-gear"></i>
+          <span>Komissiya</span>
+        </div>
+      </div>
+      <div class="field-label">E-poçt ünvanı</div>
+      <div class="field-wrap">
+        <i class="fa-solid fa-envelope"></i>
+        <input type="email" id="login-email" placeholder="example@edu.gov.az" autocomplete="email">
+      </div>
+      <button class="btn-primary" onclick="sendOTP()">
+        <i class="fa-solid fa-paper-plane"></i> Kod Göndər
+      </button>
+    </div>
+
+    <!-- Step 2: OTP -->
+    <div id="login-step2" style="display:none;">
+      <div class="otp-back" onclick="backToStep1()">
+        <i class="fa-solid fa-arrow-left"></i> Geri qayıt
+      </div>
+      <div class="login-title">Kod daxil edin</div>
+      <div class="otp-hint">E-poçtunuza göndərilən 6 rəqəmli kodu daxil edin:<br><span id="otp-email-display"></span></div>
+      <div class="otp-inputs">
+        <input type="tel" maxlength="1" class="otp-digit" oninput="otpInput(this,0)" onkeydown="otpKey(event,0)">
+        <input type="tel" maxlength="1" class="otp-digit" oninput="otpInput(this,1)" onkeydown="otpKey(event,1)">
+        <input type="tel" maxlength="1" class="otp-digit" oninput="otpInput(this,2)" onkeydown="otpKey(event,2)">
+        <input type="tel" maxlength="1" class="otp-digit" oninput="otpInput(this,3)" onkeydown="otpKey(event,3)">
+        <input type="tel" maxlength="1" class="otp-digit" oninput="otpInput(this,4)" onkeydown="otpKey(event,4)">
+        <input type="tel" maxlength="1" class="otp-digit" oninput="otpInput(this,5)" onkeydown="otpKey(event,5)">
+      </div>
+      <button class="btn-primary" onclick="verifyOTP()">
+        <i class="fa-solid fa-check"></i> Təsdiqlə
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- HOME SCREEN (School) -->
+<div class="screen" id="screen-home">
+  <div class="topbar">
+    <div style="flex:1;">
+      <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;letter-spacing:2px;color:var(--gold2);">PTPK</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span class="pulsar"></span>
+      <span style="font-size:11px;color:var(--text2);">Canlı</span>
+    </div>
+    <div class="topbar-action" onclick="showScreen('screen-profile')"><i class="fa-solid fa-user"></i></div>
+  </div>
+  <div class="screen-body">
+    <div class="home-hero">
+      <div class="hero-greeting">Xoş gəldiniz,</div>
+      <div class="hero-name">Müəllim <span id="home-username">İstifadəçi</span></div>
+      <div class="stat-row">
+        <div class="stat-chip">
+          <div class="stat-chip-num gold" id="home-total">—</div>
+          <div class="stat-chip-label">Cəmi</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-chip-num green" id="home-active">—</div>
+          <div class="stat-chip-label">Aktiv</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-chip-num amber" id="home-pending">—</div>
+          <div class="stat-chip-label">Gözləmədə</div>
+        </div>
+      </div>
+    </div>
+    <div class="section-head">
+      <h3>Tez Əməliyyatlar</h3>
+    </div>
+    <div class="action-grid">
+      <div class="action-tile gold" onclick="showScreen('screen-submit')">
+        <div class="tile-icon"><i class="fa-solid fa-plus"></i></div>
+        <div class="tile-title">Yeni Müraciət</div>
+        <div class="tile-sub">Sənəd göndər</div>
+      </div>
+      <div class="action-tile cyan" onclick="showScreen('screen-apps')">
+        <div class="tile-icon"><i class="fa-solid fa-list"></i></div>
+        <div class="tile-title">Müraciətlər</div>
+        <div class="tile-sub">Siyahıya bax</div>
+      </div>
+      <div class="action-tile green" onclick="showScreen('screen-stats')">
+        <div class="tile-icon"><i class="fa-solid fa-chart-bar"></i></div>
+        <div class="tile-title">Statistika</div>
+        <div class="tile-sub">Hesabat bax</div>
+      </div>
+      <div class="action-tile red" onclick="showToast('Tezliklə əlavə olunacaq','info')">
+        <div class="tile-icon"><i class="fa-solid fa-bell"></i></div>
+        <div class="tile-title">Bildirişlər</div>
+        <div class="tile-sub">3 yeni mesaj</div>
+      </div>
+    </div>
+    <div class="section-head">
+      <h3>Son Müraciətlər</h3>
+      <a onclick="showScreen('screen-apps')">Hamısı →</a>
+    </div>
+    <div class="activity-list" id="recent-list">
+      <!-- populated by JS -->
+    </div>
+  </div>
+  <div class="bottomnav" id="bnav-home">
+    <div class="bnav-item active" onclick="switchTab('home')"><i class="fa-solid fa-house"></i><span>Ana Səhifə</span></div>
+    <div class="bnav-item" onclick="switchTab('apps')"><i class="fa-solid fa-folder-open"></i><span>Müraciətlər</span><div class="bnav-dot" id="apps-dot"></div></div>
+    <div class="bnav-item" onclick="showScreen('screen-submit')"><i class="fa-solid fa-circle-plus" style="font-size:26px;color:var(--gold2);"></i><span>Yeni</span></div>
+    <div class="bnav-item" onclick="switchTab('stats')"><i class="fa-solid fa-chart-pie"></i><span>Statistika</span></div>
+    <div class="bnav-item" onclick="switchTab('profile')"><i class="fa-solid fa-user"></i><span>Profil</span></div>
+  </div>
+</div>
+
+<!-- SUBMIT FORM -->
+<div class="screen" id="screen-submit">
+  <div class="topbar">
+    <div class="topbar-back" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
+    <div class="topbar-title">Yeni Müraciət</div>
+    <div class="topbar-badge">Forma</div>
+  </div>
+  <div class="screen-body">
+    <div class="form-body">
+      <div>
+        <div class="form-section-label">Şagird Məlumatları</div>
+        <div class="form-divider"></div>
+        <div class="finput-group" style="margin-bottom:12px;">
+          <div class="finput-label"><i class="fa-solid fa-user"></i> Soyadı, Adı, Atasının adı <span class="finput-req">*</span></div>
+          <input class="finput" type="text" id="f-name" placeholder="S.A.A." autocomplete="off">
+        </div>
+        <div class="finput-group" style="margin-bottom:12px;">
+          <div class="finput-label"><i class="fa-solid fa-id-card"></i> FİN Kod <span class="finput-req">*</span></div>
+          <input class="finput" type="text" id="f-fin" placeholder="7 rəqəmli FİN" maxlength="7" style="text-transform:uppercase;font-family:'IBM Plex Mono',monospace;">
+        </div>
+        <div class="finput-group" style="margin-bottom:12px;">
+          <div class="finput-label"><i class="fa-solid fa-school"></i> Ümumtəhsil Müəssisəsi <span class="finput-req">*</span></div>
+          <select class="finput" id="f-school">
+            <option value="" disabled selected>— Məktəbi seçin —</option>
+            <optgroup label="📍 Gəncə şəhəri">
+              <option>Gəncə şəhər İ.Qayıbov adına 1 nömrəli məktəb</option>
+              <option>Gəncə şəhər Ə.Cavad adına 2 nömrəli məktəb</option>
+              <option>Gəncə şəhər 3 nömrəli məktəb-liseyi</option>
+              <option>Gəncə şəhər M.Mehdizadə adına 4 nömrəli məktəb</option>
+              <option>Gəncə şəhər M.Ə.Sabir adına 5 nömrəli məktəb</option>
+              <option>Gəncə şəhər C.Cabbarlı adına 6 nömrəli məktəb</option>
+              <option>Gəncə şəhər 7 nömrəli məktəb</option>
+              <option>Gəncə şəhər M.P.Vaqif adına 8 nömrəli məktəb</option>
+              <option>Gəncə şəhər 9 nömrəli məktəb</option>
+              <option>Gəncə şəhər M.Hadi adına 10 nömrəli məktəb</option>
+              <option>Gəncə şəhər 45 nömrəli xüsusi məktəb</option>
+              <option>Gəncə şəhər İnteqrasiya təlimli İnternat Tipli Gimnaziya</option>
+            </optgroup>
+            <optgroup label="📍 Göygöl rayonu">
+              <option>Göygöl şəhər 1 nömrəli məktəb</option>
+              <option>Göygöl şəhər 2 nömrəli məktəb-liseyi</option>
+            </optgroup>
+            <optgroup label="📍 Daşkəsən rayonu">
+              <option>Daşkəsən şəhər S.Vurğun adına 1 nömrəli məktəb</option>
+              <option>Daşkəsən şəhər A.Mürsəlov adına 2 nömrəli məktəb</option>
+            </optgroup>
+            <optgroup label="📍 Goranboy rayonu">
+              <option>Goranboy şəhər 1 nömrəli məktəb</option>
+              <option>Goranboy şəhər 2 nömrəli məktəb</option>
+            </optgroup>
+            <optgroup label="📍 Samux rayonu">
+              <option>Samux şəhər 1 nömrəli məktəb</option>
+              <option>Samux şəhər 2 nömrəli məktəb</option>
+            </optgroup>
+            <optgroup label="📍 Naftalan şəhəri">
+              <option>Naftalan şəhər 1 nömrəli məktəb</option>
+            </optgroup>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div class="finput-group">
+            <div class="finput-label"><i class="fa-solid fa-tag"></i> Müraciət Növü</div>
+            <select class="finput" id="f-type">
+              <option value="" disabled selected>Seçin</option>
+              <option>Yeni</option>
+              <option>Təkrar</option>
+            </select>
+          </div>
+          <div class="finput-group">
+            <div class="finput-label"><i class="fa-solid fa-calendar"></i> Tədris İli</div>
+            <select class="finput" id="f-year">
+              <option>2025-2026</option>
+              <option>2024-2025</option>
+              <option>2026-2027</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="form-section-label">Sənədlər</div>
+        <div class="form-divider"></div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div class="finput-group">
+            <div class="finput-label"><i class="fa-solid fa-file-lines"></i> 1. Müşayiət məktubu <span class="finput-req">*</span></div>
+            <div class="file-zone" id="fz-0">
+              <input type="file" accept=".pdf,.doc,.docx,.jpg,.png" onchange="fileSelected(this,0)">
+              <div class="file-zone-icon"><i class="fa-solid fa-upload"></i></div>
+              <div class="file-zone-text">
+                <div class="file-zone-main" id="fz-main-0">Fayl seçin və ya buraya dartın</div>
+                <div class="file-zone-sub">PDF, DOC, JPG (max 10MB)</div>
+              </div>
+              <i class="fa-solid fa-circle-check file-zone-check"></i>
+            </div>
+          </div>
+          <div class="finput-group">
+            <div class="finput-label"><i class="fa-solid fa-house"></i> 2. Yaşayış arayışı <span class="finput-req">*</span></div>
+            <div class="file-zone" id="fz-1">
+              <input type="file" accept=".pdf,.doc,.docx,.jpg,.png" onchange="fileSelected(this,1)">
+              <div class="file-zone-icon"><i class="fa-solid fa-upload"></i></div>
+              <div class="file-zone-text">
+                <div class="file-zone-main" id="fz-main-1">Fayl seçin və ya buraya dartın</div>
+                <div class="file-zone-sub">PDF, DOC, JPG (max 10MB)</div>
+              </div>
+              <i class="fa-solid fa-circle-check file-zone-check"></i>
+            </div>
+          </div>
+          <div class="finput-group">
+            <div class="finput-label"><i class="fa-solid fa-id-badge"></i> 3. Xasiyyətnamə <span class="finput-req">*</span></div>
+            <div class="file-zone" id="fz-2">
+              <input type="file" accept=".pdf,.doc,.docx,.jpg,.png" onchange="fileSelected(this,2)">
+              <div class="file-zone-icon"><i class="fa-solid fa-upload"></i></div>
+              <div class="file-zone-text">
+                <div class="file-zone-main" id="fz-main-2">Fayl seçin və ya buraya dartın</div>
+                <div class="file-zone-sub">PDF, DOC, JPG (max 10MB)</div>
+              </div>
+              <i class="fa-solid fa-circle-check file-zone-check"></i>
+            </div>
+          </div>
+          <div class="finput-group">
+            <div class="finput-label"><i class="fa-solid fa-address-card"></i> 4. ŞV surətləri <span class="finput-req">*</span></div>
+            <div class="file-zone" id="fz-3">
+              <input type="file" accept=".pdf,.doc,.docx,.jpg,.png" onchange="fileSelected(this,3)">
+              <div class="file-zone-icon"><i class="fa-solid fa-upload"></i></div>
+              <div class="file-zone-text">
+                <div class="file-zone-main" id="fz-main-3">Fayl seçin və ya buraya dartın</div>
+                <div class="file-zone-sub">PDF, DOC, JPG (max 10MB)</div>
+              </div>
+              <i class="fa-solid fa-circle-check file-zone-check"></i>
+            </div>
+          </div>
+          <div class="finput-group">
+            <div class="finput-label"><i class="fa-solid fa-table-list"></i> 5. Qiymət cədvəli / Tabel <span class="finput-req">*</span></div>
+            <div class="file-zone" id="fz-4">
+              <input type="file" accept=".pdf,.doc,.docx,.jpg,.png" onchange="fileSelected(this,4)">
+              <div class="file-zone-icon"><i class="fa-solid fa-upload"></i></div>
+              <div class="file-zone-text">
+                <div class="file-zone-main" id="fz-main-4">Fayl seçin və ya buraya dartın</div>
+                <div class="file-zone-sub">PDF, DOC, JPG (max 10MB)</div>
+              </div>
+              <i class="fa-solid fa-circle-check file-zone-check"></i>
+            </div>
+          </div>
+          <div class="finput-group">
+            <div class="finput-label"><i class="fa-solid fa-file-medical"></i> 6. Forma 027 <span class="finput-req">*</span></div>
+            <div class="file-zone" id="fz-5">
+              <input type="file" accept=".pdf,.doc,.docx,.jpg,.png" onchange="fileSelected(this,5)">
+              <div class="file-zone-icon"><i class="fa-solid fa-upload"></i></div>
+              <div class="file-zone-text">
+                <div class="file-zone-main" id="fz-main-5">Fayl seçin və ya buraya dartın</div>
+                <div class="file-zone-sub">PDF, DOC, JPG (max 10MB)</div>
+              </div>
+              <i class="fa-solid fa-circle-check file-zone-check"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="submit-btn" onclick="submitForm()">
+        <i class="fa-solid fa-paper-plane"></i> Müraciəti Göndər
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- APPLICATIONS LIST -->
+<div class="screen" id="screen-apps">
+  <div class="topbar">
+    <div class="topbar-back" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
+    <div class="topbar-title">Müraciətlər</div>
+    <div class="topbar-badge" id="apps-count">0</div>
+  </div>
+  <div class="search-bar">
+    <div class="search-wrap">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" placeholder="Ad, FİN və ya məktəb axtar..." id="search-input" oninput="filterApps()">
+    </div>
+  </div>
+  <div class="filter-chips">
+    <div class="fchip active" onclick="setFilter('all',this)">Hamısı</div>
+    <div class="fchip" onclick="setFilter('waiting',this)">Gözləmədə</div>
+    <div class="fchip" onclick="setFilter('active',this)">Qüvvədədir</div>
+    <div class="fchip" onclick="setFilter('warning',this)">Düzəliş</div>
+    <div class="fchip" onclick="setFilter('expired',this)">Qüvvədən düşüb</div>
+  </div>
+  <div class="screen-body">
+    <div class="app-list" id="app-list">
+      <!-- populated by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- APP DETAIL -->
+<div class="screen" id="screen-detail">
+  <div class="topbar">
+    <div class="topbar-back" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
+    <div class="topbar-title">Müraciət Detalı</div>
+    <div class="topbar-action" onclick="openActionModal()"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+  </div>
+  <div class="screen-body">
+    <div class="detail-hero" id="detail-hero">
+      <!-- populated by JS -->
+    </div>
+    <div class="detail-body" id="detail-body">
+      <!-- populated by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="screen" id="screen-stats">
+  <div class="topbar">
+    <div class="topbar-back" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
+    <div class="topbar-title">Statistika</div>
+    <div class="topbar-badge">2025–2026</div>
+  </div>
+  <div class="screen-body">
+    <div class="stats-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="stat-big-card">
+          <div class="stat-big-num" id="st-total">—</div>
+          <div class="stat-big-label">Cəmi Müraciət</div>
+        </div>
+        <div class="stat-big-card">
+          <div class="stat-big-num" style="color:var(--green);" id="st-active">—</div>
+          <div class="stat-big-label">Qüvvədədir</div>
+        </div>
+      </div>
+
+      <div class="info-block">
+        <div class="info-block-title"><i class="fa-solid fa-chart-bar"></i> Status Paylanması</div>
+        <div style="padding:14px;">
+          <div class="stat-bar-list" id="stats-bars"></div>
+        </div>
+      </div>
+
+      <div class="info-block">
+        <div class="info-block-title"><i class="fa-solid fa-map-pin"></i> Rayonlar üzrə</div>
+        <div style="padding:14px;">
+          <div class="region-grid" id="stats-regions"></div>
+        </div>
+      </div>
+
+      <div class="info-block">
+        <div class="info-block-title"><i class="fa-solid fa-graduation-cap"></i> Təhsil Formaları</div>
+        <div style="padding:14px;">
+          <div class="stat-bar-list" id="stats-edu"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="screen" id="screen-profile">
+  <div class="topbar">
+    <div class="topbar-back" onclick="goBack()"><i class="fa-solid fa-arrow-left"></i></div>
+    <div class="topbar-title">Profil</div>
+  </div>
+  <div class="screen-body">
+    <div class="profile-hero">
+      <div class="profile-avatar-big" id="profile-avatar">—</div>
+      <div class="profile-info-hero">
+        <div class="profile-name-big" id="profile-name">—</div>
+        <div class="profile-email" id="profile-email">—</div>
+        <div class="profile-role-badge">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span id="profile-role">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="profile-body">
+      <div class="settings-group">
+        <div class="settings-item">
+          <div class="settings-icon gold"><i class="fa-solid fa-bell"></i></div>
+          <div class="settings-text">
+            <div class="settings-name">Bildirişlər</div>
+            <div class="settings-desc">Push bildirişlər idarə et</div>
+          </div>
+          <i class="fa-solid fa-chevron-right settings-arrow"></i>
+        </div>
+        <div class="settings-item">
+          <div class="settings-icon blue"><i class="fa-solid fa-language"></i></div>
+          <div class="settings-text">
+            <div class="settings-name">Dil</div>
+            <div class="settings-desc">Azərbaycan dili</div>
+          </div>
+          <i class="fa-solid fa-chevron-right settings-arrow"></i>
+        </div>
+        <div class="settings-item">
+          <div class="settings-icon green"><i class="fa-solid fa-shield-halved"></i></div>
+          <div class="settings-text">
+            <div class="settings-name">Təhlükəsizlik</div>
+            <div class="settings-desc">Şifrə, OTP ayarları</div>
+          </div>
+          <i class="fa-solid fa-chevron-right settings-arrow"></i>
+        </div>
+      </div>
+      <div class="settings-group">
+        <div class="settings-item">
+          <div class="settings-icon gold"><i class="fa-solid fa-circle-question"></i></div>
+          <div class="settings-text">
+            <div class="settings-name">Yardım</div>
+            <div class="settings-desc">Tez-tez verilən suallar</div>
+          </div>
+          <i class="fa-solid fa-chevron-right settings-arrow"></i>
+        </div>
+        <div class="settings-item" onclick="logout()">
+          <div class="settings-icon red"><i class="fa-solid fa-arrow-right-from-bracket"></i></div>
+          <div class="settings-text">
+            <div class="settings-name">Çıxış</div>
+            <div class="settings-desc">Hesabdan çıx</div>
+          </div>
+          <i class="fa-solid fa-chevron-right settings-arrow"></i>
+        </div>
+      </div>
+      <div style="text-align:center;padding:16px 0;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);">PTPK v2.0.0 · by F.Alakbarov</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px;">© 2026 Psixoloji-Tibbi-Pedaqoji Komissiya</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ACTION MODAL -->
+<div class="modal-overlay" id="action-modal" onclick="closeActionModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-app-name">Əməliyyat</div>
+    <div class="modal-sub">Müraciət üçün əməliyyat seçin</div>
+
+    <div id="modal-decision-section">
+      <div style="margin-bottom:10px;">
+        <div class="decision-label"><i class="fa-solid fa-gavel"></i> Qərar Statusu</div>
+        <select class="decision-select" id="modal-status">
+          <option>Gözləmədə</option>
+          <option>Qüvvədədir</option>
+          <option>Qüvvədən düşüb</option>
+          <option>Düzəliş lazım</option>
+        </select>
+      </div>
+      <div style="margin-bottom:10px;">
+        <div class="decision-label"><i class="fa-solid fa-book-open"></i> Təhsil Forması</div>
+        <select class="decision-select" id="modal-form">
+          <option value="-">—</option>
+          <option>Evdə təhsil (Ümumi proqram)</option>
+          <option>Evdə təhsil (Xüsusi proqram)</option>
+          <option>İnklüziv təhsil (Ümumi proqram)</option>
+          <option>Xüsusi təhsil (Xüsusi proqram)</option>
+        </select>
+      </div>
+      <div style="margin-bottom:10px;">
+        <div class="decision-label"><i class="fa-solid fa-calendar-check"></i> Bitmə Tarixi</div>
+        <input type="date" class="decision-select" id="modal-expiry" style="color:var(--text);">
+      </div>
+      <div style="margin-bottom:14px;">
+        <div class="decision-label"><i class="fa-solid fa-note-sticky"></i> Qeyd</div>
+        <textarea class="decision-textarea" id="modal-notes" placeholder="Əlavə qeydlər..."></textarea>
+      </div>
+      <button class="btn-save" onclick="saveDecision()">
+        <i class="fa-solid fa-floppy-disk"></i> Qərarı Yadda Saxla
+      </button>
+    </div>
+
+    <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">
+      <button onclick="showToast('Sənəd yüklənir...','info'); closeActionModal()" style="width:100%;padding:12px;background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.25);border-radius:10px;color:var(--cyan);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+        <i class="fa-solid fa-file-pdf"></i> Qərar PDF-ini Yüklə
+      </button>
+      <button onclick="deleteApp()" style="width:100%;padding:12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:10px;color:var(--red);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+        <i class="fa-solid fa-trash"></i> Müraciəti Sil
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"><i class="fa-solid fa-circle-check"></i><span id="toast-msg"></span></div>
+
+<script>
+// ══════════════════════════════
+// STATE
+// ══════════════════════════════
+const API = 'https://vlyuxgtwvfgbwaysbymv.supabase.co/rest/v1';
+let currentUser = null;
+let currentScreen = 'screen-splash';
+let prevScreen = null;
+let selectedRole = 'school';
+let currentApp = null;
+let allApps = [];
+let currentFilter = 'all';
+
+// Demo data for preview
+const DEMO_APPS = [
+  { id:'PTPK_1001', fin:'7ABC123', name:'Əliyev Anar Rauf oğlu', schoolText:'Gəncə şəhər 7 nömrəli məktəb', type:'Yeni Müraciət', year:'2025-2026', decisionStatus:'Qüvvədədir', educationForm:'Evdə təhsil (Ümumi proqram)', expiryDate:'01.06.2026', notes:'', docStatus:'Tam Sənəd', coverLetter:'f1.pdf', residenceCertificate:'f2.pdf', xasiyyetname:'f3.pdf', idCopies:'f4.pdf', tabel:'f5.pdf', forma027:'f6.pdf' },
+  { id:'PTPK_1002', fin:'5XYZ789', name:'Hüseynova Günel Tural qızı', schoolText:'Gəncə şəhər M.Ə.Sabir adına 5 nömrəli məktəb', type:'Təkrar Müraciət', year:'2025-2026', decisionStatus:'Gözləmədə', educationForm:'-', expiryDate:'-', notes:'', docStatus:'Tam Sənəd', coverLetter:'f1.pdf', residenceCertificate:'f2.pdf', xasiyyetname:'f3.pdf', idCopies:'f4.pdf', tabel:'f5.pdf', forma027:'f6.pdf' },
+  { id:'PTPK_1003', fin:'3MNO456', name:'Babayev Kənan Elçin oğlu', schoolText:'Göygöl şəhər 1 nömrəli məktəb', type:'Yeni Müraciət', year:'2025-2026', decisionStatus:'Düzəliş lazım', educationForm:'-', expiryDate:'-', notes:'Forma 027 tam deyil', docStatus:'Çatışmır', coverLetter:'f1.pdf', residenceCertificate:'', xasiyyetname:'f3.pdf', idCopies:'f4.pdf', tabel:'f5.pdf', forma027:'' },
+  { id:'PTPK_1004', fin:'9PQR012', name:'Nəcəfova Sevinc Murad qızı', schoolText:'Daşkəsən şəhər S.Vurğun adına 1 nömrəli məktəb', type:'Yeni Müraciət', year:'2024-2025', decisionStatus:'Qüvvədən düşüb', educationForm:'Xüsusi təhsil (Xüsusi proqram)', expiryDate:'01.09.2025', notes:'', docStatus:'Tam Sənəd', coverLetter:'f1.pdf', residenceCertificate:'f2.pdf', xasiyyetname:'f3.pdf', idCopies:'f4.pdf', tabel:'f5.pdf', forma027:'f6.pdf' },
+  { id:'PTPK_1005', fin:'2STU345', name:'Quliyev Rəşad Faiq oğlu', schoolText:'Gəncə şəhər İ.Qayıbov adına 1 nömrəli məktəb', type:'Yeni Müraciət', year:'2025-2026', decisionStatus:'Qüvvədədir', educationForm:'İnklüziv təhsil (Ümumi proqram)', expiryDate:'01.06.2026', notes:'', docStatus:'Tam Sənəd', coverLetter:'f1.pdf', residenceCertificate:'f2.pdf', xasiyyetname:'f3.pdf', idCopies:'f4.pdf', tabel:'f5.pdf', forma027:'f6.pdf' },
+  { id:'PTPK_1006', fin:'6VWX678', name:'Məmmədova Aytən Cavid qızı', schoolText:'Samux şəhər 1 nömrəli məktəb', type:'Yeni Müraciət', year:'2025-2026', decisionStatus:'Gözləmədə', educationForm:'-', expiryDate:'-', notes:'', docStatus:'Tam Sənəd', coverLetter:'f1.pdf', residenceCertificate:'f2.pdf', xasiyyetname:'f3.pdf', idCopies:'f4.pdf', tabel:'f5.pdf', forma027:'f6.pdf' },
+];
+
+// ══════════════════════════════
+// NAVIGATION
+// ══════════════════════════════
+function showScreen(id, back=false) {
+  const cur = document.getElementById(currentScreen);
+  const next = document.getElementById(id);
+  if (!next || id === currentScreen) return;
+
+  cur.classList.remove('active');
+  if (back) {
+    cur.style.transform = 'translateX(30px)';
+    cur.style.opacity = '0';
+  } else {
+    cur.classList.add('slide-left');
+  }
+
+  prevScreen = currentScreen;
+  currentScreen = id;
+
+  next.style.transform = back ? 'translateX(-30px)' : 'translateX(30px)';
+  next.style.opacity = '0';
+  next.style.pointerEvents = 'none';
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      next.classList.add('active');
+      next.style.transform = '';
+      next.style.opacity = '';
+      next.style.pointerEvents = '';
+    });
+  });
+
+  setTimeout(() => {
+    cur.classList.remove('slide-left');
+    cur.style.transform = '';
+    cur.style.opacity = '';
+  }, 320);
+}
+
+function goBack() {
+  if (prevScreen) {
+    showScreen(prevScreen, true);
+  } else {
+    showScreen('screen-home', true);
+  }
+}
+
+function switchTab(tab) {
+  const map = { home:'screen-home', apps:'screen-apps', stats:'screen-stats', profile:'screen-profile' };
+  if (map[tab]) showScreen(map[tab]);
+}
+
+// ══════════════════════════════
+// SPLASH
+// ══════════════════════════════
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    // Check saved session
+    const saved = localStorage.getItem('ptpk_session');
+    if (saved) {
+      try {
+        currentUser = JSON.parse(saved);
+        loadApps();
+        updateProfile();
+        showScreen('screen-home');
+      } catch(e) {
+        showScreen('screen-login');
+      }
+    } else {
+      showScreen('screen-login');
+    }
+  }, 2000);
+});
+
+// ══════════════════════════════
+// AUTH
+// ══════════════════════════════
+function selectRole(role, el) {
+  selectedRole = role;
+  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+async function sendOTP() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { showToast('E-poçt ünvanını daxil edin','error'); return; }
+
+  showToast('Kod göndərilir...','info');
+
+  try {
+    const res = await fetch(`${API.replace('rest/v1','')}/api/auth/send-otp`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email})
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      document.getElementById('otp-email-display').textContent = email;
+      document.getElementById('login-step1').style.display = 'none';
+      document.getElementById('login-step2').style.display = 'block';
+      document.querySelectorAll('.otp-digit')[0].focus();
+      showToast('Kod göndərildi','success');
+    } else {
+      // Demo mode fallback
+      document.getElementById('otp-email-display').textContent = email;
+      document.getElementById('login-step1').style.display = 'none';
+      document.getElementById('login-step2').style.display = 'block';
+      document.querySelectorAll('.otp-digit')[0].focus();
+      showToast('Demo: 123456 kodunu daxil edin','info');
+    }
+  } catch(e) {
+    // Demo mode
+    document.getElementById('otp-email-display').textContent = email;
+    document.getElementById('login-step1').style.display = 'none';
+    document.getElementById('login-step2').style.display = 'block';
+    document.querySelectorAll('.otp-digit')[0].focus();
+    showToast('Demo: 123456 kodunu daxil edin','info');
+  }
+}
+
+function backToStep1() {
+  document.getElementById('login-step1').style.display = 'block';
+  document.getElementById('login-step2').style.display = 'none';
+  document.querySelectorAll('.otp-digit').forEach(i => i.value = '');
+}
+
+function otpInput(el, idx) {
+  el.value = el.value.replace(/\D/g,'');
+  if (el.value) {
+    const digits = document.querySelectorAll('.otp-digit');
+    if (idx < 5) digits[idx+1].focus();
+    else verifyOTP();
+  }
+}
+function otpKey(e, idx) {
+  if (e.key === 'Backspace') {
+    const digits = document.querySelectorAll('.otp-digit');
+    if (!digits[idx].value && idx > 0) digits[idx-1].focus();
+  }
+}
+
+async function verifyOTP() {
+  const digits = [...document.querySelectorAll('.otp-digit')].map(i=>i.value).join('');
+  if (digits.length < 6) { showToast('6 rəqəmli kodu daxil edin','error'); return; }
+
+  const email = document.getElementById('login-email').value.trim();
+
+  // Demo mode: accept 123456
+  if (digits === '123456') {
+    currentUser = { email, role: selectedRole, full_name: email.split('@')[0] };
+    localStorage.setItem('ptpk_session', JSON.stringify(currentUser));
+    allApps = [...DEMO_APPS];
+    loadApps();
+    updateProfile();
+    showScreen('screen-home');
+    showToast('Xoş gəldiniz!','success');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API.replace('rest/v1','')}/api/auth/verify-otp`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email, code: digits})
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      currentUser = { email: data.email, role: data.role, full_name: data.full_name, token: data.token };
+      localStorage.setItem('ptpk_session', JSON.stringify(currentUser));
+      loadApps();
+      updateProfile();
+      showScreen('screen-home');
+      showToast('Xoş gəldiniz!','success');
+    } else {
+      showToast('Kod yanlışdır','error');
+    }
+  } catch(e) {
+    showToast('Kod yanlışdır. Demo: 123456','error');
+  }
+}
+
+function logout() {
+  localStorage.removeItem('ptpk_session');
+  currentUser = null;
+  allApps = [];
+  showScreen('screen-login', true);
+  document.getElementById('login-step1').style.display = 'block';
+  document.getElementById('login-step2').style.display = 'none';
+  showToast('Çıxış edildi','info');
+}
+
+// ══════════════════════════════
+// APPS
+// ══════════════════════════════
+async function loadApps() {
+  try {
+    const res = await fetch(`${API.replace('rest/v1','')}/api/komissiya/get-applications`);
+    if (res.ok) {
+      allApps = await res.json();
+    } else { allApps = [...DEMO_APPS]; }
+  } catch(e) { allApps = [...DEMO_APPS]; }
+
+  renderApps();
+  renderHome();
+  renderStats();
+}
+
+function getStatusClass(s) {
+  if (!s) return 'waiting';
+  if (s.includes('Qüvvədədir')) return 'active';
+  if (s.includes('düşüb')) return 'expired';
+  if (s.includes('Düzəliş') || s.includes('Yeni Sənəd')) return 'warning';
+  if (s.includes('Gözlə')) return 'waiting';
+  return 'muted';
+}
+
+function initials(name) {
+  if (!name) return '?';
+  const p = name.trim().split(/\s+/);
+  return (p[0]?.[0]||'') + (p[1]?.[0]||'');
+}
+
+function renderApps() {
+  const list = document.getElementById('app-list');
+  const search = (document.getElementById('search-input')?.value || '').toLowerCase();
+  let filtered = allApps.filter(a => {
+    const matchSearch = !search ||
+      a.name?.toLowerCase().includes(search) ||
+      a.fin?.toLowerCase().includes(search) ||
+      a.schoolText?.toLowerCase().includes(search);
+    const matchFilter = currentFilter === 'all' || getStatusClass(a.decisionStatus) === currentFilter;
+    return matchSearch && matchFilter;
+  });
+
+  document.getElementById('apps-count').textContent = filtered.length;
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div><div class="empty-title">Müraciət tapılmadı</div><div class="empty-sub">Axtarış meyarlarına uyğun nəticə yoxdur</div></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(a => {
+    const sc = getStatusClass(a.decisionStatus);
+    const slabel = a.decisionStatus || 'Gözləmədə';
+    return `<div class="app-card" onclick="openDetail('${a.id}')">
+      <div class="app-card-top">
+        <div class="app-avatar">${initials(a.name)}</div>
+        <div class="app-info">
+          <div class="app-name">${a.name || '—'}</div>
+          <div class="app-fin">${a.fin || '—'}</div>
+        </div>
+        <div class="status-pill ${sc}">${slabel}</div>
+      </div>
+      <div class="app-card-bottom">
+        <div class="app-meta-item"><i class="fa-solid fa-school"></i>${a.schoolText?.split(' ').slice(0,4).join(' ')}...</div>
+        <div class="app-meta-item"><i class="fa-solid fa-calendar"></i>${a.year || '—'}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterApps() { renderApps(); }
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.fchip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderApps();
+}
+
+function renderHome() {
+  const total = allApps.length;
+  const active = allApps.filter(a => getStatusClass(a.decisionStatus) === 'active').length;
+  const pending = allApps.filter(a => getStatusClass(a.decisionStatus) === 'waiting').length;
+  document.getElementById('home-total').textContent = total;
+  document.getElementById('home-active').textContent = active;
+  document.getElementById('home-pending').textContent = pending;
+
+  const recent = allApps.slice(-5).reverse();
+  const dot = document.getElementById('apps-dot');
+  if (allApps.some(a => getStatusClass(a.decisionStatus) === 'warning')) dot.classList.add('show');
+
+  const rl = document.getElementById('recent-list');
+  if (!recent.length) {
+    rl.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-inbox"></i></div><div class="empty-title">Müraciət yoxdur</div><div class="empty-sub">Yeni müraciət göndərin</div></div>`;
+    return;
+  }
+  rl.innerHTML = recent.map(a => {
+    const sc = getStatusClass(a.decisionStatus);
+    const pillClass = sc === 'active' ? 'green' : sc === 'warning' ? 'amber' : sc === 'expired' ? 'red' : 'muted';
+    return `<div class="activity-item" onclick="openDetail('${a.id}')">
+      <div class="activity-dot ${pillClass}"></div>
+      <div class="activity-info">
+        <div class="activity-name">${a.name}</div>
+        <div class="activity-meta">${a.schoolText?.split(' ').slice(0,5).join(' ')}...</div>
+      </div>
+      <div class="activity-pill ${pillClass}">${a.decisionStatus || 'Gözləmədə'}</div>
+    </div>`;
+  }).join('');
+
+  if (currentUser) {
+    const n = currentUser.full_name || currentUser.email?.split('@')[0] || 'İstifadəçi';
+    document.getElementById('home-username').textContent = n.split(' ')[0] || n;
+  }
+}
+
+function renderStats() {
+  const total = allApps.length;
+  document.getElementById('st-total').textContent = total || '—';
+  const active = allApps.filter(a=>getStatusClass(a.decisionStatus)==='active').length;
+  document.getElementById('st-active').textContent = active || '—';
+
+  const statuses = [
+    { label:'Gözləmədə', cls:'muted', count: allApps.filter(a=>getStatusClass(a.decisionStatus)==='waiting').length },
+    { label:'Qüvvədədir', cls:'green', count: active },
+    { label:'Düzəliş lazım', cls:'amber', count: allApps.filter(a=>getStatusClass(a.decisionStatus)==='warning').length },
+    { label:'Qüvvədən düşüb', cls:'red', count: allApps.filter(a=>getStatusClass(a.decisionStatus)==='expired').length },
+  ];
+  document.getElementById('stats-bars').innerHTML = statuses.map(s => {
+    const pct = total ? Math.round(s.count/total*100) : 0;
+    const fillCls = s.cls === 'muted' ? 'gold' : s.cls;
+    return `<div class="stat-bar-row">
+      <div class="stat-bar-head"><span>${s.label}</span><span>${s.count} (${pct}%)</span></div>
+      <div class="stat-bar-track"><div class="stat-bar-fill ${fillCls}" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  const regions = {};
+  allApps.forEach(a => {
+    const city = a.schoolText?.split(' ')[0] || 'Digər';
+    regions[city] = (regions[city]||0)+1;
+  });
+  document.getElementById('stats-regions').innerHTML = Object.entries(regions).slice(0,6).map(([k,v]) =>
+    `<div class="region-card"><div class="region-name">${k}</div><div class="region-num">${v}</div></div>`
+  ).join('') || '<div style="color:var(--text2);font-size:12px;padding:4px;">Məlumat yoxdur</div>';
+
+  const eduForms = {};
+  allApps.forEach(a => {
+    const ef = a.educationForm && a.educationForm !== '-' ? a.educationForm : 'Qərar verilməyib';
+    eduForms[ef] = (eduForms[ef]||0)+1;
+  });
+  document.getElementById('stats-edu').innerHTML = Object.entries(eduForms).slice(0,5).map(([k,v]) => {
+    const pct = total ? Math.round(v/total*100) : 0;
+    return `<div class="stat-bar-row">
+      <div class="stat-bar-head"><span>${k}</span><span>${v}</span></div>
+      <div class="stat-bar-track"><div class="stat-bar-fill gold" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('') || '<div style="color:var(--text2);font-size:12px;padding:4px;">Məlumat yoxdur</div>';
+}
+
+// ══════════════════════════════
+// DETAIL
+// ══════════════════════════════
+function openDetail(id) {
+  currentApp = allApps.find(a => a.id === id);
+  if (!currentApp) return;
+  const a = currentApp;
+
+  const sc = getStatusClass(a.decisionStatus);
+  const pillClass = sc === 'active' ? 'green' : sc === 'warning' ? 'amber' : sc === 'expired' ? 'red' : 'waiting';
+
+  document.getElementById('detail-hero').innerHTML = `
+    <div class="detail-avatar">${initials(a.name)}</div>
+    <div class="detail-name">${a.name || '—'}</div>
+    <div class="detail-fin"><i class="fa-solid fa-id-card" style="margin-right:5px;"></i>${a.fin || '—'}</div>
+    <div class="detail-pills">
+      <div class="status-pill ${sc}">${a.decisionStatus || 'Gözləmədə'}</div>
+      <div class="topbar-badge">${a.type || '—'}</div>
+      <div class="topbar-badge">${a.year || '—'}</div>
+    </div>`;
+
+  const docFields = [
+    { key:'coverLetter', label:'Müşayiət məktubu' },
+    { key:'residenceCertificate', label:'Yaşayış arayışı' },
+    { key:'xasiyyetname', label:'Xasiyyətnamə' },
+    { key:'idCopies', label:'ŞV surətləri' },
+    { key:'tabel', label:'Qiymət cədvəli' },
+    { key:'forma027', label:'Forma 027' },
+  ];
+  const docRows = docFields.map(f => {
+    const has = a[f.key] && a[f.key].length > 3;
+    return `<div class="doc-item">
+      <div class="doc-icon ${has?'ok':'missing'}"><i class="fa-solid fa-file-${has?'check':'xmark'}"></i></div>
+      <div class="doc-name">${f.label}</div>
+      <div class="doc-status ${has?'ok':'missing'}">${has?'Var':'Yoxdur'}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('detail-body').innerHTML = `
+    <div class="info-block">
+      <div class="info-block-title"><i class="fa-solid fa-school"></i> Məktəb Məlumatları</div>
+      <div class="info-row"><span class="info-key">Məktəb</span><span class="info-val">${a.schoolText||'—'}</span></div>
+      <div class="info-row"><span class="info-key">Tədris ili</span><span class="info-val">${a.year||'—'}</span></div>
+      <div class="info-row"><span class="info-key">Müraciət növü</span><span class="info-val">${a.type||'—'}</span></div>
+      <div class="info-row"><span class="info-key">Sənəd statusu</span><span class="info-val">${a.docStatus||'—'}</span></div>
+    </div>
+    <div class="info-block">
+      <div class="info-block-title"><i class="fa-solid fa-gavel"></i> Komissiya Qərarı</div>
+      <div class="info-row"><span class="info-key">Status</span><span class="info-val">${a.decisionStatus||'Gözləmədə'}</span></div>
+      <div class="info-row"><span class="info-key">Təhsil forması</span><span class="info-val">${a.educationForm||'—'}</span></div>
+      <div class="info-row"><span class="info-key">Bitmə tarixi</span><span class="info-val">${a.expiryDate||'—'}</span></div>
+      ${a.notes?`<div class="info-row"><span class="info-key">Qeyd</span><span class="info-val">${a.notes}</span></div>`:''}
+    </div>
+    <div class="info-block">
+      <div class="info-block-title"><i class="fa-solid fa-folder"></i> Sənədlər</div>
+      ${docRows}
+    </div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);text-align:center;padding:4px 0;">${a.id}</div>`;
+
+  showScreen('screen-detail');
+}
+
+// ══════════════════════════════
+// ACTION MODAL
+// ══════════════════════════════
+function openActionModal() {
+  if (!currentApp) return;
+  document.getElementById('modal-app-name').textContent = currentApp.name;
+  document.getElementById('modal-status').value = currentApp.decisionStatus || 'Gözləmədə';
+  document.getElementById('modal-form').value = currentApp.educationForm || '-';
+  document.getElementById('modal-notes').value = currentApp.notes || '';
+  if (currentApp.expiryDate && currentApp.expiryDate !== '-') {
+    const parts = currentApp.expiryDate.split('.');
+    if (parts.length === 3) {
+      document.getElementById('modal-expiry').value = `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+  }
+  document.getElementById('action-modal').classList.add('open');
+}
+function closeActionModal(e) {
+  if (!e || e.target === document.getElementById('action-modal')) {
+    document.getElementById('action-modal').classList.remove('open');
+  }
+}
+
+async function saveDecision() {
+  if (!currentApp) return;
+  const status = document.getElementById('modal-status').value;
+  const form = document.getElementById('modal-form').value;
+  const notes = document.getElementById('modal-notes').value;
+  const expiryRaw = document.getElementById('modal-expiry').value;
+  let expiry = '-';
+  if (expiryRaw) {
+    const p = expiryRaw.split('-');
+    expiry = `${p[2]}.${p[1]}.${p[0]}`;
+  }
+
+  try {
+    await fetch(`${API.replace('rest/v1','')}/api/komissiya/update-decision`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id: currentApp.id, decisionStatus: status, educationForm: form, notes, expiryDate: expiry })
+    });
+  } catch(e) {}
+
+  // Update local
+  const idx = allApps.findIndex(a => a.id === currentApp.id);
+  if (idx >= 0) {
+    allApps[idx].decisionStatus = status;
+    allApps[idx].educationForm = form;
+    allApps[idx].notes = notes;
+    allApps[idx].expiryDate = expiry;
+    currentApp = allApps[idx];
+  }
+
+  document.getElementById('action-modal').classList.remove('open');
+  openDetail(currentApp.id);
+  renderApps();
+  renderHome();
+  renderStats();
+  showToast('Qərar yadda saxlanıldı','success');
+}
+
+async function deleteApp() {
+  if (!currentApp) return;
+  if (!confirm(`"${currentApp.name}" silinsin?`)) return;
+
+  try {
+    await fetch(`${API.replace('rest/v1','')}/api/komissiya/delete-application?id=${currentApp.id}`, { method: 'DELETE' });
+  } catch(e) {}
+
+  allApps = allApps.filter(a => a.id !== currentApp.id);
+  document.getElementById('action-modal').classList.remove('open');
+  renderApps();
+  renderHome();
+  renderStats();
+  goBack();
+  showToast('Müraciət silindi','success');
+}
+
+// ══════════════════════════════
+// FORM
+// ══════════════════════════════
+function fileSelected(input, idx) {
+  const zone = document.getElementById(`fz-${idx}`);
+  const main = document.getElementById(`fz-main-${idx}`);
+  if (input.files[0]) {
+    zone.classList.add('has-file');
+    main.textContent = input.files[0].name;
+  }
+}
+
+async function submitForm() {
+  const name = document.getElementById('f-name').value.trim();
+  const fin = document.getElementById('f-fin').value.trim();
+  const school = document.getElementById('f-school').value;
+  const type = document.getElementById('f-type').value;
+  const year = document.getElementById('f-year').value;
+
+  if (!name || !fin || !school || !type) {
+    showToast('Bütün məcburi sahələri doldurun','error');
+    return;
+  }
+  if (fin.length < 7) {
+    showToast('FİN kod 7 rəqəm olmalıdır','error');
+    return;
+  }
+
+  // Demo: add to local list
+  const newApp = {
+    id: `PTPK_${Date.now()}`,
+    fin: fin.toUpperCase(),
+    name,
+    schoolText: school,
+    type: type + ' Müraciət',
+    year,
+    decisionStatus: 'Gözləmədə',
+    educationForm: '-',
+    expiryDate: '-',
+    notes: '',
+    docStatus: 'Tam Sənəd',
+    coverLetter:'new.pdf', residenceCertificate:'new.pdf', xasiyyetname:'new.pdf',
+    idCopies:'new.pdf', tabel:'new.pdf', forma027:'new.pdf'
+  };
+  allApps.unshift(newApp);
+  renderApps();
+  renderHome();
+  renderStats();
+
+  // Reset form
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-fin').value = '';
+  document.getElementById('f-school').value = '';
+  document.getElementById('f-type').value = '';
+  for (let i=0;i<6;i++) {
+    const z = document.getElementById(`fz-${i}`);
+    const m = document.getElementById(`fz-main-${i}`);
+    if (z) z.classList.remove('has-file');
+    if (m) m.textContent = 'Fayl seçin və ya buraya dartın';
+  }
+
+  showToast('Müraciət göndərildi!','success');
+  showScreen('screen-home', true);
+}
+
+// ══════════════════════════════
+// PROFILE
+// ══════════════════════════════
+function updateProfile() {
+  if (!currentUser) return;
+  const name = currentUser.full_name || currentUser.email?.split('@')[0] || '?';
+  document.getElementById('profile-name').textContent = name;
+  document.getElementById('profile-email').textContent = currentUser.email || '—';
+  document.getElementById('profile-avatar').textContent = name.slice(0,2).toUpperCase();
+  const roleMap = { school:'Məktəb İstifadəçisi', komissiya:'Komissiya Üzvü', admin:'Administrator' };
+  document.getElementById('profile-role').textContent = roleMap[currentUser.role] || currentUser.role || '—';
+}
+
+// ══════════════════════════════
+// TOAST
+// ══════════════════════════════
+let toastTimer;
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  const m = document.getElementById('toast-msg');
+  const i = t.querySelector('i');
+  t.className = type;
+  i.className = `fa-solid ${type==='success'?'fa-circle-check':type==='error'?'fa-circle-xmark':'fa-circle-info'}`;
+  m.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
