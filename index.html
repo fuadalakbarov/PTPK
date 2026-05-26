@@ -327,6 +327,116 @@ window.addEventListener('DOMContentLoaded', () => {
             div[style*="display:flex; gap:12px"] { flex-direction: column; }
             a[href="/mekteb.html"] { padding: 12px !important; text-align: center; }
         }
+
+        /* ── MODAL ── */
+        .ptpk-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15,23,42,0.55);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .ptpk-modal-overlay.active { display: flex; }
+
+        .ptpk-modal {
+            background: #fff;
+            border-radius: 14px;
+            border: 2px solid #0f172a;
+            box-shadow: 0 24px 60px rgba(15,23,42,0.3);
+            width: 100%;
+            max-width: 680px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: modalIn .22s ease;
+        }
+        @keyframes modalIn {
+            from { opacity:0; transform: translateY(18px) scale(.97); }
+            to   { opacity:1; transform: translateY(0) scale(1); }
+        }
+        .ptpk-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            border-bottom: 2px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .ptpk-modal-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .ptpk-modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #94a3b8;
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all .2s;
+        }
+        .ptpk-modal-close:hover { background: #fee2e2; color: #dc2626; }
+
+        .ptpk-modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+            font-size: 13.5px;
+            color: #334155;
+            line-height: 1.75;
+        }
+        .ptpk-modal-body h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 18px 0 8px;
+            padding-bottom: 4px;
+            border-bottom: 1.5px solid #e2e8f0;
+        }
+        .ptpk-modal-body h3:first-child { margin-top: 0; }
+        .ptpk-modal-body ul {
+            padding-left: 18px;
+            margin: 6px 0;
+        }
+        .ptpk-modal-body ul li { margin-bottom: 5px; }
+        .ptpk-modal-body p { margin-bottom: 8px; }
+        .ptpk-modal-body .badge {
+            display: inline-block;
+            background: #eff6ff;
+            color: #0284c7;
+            border: 1px solid #bfdbfe;
+            border-radius: 5px;
+            padding: 1px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 2px 2px;
+        }
+        .ptpk-modal-footer {
+            padding: 14px 24px;
+            border-top: 1.5px solid #e2e8f0;
+            text-align: right;
+            background: #f8fafc;
+        }
+        .ptpk-modal-footer button {
+            background: #0f172a;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 22px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .2s;
+        }
+        .ptpk-modal-footer button:hover { background: #0284c7; }
     </style>
 </head>
 <body>
@@ -613,9 +723,9 @@ window.addEventListener('DOMContentLoaded', () => {
         </form>
 
         <div class="footer-links">
-            <a href="#">❓ Təlimat və Qaydalar</a>
-            <a href="#">🔗 İstifadəçi Razılaşması</a>
-            <a href="#">📞 Texniki Dəstək</a>
+            <a href="#" onclick="openModal('telimat'); return false;">❓ Təlimat və Qaydalar</a>
+            <a href="#" onclick="openModal('razilasma'); return false;">🔗 İstifadəçi Razılaşması</a>
+            <a href="mailto:fuad.pennsl@gmail.com?subject=Texniki%20Dəstək">📞 Texniki Dəstək</a>
         </div>
     </div>
 </div>
@@ -672,6 +782,120 @@ async function submitForm() {
         alert("Python serverinə bağlanmaq mümkün olmadı! Terminalda 'main.py'-ın işlədiyindən əmin olun.");
     }
 }
+</script>
+
+<!-- ══ TƏLİMAT VƏ QAYDALAR MODALI ══ -->
+<div class="ptpk-modal-overlay" id="modal-telimat" onclick="closeModalOutside(event, 'telimat')">
+    <div class="ptpk-modal">
+        <div class="ptpk-modal-header">
+            <h2>❓ Təlimat və Qaydalar</h2>
+            <button class="ptpk-modal-close" onclick="closeModal('telimat')">✕</button>
+        </div>
+        <div class="ptpk-modal-body">
+            <h3>📌 Sistem haqqında</h3>
+            <p>PTPK Rəqəmsal Sənəd Qəbulu Sistemi Psixoloji-Tibbi-Pedaqoji Komissiyaya müraciət prosesini rəqəmsallaşdırmaq məqsədilə yaradılmışdır. Məktəblər bu sistem vasitəsilə şagird sənədlərini onlayn təqdim edə bilər.</p>
+
+            <h3>📋 Müraciət Proseduru</h3>
+            <ul>
+                <li>Sistemə daxil olmaq üçün məktəbə verilmiş giriş məlumatlarından istifadə edin.</li>
+                <li>Şagirdin FİN kodunu və tam adını düzgün daxil edin.</li>
+                <li>Müraciət növünü və tədris ilini seçin.</li>
+                <li>Tələb olunan 6 sənədi müvafiq xanalara yükləyin.</li>
+                <li><strong>«Sənədləri Portala Göndər»</strong> düyməsini sıxın.</li>
+            </ul>
+
+            <h3>📁 Tələb Olunan Sənədlər</h3>
+            <ul>
+                <li><span class="badge">1</span> Məktəbin müşayiət məktubu</li>
+                <li><span class="badge">2</span> Yaşayış yerindən arayış</li>
+                <li><span class="badge">3</span> Xasiyyətnamə (məktəb tərəfindən)</li>
+                <li><span class="badge">4</span> Valideyn və şagirdin ŞV surətləri</li>
+                <li><span class="badge">5</span> Qiymət cədvəli / tabel (məktəb tərəfindən)</li>
+                <li><span class="badge">6</span> Tibb müəssisəsindən çıxarış (Forma 027 – Sahə həkimi)</li>
+            </ul>
+
+            <h3>📎 Fayl Formatları</h3>
+            <p>Sənədlər aşağıdakı formatlarda qəbul edilir: <span class="badge">PDF</span> <span class="badge">JPG</span> <span class="badge">PNG</span> <span class="badge">DOC</span> <span class="badge">DOCX</span></p>
+
+            <h3>⚠️ Vacib Qeydlər</h3>
+            <ul>
+                <li>Bütün 6 sənəd tam və oxunaqlı olmalıdır.</li>
+                <li>FİN kod 7 simvoldan ibarət olmalıdır.</li>
+                <li>Sənədlər göndərildikdən sonra komissiya tərəfindən yoxlanılacaq.</li>
+                <li>Çatışmazlıq aşkar edilərsə, məktəbə bildiriş göndəriləcək.</li>
+                <li>Sistem hər bir müraciətə avtomatik ID nömrəsi təyin edir.</li>
+            </ul>
+
+            <h3>🕐 İş Saatları</h3>
+            <p>Komissiya iş günləri saat <strong>09:00 – 17:00</strong> arasında müraciətlərə baxır. Göndərilmiş sənədlər növbəti iş günü daxilində qeydiyyata alınır.</p>
+        </div>
+        <div class="ptpk-modal-footer">
+            <button onclick="closeModal('telimat')">Bağla</button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ İSTİFADƏÇİ RAZILАŞMASI MODALI ══ -->
+<div class="ptpk-modal-overlay" id="modal-razilasma" onclick="closeModalOutside(event, 'razilasma')">
+    <div class="ptpk-modal">
+        <div class="ptpk-modal-header">
+            <h2>🔗 İstifadəçi Razılaşması</h2>
+            <button class="ptpk-modal-close" onclick="closeModal('razilasma')">✕</button>
+        </div>
+        <div class="ptpk-modal-body">
+            <h3>1. Ümumi Müddəalar</h3>
+            <p>Bu razılaşma PTPK Rəqəmsal Sənəd Qəbulu Sistemi (<strong>«Sistem»</strong>) ilə istifadəçi (<strong>«Məktəb»</strong>) arasında bağlanır. Sistemdən istifadə etməklə siz bu şərtləri tam qəbul etmiş sayılırsınız.</p>
+
+            <h3>2. İstifadəçinin Öhdəlikləri</h3>
+            <ul>
+                <li>Yalnız həqiqi və dəqiq məlumatları daxil etmək.</li>
+                <li>Şagirdlərə aid sənədləri təhrif etmədən, orijinal şəkildə yükləmək.</li>
+                <li>Giriş məlumatlarını (istifadəçi adı, şifrə) üçüncü şəxslərlə paylaşmamaq.</li>
+                <li>Sistemdən yalnız rəsmi məktəb müraciətləri üçün istifadə etmək.</li>
+                <li>Hər hansı texniki nasazlığı dərhal texniki dəstəyə bildirmək.</li>
+            </ul>
+
+            <h3>3. Məlumatların Mühafizəsi</h3>
+            <p>Sistemə daxil edilən bütün şəxsi məlumatlar (<strong>FİN, ad, sənədlər</strong>) Azərbaycan Respublikasının «Fərdi məlumatlar haqqında» Qanununa uyğun olaraq qorunur. Məlumatlar yalnız komissiya işçiləri tərəfindən, xidməti məqsədlər çərçivəsində istifadə edilir.</p>
+
+            <h3>4. Sistemin İstifadə Şərtləri</h3>
+            <ul>
+                <li>Sistem 7/24 əlçatan olmağa çalışır, lakin texniki işlər zamanı müvəqqəti fasilələr mümkündür.</li>
+                <li>İstifadəçi hesabı üçüncü şəxslər tərəfindən sui-istifadə edildikdə məsuliyyət məktəbin üzərinə düşür.</li>
+                <li>Saxta məlumat daxil edildiyi aşkar olunarsa, müraciət ləğv edilib müvafiq qurumlar xəbərdar ediləcək.</li>
+            </ul>
+
+            <h3>5. Məsuliyyətin Məhdudlaşdırılması</h3>
+            <p>Komissiya, göndərilmiş sənədlərdəki çatışmazlıqlardan irəli gələn gecikmələrə görə məsuliyyət daşımır. Sənədlər tam və vaxtında göndərilməsi məktəbin öhdəliyidir.</p>
+
+            <h3>6. Dəyişikliklər</h3>
+            <p>Komissiya bu razılaşmanı öncədən xəbərdarlıq etmədən yeniləmək hüququnu özündə saxlayır. Dəyişikliklər sistemdə elan edildiyi gündən qüvvəyə minir.</p>
+
+            <p style="margin-top:16px; font-size:12px; color:#94a3b8;">Son yenilənmə: May 2026 &nbsp;|&nbsp; © 2026 Psixoloji-Tibbi-Pedaqoji Komissiya</p>
+        </div>
+        <div class="ptpk-modal-footer">
+            <button onclick="closeModal('razilasma')">Oxudum, Bağla</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openModal(name) {
+    document.getElementById('modal-' + name).classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeModal(name) {
+    document.getElementById('modal-' + name).classList.remove('active');
+    document.body.style.overflow = '';
+}
+function closeModalOutside(e, name) {
+    if (e.target === document.getElementById('modal-' + name)) closeModal(name);
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        ['telimat','razilasma'].forEach(closeModal);
+    }
+});
 </script>
 </body>
 </html>
