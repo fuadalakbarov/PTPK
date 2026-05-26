@@ -283,6 +283,79 @@
             padding:6px 14px; font-size:12px; font-weight:600;
             cursor:pointer; color:var(--text-muted); margin-top:8px; width:100%;
         }
+
+        /* İstifadə Qaydaları Modal */
+        .rules-modal-overlay {
+            position:fixed; inset:0; background:rgba(15,23,42,0.6);
+            display:none; align-items:center; justify-content:center;
+            z-index:2000; backdrop-filter:blur(2px);
+        }
+        .rules-modal-overlay.open { display:flex; }
+        .rules-modal-box {
+            background:#fff; border-radius:14px;
+            width:600px; max-width:95vw; max-height:88vh;
+            overflow:hidden; display:flex; flex-direction:column;
+            border:2px solid var(--primary-navy);
+            box-shadow:0 20px 60px rgba(0,0,0,0.25);
+        }
+        .rules-modal-header {
+            background:var(--primary-navy); color:#fff;
+            padding:16px 20px; display:flex; align-items:center;
+            justify-content:space-between; flex-shrink:0;
+        }
+        .rules-modal-header h2 {
+            font-size:15px; font-weight:700; margin:0;
+            display:flex; align-items:center; gap:8px;
+        }
+        .rules-modal-close {
+            background:none; border:none; color:#fff;
+            font-size:18px; cursor:pointer; line-height:1;
+            opacity:0.8; transition:opacity 0.2s;
+        }
+        .rules-modal-close:hover { opacity:1; }
+        .rules-modal-body {
+            padding:20px 24px; overflow-y:auto; flex:1;
+        }
+        .rules-section { margin-bottom:20px; }
+        .rules-section:last-child { margin-bottom:0; }
+        .rules-section-title {
+            font-size:12px; font-weight:700; color:var(--brand-blue);
+            text-transform:uppercase; letter-spacing:0.6px;
+            margin-bottom:10px; padding-bottom:6px;
+            border-bottom:2px solid #e2e8f0;
+            display:flex; align-items:center; gap:6px;
+        }
+        .rules-list { list-style:none; padding:0; margin:0; }
+        .rules-list li {
+            font-size:13px; color:var(--text-dark); line-height:1.6;
+            padding:7px 0 7px 22px; position:relative;
+            border-bottom:1px solid #f1f5f9;
+        }
+        .rules-list li:last-child { border-bottom:none; }
+        .rules-list li::before {
+            content:''; position:absolute; left:6px; top:14px;
+            width:6px; height:6px; border-radius:50%;
+            background:var(--brand-blue); flex-shrink:0;
+        }
+        .rules-list li strong { color:var(--primary-navy); }
+        .rules-warning-box {
+            background:#fef3c7; border:1px solid #fcd34d;
+            border-radius:8px; padding:12px 14px; margin-top:16px;
+            font-size:12px; color:#92400e; line-height:1.6;
+            display:flex; gap:10px; align-items:flex-start;
+        }
+        .rules-warning-box i { color:#d97706; font-size:15px; flex-shrink:0; margin-top:1px; }
+        .rules-modal-footer {
+            padding:14px 20px; border-top:1px solid #e2e8f0;
+            display:flex; justify-content:flex-end; flex-shrink:0;
+            background:#f8fafc;
+        }
+        .rules-close-btn {
+            background:var(--brand-blue); color:#fff; border:none;
+            border-radius:8px; padding:9px 22px; font-size:13px;
+            font-weight:700; cursor:pointer; transition:background 0.2s;
+        }
+        .rules-close-btn:hover { background:#0369a1; }
         .resubmit-status { font-size:12px; font-weight:700; margin-top:8px; text-align:center; display:none; }
         .resubmit-status.ok { color:var(--success-green); }
         .resubmit-status.err { color:var(--danger-red); }
@@ -365,7 +438,78 @@
         <div class="nav-item active" title="Məktəb Portalı">
             <i class="fa-solid fa-school"></i>
         </div>
-        <div></div>
+        <div>
+            <div class="nav-item" title="İstifadə Qaydaları" onclick="openRulesModal()" style="cursor:pointer;">
+                <i class="fa-solid fa-circle-info"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- İstifadə Qaydaları Modal -->
+    <div class="rules-modal-overlay" id="rulesModal">
+        <div class="rules-modal-box">
+            <div class="rules-modal-header">
+                <h2><i class="fa-solid fa-book-open"></i> İstifadə Qaydaları — Məktəb Portalı</h2>
+                <button class="rules-modal-close" onclick="closeRulesModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="rules-modal-body">
+
+                <div class="rules-section">
+                    <div class="rules-section-title"><i class="fa-solid fa-school"></i> Ümumi Məlumat</div>
+                    <ul class="rules-list">
+                        <li>Bu portal <strong>məktəb əməkdaşlarının</strong> şagird sənədlərini izləməsi və idarə etməsi üçün nəzərdə tutulmuşdur.</li>
+                        <li>Portala giriş yalnız <strong>müvafiq müəssisəyə aid</strong> seçim edilərək mümkündür — siyahıdan öz məktəbinizi seçin.</li>
+                        <li>Hər müəssisə yalnız <strong>özünə aid müraciətləri</strong> görə bilir; başqa məktəblərin məlumatlarına giriş qadağandır.</li>
+                    </ul>
+                </div>
+
+                <div class="rules-section">
+                    <div class="rules-section-title"><i class="fa-solid fa-file-lines"></i> Sənəd Statusları</div>
+                    <ul class="rules-list">
+                        <li><strong>Qüvvədə:</strong> Komissiya tərəfindən yoxlanılmış və qəbul edilmiş müraciətlər.</li>
+                        <li><strong>Gözləmədə:</strong> Hələ komissiyaya çatmamış və ya baxılmamış müraciətlər.</li>
+                        <li><strong>Düzəliş lazım:</strong> Komissiya tərəfindən natamam və ya yanlış tapılan, yenidən göndərilməsi tələb olunan müraciətlər.</li>
+                        <li>Statuslar yalnız komissiya tərəfindən dəyişdirilir; məktəb tərəfindən manual dəyişiklik edilmir.</li>
+                    </ul>
+                </div>
+
+                <div class="rules-section">
+                    <div class="rules-section-title"><i class="fa-solid fa-rotate-right"></i> Yenidən Göndərmə</div>
+                    <ul class="rules-list">
+                        <li><strong>Düzəliş lazım</strong> statuslu müraciətlər üçün <strong>"Yenidən Göndər"</strong> düyməsindən istifadə edin.</li>
+                        <li>Yenidən göndərmədən əvvəl komissiya qeydinə diqqət edin — hansı sənədin düzəldilmə səbəbi orada qeyd olunur.</li>
+                        <li>Yüklənən sənədlər <strong>PDF formatında</strong> olmalı, ölçüsü <strong>10 MB-ı</strong> aşmamalıdır.</li>
+                        <li>Göndərmə zamanı yaşıl rəngli uğur mesajı göründükdə əməliyyat tamamlanmış sayılır.</li>
+                    </ul>
+                </div>
+
+                <div class="rules-section">
+                    <div class="rules-section-title"><i class="fa-solid fa-magnifying-glass"></i> Axtarış və Filtrasiya</div>
+                    <ul class="rules-list">
+                        <li>Şagird adına və ya <strong>FİN koduna</strong> görə axtarış edə bilərsiniz.</li>
+                        <li>Sənəd statusuna görə filtrasiya etmək üçün yuxarıdakı filtr menyusundan istifadə edin.</li>
+                        <li>Siyahı avtomatik olaraq məktəb seçimi dəyişdikdə yenilənir.</li>
+                    </ul>
+                </div>
+
+                <div class="rules-section">
+                    <div class="rules-section-title"><i class="fa-solid fa-print"></i> Çap</div>
+                    <ul class="rules-list">
+                        <li>Müraciət detalları görünərkən <strong>"Çap et"</strong> düyməsi ilə rəsmi çap blanki əldə edə bilərsiniz.</li>
+                        <li>Çap zamanı yalnız müvafiq bölmə çap olunur; interfeys elementləri görünmür.</li>
+                    </ul>
+                </div>
+
+                <div class="rules-warning-box">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Şagirdlərə aid şəxsi məlumatlar məxfidir. Bu məlumatları icazəsiz şəxslərlə paylaşmaq <strong>qadağandır</strong>. Portaldan yalnız rəsmi iş məqsədləri üçün istifadə edilməlidir.</span>
+                </div>
+
+            </div>
+            <div class="rules-modal-footer">
+                <button class="rules-close-btn" onclick="closeRulesModal()">Bağla</button>
+            </div>
+        </div>
     </div>
 
     <div class="viewport">
@@ -737,6 +881,17 @@
 </div>
 
 <script>
+    // İstifadə Qaydaları Modal
+    function openRulesModal() {
+        document.getElementById('rulesModal').classList.add('open');
+    }
+    function closeRulesModal() {
+        document.getElementById('rulesModal').classList.remove('open');
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeRulesModal();
+    });
+
     let allApplications = [];
     let selectedApp = null;
 
