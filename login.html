@@ -521,7 +521,10 @@
                     e.target.playVideo();
                     var unlocked = false;
                     function unlock() {
-                        if (unlocked) return; unlocked = true;
+                        if (unlocked) return;
+                        var overlay = document.getElementById('tutorial-overlay');
+                        if (overlay && overlay.classList.contains('visible')) return;
+                        unlocked = true;
                         e.target.unMute(); e.target.setVolume(40);
                         ['click','keydown','touchstart','scroll'].forEach(ev => document.removeEventListener(ev, unlock));
                     }
@@ -690,7 +693,7 @@
         window.openTutorial = function() {
             overlay.classList.remove('hiding');
             overlay.classList.add('visible');
-            if (typeof ytPlayer !== 'undefined' && ytPlayer && ytPlayer.muteVideo) ytPlayer.muteVideo();
+            if (typeof ytPlayer !== 'undefined' && ytPlayer && ytPlayer.mute) ytPlayer.mute();
 
             if (!tutPlayer) {
                 tutPlayer = new YT.Player('tutorial-video', {
@@ -724,7 +727,7 @@
         window.closeTutorial = function() {
             if (tutPlayer) tutPlayer.pauseVideo();
             clearInterval(tutTimer);
-            if (typeof ytPlayer !== 'undefined' && ytPlayer && ytPlayer.unMuteVideo) ytPlayer.unMuteVideo();
+            if (typeof ytPlayer !== 'undefined' && ytPlayer && ytPlayer.unMute) ytPlayer.unMute();
             overlay.classList.add('hiding');
             setTimeout(() => {
                 overlay.classList.remove('visible');
