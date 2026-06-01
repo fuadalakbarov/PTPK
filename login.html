@@ -101,10 +101,12 @@
             width: 100%;
             aspect-ratio: 16/9;
         }
-        .tutorial-video-wrap video {
-            width: 100%; height: 100%;
+        .tutorial-video-wrap video,
+        .tutorial-video-wrap iframe,
+        .tutorial-video-wrap > div {
+            width: 100% !important;
+            height: 100% !important;
             display: block;
-            object-fit: contain;
         }
         .tutorial-footer {
             padding: 14px 20px;
@@ -547,9 +549,7 @@
             <div class="tut-progress-fill" id="tut-progress"></div>
         </div>
         <div class="tutorial-video-wrap">
-            <video id="tutorial-video" controls playsinline preload="metadata">
-                <source src="İstifadəçi Təlimatı.mp4" type="video/mp4">
-            </video>
+            <div id="tutorial-video"></div>
         </div>
         <div class="tutorial-footer">
             <div class="tutorial-note">
@@ -682,36 +682,53 @@
 <script>
     // ── TUTORİAL MODAL LOGİKASI ──
     (function() {
-        const overlay = document.getElementById('tutorial-overlay');
-        const video   = document.getElementById('tutorial-video');
+        const overlay  = document.getElementById('tutorial-overlay');
         const progress = document.getElementById('tut-progress');
-        const btn     = document.getElementById('btn-close-tutorial');
-        const btnIcon = document.getElementById('tut-btn-icon');
-        const btnText = document.getElementById('tut-btn-text');
+        let tutPlayer  = null;
+        let tutTimer   = null;
 
         window.openTutorial = function() {
             overlay.classList.remove('hiding');
             overlay.classList.add('visible');
-            video.play().catch(() => {});
+            if (typeof ytPlayer !== 'undefined' && ytPlayer && ytPlayer.muteVideo) ytPlayer.muteVideo();
+
+            if (!tutPlayer) {
+                tutPlayer = new YT.Player('tutorial-video', {
+                    videoId: 'Iyey0wlkgN4',
+                    playerVars: {
+                        autoplay: 1, controls: 1, rel: 0,
+                        modestbranding: 1, playsinline: 1
+                    },
+                    events: {
+                        onStateChange: function(e) {
+                            if (e.data === YT.PlayerState.PLAYING) {
+                                tutTimer = setInterval(updateProgress, 500);
+                            } else {
+                                clearInterval(tutTimer);
+                            }
+                        }
+                    }
+                });
+            } else {
+                tutPlayer.playVideo();
+            }
         };
 
-        video.addEventListener('timeupdate', function() {
-            if (!video.duration) return;
-            const pct = (video.currentTime / video.duration) * 100;
-            progress.style.width = pct + '%';
-        });
-
-        video.addEventListener('ended', function() {
-            progress.style.width = '100%';
-        });
+        function updateProgress() {
+            if (!tutPlayer) return;
+            const dur = tutPlayer.getDuration();
+            const cur = tutPlayer.getCurrentTime();
+            if (dur > 0) progress.style.width = ((cur / dur) * 100) + '%';
+        }
 
         window.closeTutorial = function() {
-            video.pause();
+            if (tutPlayer) tutPlayer.pauseVideo();
+            clearInterval(tutTimer);
+            if (typeof ytPlayer !== 'undefined' && ytPlayer && ytPlayer.unMuteVideo) ytPlayer.unMuteVideo();
             overlay.classList.add('hiding');
             setTimeout(() => {
                 overlay.classList.remove('visible');
                 overlay.classList.remove('hiding');
-                video.currentTime = 0;
                 progress.style.width = '0%';
             }, 350);
         };
