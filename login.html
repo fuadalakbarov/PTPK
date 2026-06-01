@@ -16,6 +16,156 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
+        /* ── TUTORİAL MODAL ── */
+        #tutorial-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(5, 12, 22, 0.92);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+        #tutorial-overlay.visible {
+            display: flex;
+            animation: fadeIn 0.35s ease both;
+        }
+        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        #tutorial-overlay.hiding {
+            animation: fadeOut 0.35s ease both;
+        }
+        @keyframes fadeOut { from { opacity:1; } to { opacity:0; } }
+
+        .btn-tutorial-open {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin-top: 14px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(201,168,76,0.75);
+            background: rgba(201,168,76,0.07);
+            border: 1px solid rgba(201,168,76,0.2);
+            border-radius: 10px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            width: 100%;
+            justify-content: center;
+        }
+        .btn-tutorial-open:hover {
+            background: rgba(201,168,76,0.14);
+            color: #f0d080;
+        }
+
+        .tutorial-box {
+            width: 100%;
+            max-width: 760px;
+            background: rgba(13,27,42,0.85);
+            border: 1px solid rgba(201,168,76,0.35);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        .tutorial-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: rgba(201,168,76,0.10);
+            border-bottom: 1px solid rgba(201,168,76,0.2);
+        }
+        .tutorial-header .tut-icon {
+            width: 40px; height: 40px;
+            background: rgba(201,168,76,0.18);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: #c9a84c; font-size: 18px; flex-shrink: 0;
+        }
+        .tutorial-header h2 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px; font-weight: 700;
+            color: #f0d080; margin: 0; flex: 1;
+        }
+        .tutorial-header p {
+            font-size: 12px; color: rgba(255,255,255,0.5);
+            margin: 2px 0 0; font-family: 'DM Sans', sans-serif;
+        }
+        .tutorial-video-wrap {
+            position: relative;
+            background: #000;
+            width: 100%;
+            aspect-ratio: 16/9;
+        }
+        .tutorial-video-wrap video {
+            width: 100%; height: 100%;
+            display: block;
+            object-fit: contain;
+        }
+        .tutorial-footer {
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            background: rgba(0,0,0,0.3);
+        }
+        .tutorial-note {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            color: rgba(255,255,255,0.45);
+            flex: 1;
+        }
+        .tutorial-note i { color: #c9a84c; margin-right: 4px; }
+        #btn-close-tutorial {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px; font-weight: 700;
+            padding: 10px 22px;
+            border-radius: 10px;
+            border: none; cursor: pointer;
+            background: rgba(201,168,76,0.15);
+            color: #f0d080;
+            border: 1px solid rgba(201,168,76,0.35);
+            transition: background 0.2s, transform 0.15s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        #btn-close-tutorial:hover {
+            background: rgba(201,168,76,0.28);
+            transform: translateY(-1px);
+        }
+        #btn-close-tutorial.ready {
+            background: rgba(201,168,76,0.25);
+            color: #f0d080;
+            border-color: rgba(201,168,76,0.6);
+            animation: pulse-gold 1.5s ease infinite;
+        }
+        @keyframes pulse-gold {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0); }
+            50%       { box-shadow: 0 0 0 6px rgba(201,168,76,0.15); }
+        }
+        .tut-progress-bar {
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.08);
+        }
+        .tut-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #c9a84c, #f0d080);
+            transition: width 0.5s linear;
+        }
+        @media (max-width: 600px) {
+            .tutorial-box { border-radius: 14px; }
+            .tutorial-header h2 { font-size: 13px; }
+            #btn-close-tutorial { font-size: 12px; padding: 9px 16px; }
+        }
+    </style>
+    <style>
         :root {
             --navy:    #0d1b2a;
             --navy2:   #1a2e45;
@@ -383,6 +533,37 @@
     }
 </script>
 
+<!-- ── TUTORİAL MODAL ── -->
+<div id="tutorial-overlay">
+    <div class="tutorial-box">
+        <div class="tutorial-header">
+            <div class="tut-icon"><i class="fa-solid fa-circle-play"></i></div>
+            <div>
+                <h2>İstifadəçi Təlimatı — Sistemi necə istifadə etmək olar</h2>
+                <p>Giriş etməzdən əvvəl zəhmət olmasa videoyu izləyin</p>
+            </div>
+        </div>
+        <div class="tut-progress-bar">
+            <div class="tut-progress-fill" id="tut-progress"></div>
+        </div>
+        <div class="tutorial-video-wrap">
+            <video id="tutorial-video" controls playsinline preload="metadata">
+                <source src="İstifadəçi Təlimatı.mp4" type="video/mp4">
+            </video>
+        </div>
+        <div class="tutorial-footer">
+            <div class="tutorial-note">
+                <i class="fa-solid fa-info-circle"></i>
+                Sistemi ilk dəfə istifadə edirsinizsə bu videodan kömək ala bilərsiniz.
+            </div>
+            <button id="btn-close-tutorial" onclick="closeTutorial()">
+                <i class="fa-solid fa-xmark" id="tut-btn-icon"></i>
+                <span id="tut-btn-text">Bağla</span>
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- MAIN LAYOUT -->
 <div class="page-layout">
 <div class="login-card">
@@ -425,6 +606,9 @@
             </div>
             <button class="btn-main" id="btn-send-otp" onclick="sendOTP()">
                 <i class="fa-solid fa-paper-plane"></i> Kod Göndər
+            </button>
+            <button class="btn-tutorial-open" onclick="openTutorial()">
+                <i class="fa-solid fa-circle-play"></i> İstifadəçi Təlimatına bax
             </button>
             <div class="other-login-link">
                 Komissiya üzvüsünüz? <a href="login-komissiya.html">Komissiya girişi →</a>
@@ -496,6 +680,47 @@
 </div>
 
 <script>
+    // ── TUTORİAL MODAL LOGİKASI ──
+    (function() {
+        const overlay = document.getElementById('tutorial-overlay');
+        const video   = document.getElementById('tutorial-video');
+        const progress = document.getElementById('tut-progress');
+        const btn     = document.getElementById('btn-close-tutorial');
+        const btnIcon = document.getElementById('tut-btn-icon');
+        const btnText = document.getElementById('tut-btn-text');
+
+        window.openTutorial = function() {
+            overlay.classList.remove('hiding');
+            overlay.classList.add('visible');
+            video.play().catch(() => {});
+        };
+
+        video.addEventListener('timeupdate', function() {
+            if (!video.duration) return;
+            const pct = (video.currentTime / video.duration) * 100;
+            progress.style.width = pct + '%';
+        });
+
+        video.addEventListener('ended', function() {
+            progress.style.width = '100%';
+        });
+
+        window.closeTutorial = function() {
+            video.pause();
+            overlay.classList.add('hiding');
+            setTimeout(() => {
+                overlay.classList.remove('visible');
+                overlay.classList.remove('hiding');
+                video.currentTime = 0;
+                progress.style.width = '0%';
+            }, 350);
+        };
+
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) closeTutorial();
+        });
+    })();
+
     // PWA: Service Worker qeydiyyatı
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
