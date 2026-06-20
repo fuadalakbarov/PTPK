@@ -375,6 +375,10 @@
             .panel-layout { grid-template-columns: 1fr !important; }
             .panel-column:last-child { display: none !important; }
             .brand-header { flex-wrap: wrap; gap: 8px; }
+            .brand-header-right { width: 100%; align-items: stretch; }
+            .header-actions-row { width: 100%; }
+            .btn-portal, .btn-logout { flex: 1; justify-content: center; white-space: nowrap; }
+            .btn-portal { font-size: 11px; padding: 8px 10px; }
             .controls-row, .filter-group { flex-wrap: wrap !important; gap: 8px !important; }
             .select-school-filter { max-width: 100% !important; width: 100% !important; }
             .modal-box { width: 95vw !important; max-width: 100% !important; max-height: 90dvh !important; }
@@ -504,7 +508,7 @@
                 <span class="user-name-tag" id="user-name-display"></span>
                 <div class="header-actions-row">
                     <a class="btn-portal" href="https://ptpk-portal.onrender.com" target="_blank" rel="noopener">
-                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Qiymətləndirmə
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Şagird Qiymətləndirməsi
                     </a>
                     <button class="btn-logout" onclick="logout()">
                         <i class="fa-solid fa-right-from-bracket"></i> Çıxış
