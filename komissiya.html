@@ -379,7 +379,7 @@
         gap: 0;
     }
     .panel-column { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-    .panel-column:last-child { display: none; }
+    .panel-column:last-child { display: none !important; }
 
     .section-title {
         font-size: 11px;
@@ -1050,8 +1050,97 @@
 </head>
 <body>
 
+<!-- ══════════════ ŞAGİRD QƏRAR MODALI ══════════════ -->
+<div class="modal-overlay" id="studentDecisionModal" onclick="if(event.target===this)closeStudentModal()">
+    <div class="modal-box" style="width:560px;max-width:96vw;max-height:94vh;">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-gavel"></i> &nbsp;<span id="sdm-name">—</span></h3>
+            <button class="modal-close" onclick="closeStudentModal()" title="Bağla"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body" style="padding:20px;overflow-y:auto;flex:1;">
+            <p id="sdm-school" style="font-size:12px;color:var(--text-muted);margin-bottom:16px;font-weight:500;"></p>
+
+            <div class="decision-box" style="margin-top:0;padding-top:0;border-top:none;">
+                <label>Qərarın Statusu:</label>
+                <select id="select-status">
+                    <option value="Gözləmədə">Gözləmədə</option>
+                    <option value="Qüvvədədir">Qüvvədədir</option>
+                    <option value="Qüvvədən düşüb">Qüvvədən düşüb</option>
+                    <option value="Düzəliş lazım">⚠️ Düzəliş lazım</option>
+                    <option value="Yeni Sənəd ⚡">⚡ Yeni Sənəd (baxılsın)</option>
+                </select>
+
+                <label>Yekun Protokol Qərarı (Təhsil Forması):</label>
+                <select id="select-form">
+                    <option value="Evdə təhsil (Ümumi proqram)">Evdə təhsil (Ümumi proqram)</option>
+                    <option value="Evdə təhsil (Xüsusi proqram)">Evdə təhsil (Xüsusi proqram)</option>
+                    <option value="İnklüziv təhsil (Ümumi proqram)">İnklüziv təhsil (Ümumi proqram)</option>
+                    <option value="Xüsusi təhsil (Xüsusi proqram)">Xüsusi təhsil (Xüsusi proqram)</option>
+                    <option value="Sağlamdır (Ümumi təhsil)">Sağlamdır (Ümumi təhsil)</option>
+                </select>
+
+                <label>Qüvvədən Düşmə Tarixi:</label>
+                <input type="date" id="decision-expiry-date">
+
+                <label>Komissiya Diaqnozu / Rəyi:</label>
+                <textarea id="text-notes" placeholder="Rəsmi protokolu daxil edin..."></textarea>
+
+                <label style="margin-top:8px; color:#dc2626;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Sənəd Nöqsanı Qeydi (məktəbə göstərilir):
+                </label>
+
+                <div id="doc-error-checks" style="background:#fff7f7; border:2px solid #fca5a5; border-radius:7px; padding:10px 12px; margin-bottom:6px;">
+                    <div style="font-size:11px; font-weight:700; color:#dc2626; margin-bottom:7px; text-transform:uppercase; letter-spacing:.4px;">
+                        <i class="fa-solid fa-list-check"></i> Çatışmayan / Düzəliş Lazım Olan Sənədlər:
+                    </div>
+                    <div id="doc-error-checkboxes" style="display:flex; flex-direction:column; gap:5px;">
+                        <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
+                            <input type="checkbox" id="err-coverLetter" style="width:14px;height:14px;accent-color:#dc2626;" onchange="onDocErrCheck()">
+                            1. Məktəbin müşayiət məktubu
+                        </label>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
+                            <input type="checkbox" id="err-residenceCertificate" style="width:14px;height:14px;accent-color:#dc2626;" onchange="onDocErrCheck()">
+                            2. Yaşayış yerindən arayış
+                        </label>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
+                            <input type="checkbox" id="err-xasiyyetname" style="width:14px;height:14px;accent-color:#dc2626;" onchange="onDocErrCheck()">
+                            3. Xasiyyətnamə
+                        </label>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
+                            <input type="checkbox" id="err-idCopies" style="width:14px;height:14px;accent-color:#dc2626;" onchange="onDocErrCheck()">
+                            4. Valideyn / Şagird ŞV surəti
+                        </label>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
+                            <input type="checkbox" id="err-tabel" style="width:14px;height:14px;accent-color:#dc2626;" onchange="onDocErrCheck()">
+                            5. Qiymət cədvəli / Tabel
+                        </label>
+                        <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
+                            <input type="checkbox" id="err-forma027" style="width:14px;height:14px;accent-color:#dc2626;" onchange="onDocErrCheck()">
+                            6. Forma 027 (Tibb arayışı)
+                        </label>
+                    </div>
+                </div>
+
+                <textarea id="text-doc-error" placeholder="Əlavə izahat: səhvliyin detalları, konkret tələblər və s. (ixtiyari)..." style="border-color:#fca5a5; background:#fff7f7; min-height:50px; font-size:12px;"></textarea>
+                
+                <label>Rəsmi Sənədi Əllə Yüklə (Skan/PDF):</label>
+                <div class="file-upload-wrapper">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <p id="upload-status-text">Faylı bura sürükləyin və ya klikləyin</p>
+                    <input type="file" id="manual-file-upload" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="handleManualFile(this)">
+                    <div id="file-info-label" class="uploaded-file-info"></div>
+                </div>
+
+                <button type="button" class="btn-approve" onclick="saveCommissionDecision()">
+                    Qərarı Saxla <i class="fa-solid fa-floppy-disk"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ══════════════ SƏNƏDLƏR MODALI ══════════════ -->
-<div class="modal-overlay" id="docsModal">
+<div class="modal-overlay" id="docsModal" onclick="if(event.target===this)closeDocsModal()">
     <div class="modal-box">
         <div class="modal-header">
             <h3><i class="fa-solid fa-folder-open"></i> &nbsp;Müraciət Sənədləri</h3>
@@ -1467,98 +1556,6 @@
                 </div>
             </div>
 
-            <div class="panel-column">
-                <div class="section-title"><i class="fa-solid fa-gavel"></i> Ekspert Qərarı</div>
-                <div class="preview-container">
-                    <div class="right-card-body" id="sidebar-default-msg" style="text-align: center; color: var(--text-muted); padding-top: 40px;">
-                        <i class="fa-solid fa-arrow-pointer" style="font-size: 24px; margin-bottom: 10px;"></i>
-                        <p>Dəyişiklik etmək üçün Excel siyahısından şagird seçin.</p>
-                    </div>
-                    
-                    <div class="right-card-body" id="sidebar-actual-content" style="display: none;">
-                        <h3 id="panel-name" style="font-size: 15px; color: var(--primary-navy);">-</h3>
-                        <p id="panel-school" style="font-size: 12px; color: var(--text-muted); margin: 4px 0;">-</p>
-                        
-                        <div class="decision-box">
-                            <label>Qərarın Statusu:</label>
-                            <select id="select-status">
-                                <option value="Gözləmədə">Gözləmədə</option>
-                                <option value="Qüvvədədir">Qüvvədədir</option>
-                                <option value="Qüvvədən düşüb">Qüvvədən düşüb</option>
-                                <option value="Düzəliş lazım">⚠️ Düzəliş lazım</option>
-                                <option value="Yeni Sənəd ⚡">⚡ Yeni Sənəd (baxılsın)</option>
-                            </select>
-
-                            <label>Yekun Protokol Qərarı (Təhsil Forması):</label>
-                            <select id="select-form">
-                                <option value="Evdə təhsil (Ümumi proqram)">Evdə təhsil (Ümumi proqram)</option>
-                                <option value="Evdə təhsil (Xüsusi proqram)">Evdə təhsil (Xüsusi proqram)</option>
-                                <option value="İnklüziv təhsil (Ümumi proqram)">İnklüziv təhsil (Ümumi proqram)</option>
-                                <option value="Xüsusi təhsil (Xüsusi proqram)">Xüsusi təhsil (Xüsusi proqram)</option>
-                                <option value="Sağlamdır (Ümumi təhsil)">Sağlamdır (Ümumi təhsil)</option>
-                            </select>
-
-                            <label>Qüvvədən Düşmə Tarixi:</label>
-                            <input type="date" id="decision-expiry-date">
-
-                            <label>Komissiya Diaqnozu / Rəyi:</label>
-                            <textarea id="text-notes" placeholder="Rəsmi protokolu daxil edin..."></textarea>
-
-                            <label style="margin-top:8px; color:#dc2626;">
-                                <i class="fa-solid fa-triangle-exclamation"></i> Sənəd Nöqsanı Qeydi (məktəbə göstərilir):
-                            </label>
-
-                            <!-- Çatışmayan / səhv sənədlər üçün checkbox siyahısı -->
-                            <div id="doc-error-checks" style="background:#fff7f7; border:2px solid #fca5a5; border-radius:7px; padding:10px 12px; margin-bottom:6px;">
-                                <div style="font-size:11px; font-weight:700; color:#dc2626; margin-bottom:7px; text-transform:uppercase; letter-spacing:.4px;">
-                                    <i class="fa-solid fa-list-check"></i> Çatışmayan / Düzəliş Lazım Olan Sənədlər:
-                                </div>
-                                <div id="doc-error-checkboxes" style="display:flex; flex-direction:column; gap:5px;">
-                                    <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
-                                        <input type="checkbox" id="err-coverLetter" style="width:14px;height:14px;accent-color:#dc2626;" onchange="onDocErrCheck()">
-                                        1. Məktəbin müşayiət məktubu
-                                    </label>
-                                    <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
-                                        <input type="checkbox" id="err-residenceCertificate" style="width:14px;height:14px;accent-color:#dc2626;" onchange="onDocErrCheck()">
-                                        2. Yaşayış yerindən arayış
-                                    </label>
-                                    <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
-                                        <input type="checkbox" id="err-xasiyyetname" style="width:14px;height:14px;accent-color:#dc2626;" onchange="onDocErrCheck()">
-                                        3. Xasiyyətnamə
-                                    </label>
-                                    <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
-                                        <input type="checkbox" id="err-idCopies" style="width:14px;height:14px;accent-color:#dc2626;" onchange="onDocErrCheck()">
-                                        4. Valideyn / Şagird ŞV surəti
-                                    </label>
-                                    <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
-                                        <input type="checkbox" id="err-tabel" style="width:14px;height:14px;accent-color:#dc2626;" onchange="onDocErrCheck()">
-                                        5. Qiymət cədvəli / Tabel
-                                    </label>
-                                    <label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#374151;cursor:pointer;">
-                                        <input type="checkbox" id="err-forma027" style="width:14px;height:14px;accent-color:#dc2626;" onchange="onDocErrCheck()">
-                                        6. Forma 027 (Tibb arayışı)
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Əlavə qeyd (ixtiyari) -->
-                            <textarea id="text-doc-error" placeholder="Əlavə izahat: səhvliyin detalları, konkret tələblər və s. (ixtiyari)..." style="border-color:#fca5a5; background:#fff7f7; min-height:50px; font-size:12px;"></textarea>
-                            
-                            <label>Rəsmi Sənədi Əllə Yüklə (Skan/PDF):</label>
-                            <div class="file-upload-wrapper">
-                                <i class="fa-solid fa-cloud-arrow-up"></i>
-                                <p id="upload-status-text">Faylı bura sürükləyin və ya klikləyin</p>
-                                <input type="file" id="manual-file-upload" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="handleManualFile(this)">
-                                <div id="file-info-label" class="uploaded-file-info"></div>
-                            </div>
-
-                            <button type="button" class="btn-approve" onclick="saveCommissionDecision()">
-                                Qərarı Saxla <i class="fa-solid fa-floppy-disk"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
         </div><!-- /tab-excel -->
 
@@ -1632,7 +1629,10 @@ function closeRulesModal() {
     document.getElementById('rulesModal').classList.remove('open');
 }
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeRulesModal();
+    if (e.key === 'Escape') {
+        closeRulesModal();
+        closeStudentModal();
+    }
 });
 
 let selectedAppId = null;
@@ -2300,13 +2300,11 @@ function selectStudent(app, rowElement) {
     document.querySelectorAll('.student-row').forEach(r => r.classList.remove('active'));
     rowElement.classList.add('active');
 
-    document.getElementById('sidebar-default-msg').style.display = "none";
-    document.getElementById('sidebar-actual-content').style.display = "block";
-
-    document.getElementById('panel-name').innerText = app.name + " (" + app.fin + ")";
-    document.getElementById('panel-school').innerText = app.schoolText;
+    // Modal elementlərini doldur
+    document.getElementById('sdm-name').textContent = app.name + " (" + app.fin + ")";
+    document.getElementById('sdm-school').textContent = app.schoolText;
     document.getElementById('text-notes').value = app.notes || "";
-    // Əlavə qeyd: əgər docErrorNote varsa onu, yoxdursa docError-dan "Əlavə qeyd:" hissəsini çıxar
+
     let additionalNote = app.docErrorNote || "";
     if (!additionalNote && app.docError) {
         const match = app.docError.match(/Əlavə qeyd:\s*([\s\S]*)/);
@@ -2317,7 +2315,6 @@ function selectStudent(app, rowElement) {
     document.getElementById('select-form').value = app.educationForm !== "-" ? app.educationForm : "Evdə təhsil (Ümumi proqram)";
     document.getElementById('decision-expiry-date').value = app.expiryDate && app.expiryDate !== "-" ? app.expiryDate.split('.').reverse().join('-') : "";
 
-    // Checkbox-ları doldur
     const errKeys = ['coverLetter','residenceCertificate','xasiyyetname','idCopies','tabel','forma027'];
     const checkedList = app.docErrorChecks ? app.docErrorChecks.split(',') : [];
     errKeys.forEach(k => {
@@ -2325,8 +2322,6 @@ function selectStudent(app, rowElement) {
         if (cb) cb.checked = checkedList.includes(k);
     });
 
-    // manualFileData artıq siyahıda gəlmir (yaddaş qənaəti üçün)
-    // Yeni fayl yüklənməyibsə uploadedFileBase64-ü sıfırla
     uploadedFileBase64 = null;
     uploadedFileName = app.manualFileName || null;
     document.getElementById('manual-file-upload').value = "";
@@ -2340,7 +2335,15 @@ function selectStudent(app, rowElement) {
         infoLabel.style.display = "none";
         document.getElementById('upload-status-text').style.display = "block";
     }
+
+    // Modalı aç
+    document.getElementById('studentDecisionModal').classList.add('open');
 }
+
+function closeStudentModal() {
+    document.getElementById('studentDecisionModal').classList.remove('open');
+}
+
 
 async function saveCommissionDecision() {
     if (!selectedAppId) return;
@@ -2382,19 +2385,10 @@ async function saveCommissionDecision() {
         });
         if (res.ok) {
             showToast('✅ Komissiya qərarı saxlandı!', 'success');
+            closeStudentModal();
             const savedId = selectedAppId;
             // Cədvəli yenilə
             await loadCommissionTable();
-            // loadCommissionTable bitdikdən sonra yeni DOM-da aktiv sıranı tap
-            const newActiveRow = document.querySelector('.student-row.active');
-            if (newActiveRow && savedId) {
-                try {
-                    const r2 = await fetch('/api/komissiya/get-applications');
-                    const allApps = await r2.json();
-                    const updated = allApps.find(a => a.id === savedId);
-                    if (updated) selectStudent(updated, newActiveRow);
-                } catch(_) {}
-            }
         } else {
             let errMsg = '⚠️ Server xətası.';
             try {
