@@ -53,6 +53,9 @@
         .user-name-tag { font-size: 12px; font-weight: 600; color: #475569; }
         .btn-logout { display: flex; align-items: center; gap: 6px; background: none; border: 1.5px solid #e2e8f0; border-radius: 7px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: #475569; cursor: pointer; transition: all 0.2s; }
         .btn-logout:hover { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
+        .header-actions-row { display: flex; align-items: center; gap: 8px; }
+        .btn-portal { display: flex; align-items: center; gap: 6px; background: var(--primary-navy); border: 1.5px solid var(--primary-navy); border-radius: 7px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: #fff; cursor: pointer; transition: all 0.2s; text-decoration: none; }
+        .btn-portal:hover { background: #0d1b2a; border-color: #0d1b2a; }
 
         .manual-entry-bar {
             display: flex; flex-wrap: wrap; gap: 6px; 
@@ -499,9 +502,14 @@
             </div>
             <div class="brand-header-right">
                 <span class="user-name-tag" id="user-name-display"></span>
-                <button class="btn-logout" onclick="logout()">
-                    <i class="fa-solid fa-right-from-bracket"></i> Çıxış
-                </button>
+                <div class="header-actions-row">
+                    <a class="btn-portal" href="https://ptpk-portal.onrender.com" target="_blank" rel="noopener">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> PTPK Portala keç
+                    </a>
+                    <button class="btn-logout" onclick="logout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> Çıxış
+                    </button>
+                </div>
             </div>
         </div>
 
