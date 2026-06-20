@@ -140,6 +140,9 @@ async def submit_student(
     f_tab   = await save_file(tabel, "tabel")
     f_027   = await save_file(forma027, "forma027")
 
+    all_files_present = all([f_cover, f_res, f_xas, f_id, f_tab, f_027])
+    doc_status = "Tam Sənəd" if all_files_present else "Çatışmır"
+
     payload = {
         "id": app_id,
         "fin": finCode.upper(),
@@ -148,7 +151,7 @@ async def submit_student(
         "schoolValue": schoolSelect,
         "type": applicationType + " Müraciət",
         "year": academicYear,
-        "docStatus": "Tam Sənəd",
+        "docStatus": doc_status,
         "decisionStatus": "Gözləmədə",
         "expiryDate": "-",
         "educationForm": "-",
