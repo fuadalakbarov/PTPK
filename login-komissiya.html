@@ -489,7 +489,7 @@
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
     }
-    const THIS_ROLE    = 'komissiya';
+    const ALLOWED_ROLES = ['komissiya', 'admin'];
     const REDIRECT_URL = 'komissiya.html';
     let timerInterval = null;
     let timerSeconds  = 600;
@@ -516,7 +516,7 @@
             });
             clearTimeout(timeout);
             const data = await res.json();
-            return data.status === 'valid' && data.role === THIS_ROLE;
+            return data.status === 'valid' && ALLOWED_ROLES.includes(data.role);
         } catch { return false; }
     }
 
@@ -549,7 +549,7 @@
             clearTimeout(timeout2);
             const data = await res.json();
             if (data.status === 'success') {
-                if (data.role !== THIS_ROLE) {
+                if (!ALLOWED_ROLES.includes(data.role)) {
                     SFX.error();
                     showAlert('Bu e-poçt komissiya üzvü kimi qeydiyyatda deyil.', 'error');
                     btn.disabled = false;
@@ -589,7 +589,7 @@
             clearTimeout(tmo);
             const data = await res.json();
             if (data.status === 'success') {
-                if (data.role !== THIS_ROLE) {
+                if (!ALLOWED_ROLES.includes(data.role)) {
                     SFX.error(); showAlert('Giriş rədd edildi. Bu giriş yalnız komissiya üzvləri üçündür.', 'error');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
