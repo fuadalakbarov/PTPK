@@ -1386,6 +1386,13 @@ body {
   0% { transform: scale(0.8); opacity: 1; }
   100% { transform: scale(2); opacity: 0; }
 }
+
+/* ── Çox kiçik ekranlar üçün təhlükəsizlik qaydaları (≤360px) ── */
+@media (max-width: 360px) {
+  body { max-width: 100%; }
+  .stat-chip { padding: 10px 6px; }
+  .stat-chip-num { font-size: 18px; }
+}
 </style>
 </head>
 <body>
