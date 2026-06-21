@@ -37,6 +37,11 @@ window.addEventListener('DOMContentLoaded', () => {
     const email = localStorage.getItem('ptpk_email') || '';
     const el = document.getElementById('user-name-display');
     if (el && email) el.textContent = email;
+
+    if (localStorage.getItem('ptpk_role') === 'admin') {
+        const adminLink = document.getElementById('admin-panel-link');
+        if (adminLink) adminLink.style.display = 'flex';
+    }
 });
 </script>
 <head>
@@ -451,6 +456,9 @@ window.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="brand-header-right">
                 <span class="user-name-tag" id="user-name-display"></span>
+                <a id="admin-panel-link" href="/admin.html" style="display:none; align-items:center; gap:6px; background:#d97706; color:#fff; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:700; text-decoration:none;">
+                    <i class="fa-solid fa-user-shield"></i> Admin Panel
+                </a>
                 <button class="btn-logout" onclick="logout()">
                     <i class="fa-solid fa-right-from-bracket"></i> Çıxış
                 </button>
