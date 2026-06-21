@@ -420,8 +420,11 @@
             .select-school-filter, .search-wrap { max-width: 100%; width: 100%; }
             .panel-layout { grid-template-columns: 1fr; margin-top: 8px; }
             .panel-col:last-child { display: none; }
-            .excel-table { font-size: 12px; }
+            .table-container { overflow-x: auto; }
+            .excel-table { font-size: 12px; min-width: 720px; }
             .excel-table th, .student-row td { padding: 7px 8px; }
+            .doc-grid { grid-template-columns: 1fr; }
+            .modal-box { width: 95vw !important; }
         }
     </style>
 </head>
