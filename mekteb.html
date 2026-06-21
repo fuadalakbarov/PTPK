@@ -528,6 +528,9 @@
                 <div class="stat-chip total">Qüvvədə: <span id="stat-ok" style="color:var(--brand-blue); font-weight:700; margin-left:3px;">0</span></div>
                 <div class="stat-chip pending">Gözləmədə: <span id="stat-pending" style="margin-left:3px;">0</span></div>
                 <div class="stat-chip error">Düzəliş lazım: <span id="stat-error" style="margin-left:3px;">0</span></div>
+                <a id="admin-panel-link" href="/admin.html" style="display:none; align-items:center; gap:6px; background:var(--warning-orange); color:#fff; padding:6px 14px; border-radius:6px; font-size:12px; font-weight:700; text-decoration:none;">
+                    <i class="fa-solid fa-user-shield"></i> Admin Panel
+                </a>
             </div>
         </div>
 
@@ -902,6 +905,12 @@
 </div>
 
 <script>
+    // Admin Panel düyməsini yalnız admin rolu üçün göstər
+    if (localStorage.getItem('ptpk_role') === 'admin') {
+        const adminLink = document.getElementById('admin-panel-link');
+        if (adminLink) adminLink.style.display = 'flex';
+    }
+
     // İstifadə Qaydaları Modal
     function openRulesModal() {
         document.getElementById('rulesModal').classList.add('open');
