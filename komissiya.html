@@ -1516,7 +1516,12 @@ async function loadCommissionTable() {
             let statusClass = getStatusPillClass(app.decisionStatus);
             const statusLabel = app.decisionStatus === 'Düzəliş lazım'
                 ? '⚠️ Düzəliş lazım'
-                : (app.decisionStatus || 'Gözləmədə');
+                : (app.decisionStatus || 'Hələ qərar verilməyib');
+
+            // "Düzəliş lazım" statusunda sənəd vəziyyətini də "Çatışmır" kimi göstər
+            const docStatusDisplay = app.decisionStatus === 'Düzəliş lazım'
+                ? 'Çatışmır'
+                : (app.docStatus || 'Natamam');
 
             // Yüklənmiş sənəd varmı?
             const hasUploadedDocs = DOC_FIELDS.some(f => app[f.key] && app[f.key].length > 3);
@@ -1529,7 +1534,7 @@ async function loadCommissionTable() {
             tr.innerHTML = `
                 <td><strong>${app.name} (${app.fin})</strong></td>
                 <td>${app.year}</td>
-                <td><span class="status-pill ${app.docStatus === 'Tam Sənəd' ? 'tam' : app.docStatus === 'Çatışmır' ? 'catismir' : 'natamam'}">${app.docStatus}</span></td>
+                <td><span class="status-pill ${docStatusDisplay === 'Tam Sənəd' ? 'tam' : docStatusDisplay === 'Çatışmır' ? 'catismir' : 'natamam'}">${docStatusDisplay}</span></td>
                 <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
                 <td>${app.expiryDate || '-'}</td>
                 <td>${app.educationForm}</td>
@@ -1756,7 +1761,7 @@ async function downloadDecisionPDF(id) {
     } catch(_) {}
 
     // Sadə mətn hesabatı
-    const txt = `PTPK QƏRAR HESABATI\n${'-'.repeat(50)}\nŞAGİRD: ${app.name} (${app.fin})\nMƏKTƏB: ${app.schoolText}\nTƏDRİS İLİ: ${app.year}\nSTATUS: ${app.decisionStatus || 'Gözləmədə'}\nTƏHSİL FORMASI: ${app.educationForm}\nMÜDDƏT: ${app.expiryDate || '-'}\nRƏY: ${app.notes || '-'}\n${'-'.repeat(50)}\nTarix: ${new Date().toLocaleDateString('az-AZ')}`;
+    const txt = `PTPK QƏRAR HESABATI\n${'-'.repeat(50)}\nŞAGİRD: ${app.name} (${app.fin})\nMƏKTƏB: ${app.schoolText}\nTƏDRİS İLİ: ${app.year}\nSTATUS: ${app.decisionStatus || 'Hələ qərar verilməyib'}\nTƏHSİL FORMASI: ${app.educationForm}\nMÜDDƏT: ${app.expiryDate || '-'}\nRƏY: ${app.notes || '-'}\n${'-'.repeat(50)}\nTarix: ${new Date().toLocaleDateString('az-AZ')}`;
     const blob = new Blob([txt], {type: 'text/plain;charset=utf-8'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -1793,7 +1798,7 @@ async function exportAllExcel() {
     for (let school in grouped) {
         html += `<tr><td colspan="7" style="background:#e2e8f0;font-weight:bold;padding:6px 10px;">${school}</td></tr>`;
         grouped[school].forEach(app => {
-            html += '<tr>' + [`${app.name} (${app.fin})`, app.year||'-', app.docStatus||'-', app.decisionStatus||'Gözləmədə', app.expiryDate||'-', app.educationForm||'-', app.schoolText||'-'].map(c => `<td style="padding:5px 10px;">${c}</td>`).join('') + '</tr>';
+            html += '<tr>' + [`${app.name} (${app.fin})`, app.year||'-', app.docStatus||'-', app.decisionStatus||'Hələ qərar verilməyib', app.expiryDate||'-', app.educationForm||'-', app.schoolText||'-'].map(c => `<td style="padding:5px 10px;">${c}</td>`).join('') + '</tr>';
         });
     }
     html += '</tbody></table>';
