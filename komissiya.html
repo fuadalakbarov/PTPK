@@ -345,6 +345,8 @@
         @media (max-width: 1024px) {
             body { padding: 12px !important; }
             .app-window { height: 92vh !important; }
+            .excel-container { overflow-x: auto !important; }
+            .excel-table { table-layout: auto !important; min-width: 760px !important; }
         }
 
         /* ── MOBILE ── */
@@ -377,6 +379,8 @@
             .controls-row, .filter-group { flex-wrap: wrap !important; gap: 8px !important; }
             .select-school-filter { max-width: 100% !important; width: 100% !important; }
             .modal-box { width: 95vw !important; max-width: 100% !important; max-height: 90dvh !important; }
+            .excel-container { overflow-x: auto !important; }
+            .excel-table { table-layout: auto !important; min-width: 760px !important; }
         }
     </style>
 </head>
@@ -497,7 +501,7 @@
         <div class="brand-header">
             <img src="image.png" alt="PTPK Logo" class="brand-logo">
             <div class="brand-text">
-                <h1>PTPK Komissiya Ekspertiza Paneli</h1>
+                <h1>PTPK Komissiya Ekspertiza Paneli (Excel Magistral)</h1>
             </div>
             <div class="brand-header-right">
                 <span class="user-name-tag" id="user-name-display"></span>
