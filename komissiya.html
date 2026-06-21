@@ -1213,11 +1213,18 @@ async function openDocsModal(appId, event) {
                     </div>
                 </div>
             </div>
-            <button class="btn-open-doc" 
-                    onclick="openSingleDoc('${fname}')"
-                    ${!hasFile ? 'disabled' : ''}>
-                <i class="fa-solid fa-eye"></i> Aç
-            </button>
+            <div style="display:flex; align-items:center; gap:6px;">
+                <button class="btn-open-doc" 
+                        onclick="openSingleDoc('${fname}')"
+                        ${!hasFile ? 'disabled' : ''}>
+                    <i class="fa-solid fa-eye"></i> Aç
+                </button>
+                <label class="btn-open-doc" style="background:var(--success-green); border-color:var(--success-green); color:#fff; cursor:pointer;" title="${hasFile ? 'Sənədi dəyiş' : 'Sənəd yüklə'}">
+                    <i class="fa-solid fa-upload"></i> ${hasFile ? 'Dəyiş' : 'Yüklə'}
+                    <input type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none;"
+                           onchange="uploadDocFromModal(this, '${field.key}')">
+                </label>
+            </div>
         `;
         list.appendChild(item);
     });
@@ -1254,6 +1261,45 @@ function closeDocsModal() {
     document.getElementById('docsModal').classList.remove('open');
     currentModalApp = null;
     mergedPdfBytes = null;
+}
+
+// Komissiya üzvünün özünün sənəd yükləməsi/dəyişdirməsi
+async function uploadDocFromModal(inputEl, docKey) {
+    const file = inputEl.files?.[0];
+    inputEl.value = '';
+    if (!file || !currentModalApp) return;
+
+    if (file.size > 15 * 1024 * 1024) {
+        showToast('⚠️ Fayl ölçüsü 15 MB-dan çox ola bilməz', 'error');
+        return;
+    }
+
+    const labelEl = inputEl.closest('label');
+    const originalHtml = labelEl.innerHTML;
+    labelEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yüklənir...';
+
+    const formData = new FormData();
+    formData.append('appId', currentModalApp.id);
+    formData.append('docKey', docKey);
+    formData.append('file', file);
+
+    try {
+        const res = await fetch('/api/komissiya/upload-doc', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (res.ok && data.status === 'success') {
+            showToast('✅ Sənəd yükləndi', 'success');
+            currentModalApp[docKey] = data.fileName;
+            // Cədvəli arxa planda yenilə, modalı yenidən doldur
+            await loadCommissionTable();
+            openDocsModal(currentModalApp.id);
+        } else {
+            showToast('⚠️ ' + (data.detail || 'Sənəd yüklənmədi'), 'error');
+            labelEl.innerHTML = originalHtml;
+        }
+    } catch (e) {
+        showToast('⚠️ Bağlantı xətası!', 'error');
+        labelEl.innerHTML = originalHtml;
+    }
 }
 
 // Tək sənədi aç - əvvəl lokal proxy, sonra Supabase Storage
