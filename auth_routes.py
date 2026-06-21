@@ -1,210 +1,246 @@
-import os
-import random
-import string
-import httpx
-from datetime import datetime, timedelta
-from fastapi import APIRouter
-from pydantic import BaseModel
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTPK | İcazəli İstifadəçi Siyahısı (Admin)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background-color: #f4f6f9; color: #333; padding: 40px 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px; margin-bottom: 25px; }
+        .header h1 { font-size: 24px; color: #1e293b; }
+        .logout-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: 0.2s; }
+        .logout-btn:hover { background: #dc2626; }
+        .form-group { display: flex; gap: 15px; margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        input, select { padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; outline: none; }
+        input[type="email"] { flex: 2; }
+        input[type="text"] { flex: 1; }
+        select { flex: 0.5; }
+        .add-btn { background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .add-btn:hover { background: #1d4ed8; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        th { background-color: #f8fafc; color: #64748b; font-weight: 600; }
+        tr:hover { background-color: #fcfdfe; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .badge.admin { background: #dbeafe; color: #1e40af; }
+        .badge.user { background: #e2e8f0; color: #334155; }
+        .badge.komissiya { background: #dcfce7; color: #15803d; }
+        .role-select { padding: 4px 8px; font-size: 12px; border-radius: 4px; }
+        .delete-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-weight: 500; }
+        .delete-btn:hover { text-decoration: underline; }
+        .loading-row, .empty-row { text-align: center; color: #94a3b8; padding: 24px; font-size: 13px; }
+        .toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: #fff; padding: 12px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 6px 16px rgba(0,0,0,0.2); display: none; z-index: 100; }
+        .toast.error { background: #dc2626; }
+        .add-btn:disabled { background: #93c5fd; cursor: not-allowed; }
 
-router = APIRouter()
+        @media (max-width: 640px) {
+            body { padding: 16px 10px; }
+            .container { padding: 16px; border-radius: 10px; }
+            .header { flex-wrap: wrap; gap: 10px; }
+            .header h1 { font-size: 18px; }
+            .form-group { flex-direction: column; }
+            input[type="email"], input[type="text"], select, .add-btn { flex: none; width: 100%; }
+            .table-scroll { overflow-x: auto; }
+            table { min-width: 480px; }
+            th, td { padding: 9px 10px; font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
 
-SUPABASE_URL = "https://vlyuxgtwvfgbwaysbymv.supabase.co/rest/v1"
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "").strip()
-HEADERS = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": f"Bearer {SUPABASE_KEY}",
-    "Content-Type": "application/json",
-    "Prefer": "return=representation"
-}
-
-BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "").strip()
-SENDER_EMAIL  = "fuad.pennsl@gmail.com"
-SENDER_NAME   = "PTPK"
-
-class SendOTPRequest(BaseModel):
-    email: str
-
-class VerifyOTPRequest(BaseModel):
-    email: str
-    code: str
-
-class CheckSessionRequest(BaseModel):
-    token: str
-
-def generate_otp():
-    return ''.join(random.choices(string.digits, k=6))
-
-def generate_token():
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=64))
-
-async def send_otp_email(to_email: str, code: str):
-    html = f"""
-    <html><body style="font-family: Arial, sans-serif; background: #f1f5f9; padding: 30px;">
-    <div style="max-width: 420px; margin: auto; background: #ffffff; border-radius: 12px;
-                border: 2px solid #0f172a; overflow: hidden;">
-        <div style="background: #0f172a; padding: 20px 24px;">
-            <h2 style="color: #ffffff; margin: 0; font-size: 18px;">PTPK Giriş Kodu</h2>
-            <p style="color: #94a3b8; margin: 4px 0 0; font-size: 13px;">
-                Psixoloji-Tibbi-Pedaqoji Komissiya</p>
-        </div>
-        <div style="padding: 28px 24px; text-align: center;">
-            <p style="color: #475569; font-size: 14px; margin-bottom: 20px;">
-                Sistemə giriş üçün aşağıdakı 6 rəqəmli kodu daxil edin:</p>
-            <div style="background: #f0f9ff; border: 2px solid #0284c7; border-radius: 10px;
-                        padding: 18px; display: inline-block;">
-                <span style="font-size: 38px; font-weight: 900; letter-spacing: 10px;
-                             color: #0f172a; font-family: monospace;">{code}</span>
-            </div>
-            <p style="color: #94a3b8; font-size: 12px; margin-top: 20px;">
-                Bu kod 10 dəqiqə ərzində etibarlıdır.</p>
-        </div>
-        <div style="background: #f8fafc; padding: 14px 24px; border-top: 1px solid #e2e8f0;">
-            <p style="color: #94a3b8; font-size: 11px; margin: 0; text-align: center;">
-                © 2026 PTPK | by F.Alakbarov</p>
-        </div>
+<div class="container">
+    <div class="header">
+        <h1>🔐 PTPK Giriş İcazələri İdarəetmə Paneli</h1>
+        <button class="logout-btn" onclick="logout()">Çıxış</button>
     </div>
-    </body></html>
-    """
 
-    payload = {
-        "sender": {"name": SENDER_NAME, "email": SENDER_EMAIL},
-        "to": [{"email": to_email}],
-        "subject": f"PTPK Giriş Kodu: {code}",
-        "htmlContent": html
+    <div class="form-group">
+        <input type="email" id="newEmail" placeholder="Gmail ünvanı">
+        <input type="text" id="newName" placeholder="Ad, Soyad (könüllü)">
+        <select id="newRole">
+            <option value="user">İstifadəçi (Məktəb)</option>
+            <option value="komissiya">Komissiya Üzvü</option>
+            <option value="admin">Admin (İdarə)</option>
+        </select>
+        <button class="add-btn" id="addBtn" onclick="addEmail()">Əlavə Et</button>
+    </div>
+
+    <div class="table-scroll">
+        <table id="emailsTable">
+            <thead>
+                <tr>
+                    <th>Gmail</th>
+                    <th>Ad / Soyad</th>
+                    <th>Rol</th>
+                    <th>Əməliyyat</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    const token = localStorage.getItem('ptpk_token');
+    const role = localStorage.getItem('ptpk_role');
+
+    if (!token || role !== 'admin') {
+        alert('Bu panelə giriş icazəniz yoxdur!');
+        window.location.href = '/login.html';
     }
 
-    async with httpx.AsyncClient() as client:
-        r = await client.post(
-            "https://api.brevo.com/v3/smtp/email",
-            json=payload,
-            headers={
-                "api-key": BREVO_API_KEY,
-                "Content-Type": "application/json"
+    const ROLE_LABEL = { admin: 'admin', komissiya: 'komissiya', user: 'user' };
+
+    function showToast(msg, isError) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast' + (isError ? ' error' : '');
+        t.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; }, 3500);
+    }
+
+    async function loadEmails() {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = `<tr><td colspan="4" class="loading-row">Yüklənir...</td></tr>`;
+        try {
+            const res = await fetch('/api/admin/list-emails', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token })
+            });
+            const data = await res.json();
+            if (data.status === 'forbidden') {
+                showToast('Sessiyanız bitib, yenidən daxil olun', true);
+                setTimeout(() => window.location.href = '/login.html', 1500);
+                return;
             }
-        )
-        if r.status_code >= 400:
-            raise Exception(f"Brevo xətası: {r.status_code} - {r.text}")
-
-@router.post("/api/auth/send-otp")
-async def send_otp(req: SendOTPRequest):
-    email = req.email.strip().lower()
-
-    async with httpx.AsyncClient() as client:
-        r = await client.get(
-            f"{SUPABASE_URL}/allowed_emails?email=eq.{email}",
-            headers=HEADERS
-        )
-    users = r.json()
-    if not users or len(users) == 0:
-        return {"status": "error", "message": "Bu e-poçt ünvanı sistemdə qeydiyyatlı deyil."}
-
-    user = users[0]
-    code = generate_otp()
-    expires_at = (datetime.utcnow() + timedelta(minutes=10)).isoformat()
-
-    async with httpx.AsyncClient() as client:
-        await client.delete(
-            f"{SUPABASE_URL}/otp_codes?email=eq.{email}",
-            headers=HEADERS
-        )
-        await client.post(
-            f"{SUPABASE_URL}/otp_codes",
-            json={"email": email, "code": code, "expires_at": expires_at, "used": False},
-            headers=HEADERS
-        )
-
-    try:
-        await send_otp_email(email, code)
-    except Exception as e:
-        return {"status": "error", "message": f"Email göndərilmədi: {str(e)}"}
-
-    return {
-        "status": "success",
-        "message": "Kod göndərildi",
-        "role": user.get("role", "user"),
-        "full_name": user.get("name", "")
+            renderTable(data.data || []);
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="4" class="empty-row">Bağlantı xətası baş verdi.</td></tr>`;
+        }
     }
 
-@router.post("/api/auth/verify-otp")
-async def verify_otp(req: VerifyOTPRequest):
-    email = req.email.strip().lower()
-    code  = req.code.strip()
-    now   = datetime.utcnow().isoformat()
-
-    async with httpx.AsyncClient() as client:
-        r = await client.get(
-            f"{SUPABASE_URL}/otp_codes?email=eq.{email}&code=eq.{code}&used=eq.false&expires_at=gt.{now}",
-            headers=HEADERS
-        )
-    records = r.json()
-    if not records or len(records) == 0:
-        return {"status": "error", "message": "Kod yanlışdır və ya müddəti bitib."}
-
-    otp_id = records[0]["id"]
-
-    async with httpx.AsyncClient() as client:
-        await client.patch(
-            f"{SUPABASE_URL}/otp_codes?id=eq.{otp_id}",
-            json={"used": True},
-            headers=HEADERS
-        )
-        r2 = await client.get(
-            f"{SUPABASE_URL}/allowed_emails?email=eq.{email}",
-            headers=HEADERS
-        )
-
-    users = r2.json()
-    if not users:
-        return {"status": "error", "message": "İstifadəçi tapılmadı."}
-
-    user      = users[0]
-    role      = user.get("role", "user")
-    full_name = user.get("name", "")
-    token     = generate_token()
-    expires_at = (datetime.utcnow() + timedelta(hours=8)).isoformat()
-
-    async with httpx.AsyncClient() as client:
-        await client.post(
-            f"{SUPABASE_URL}/sessions",
-            json={"token": token, "email": email, "role": role, "expires_at": expires_at},
-            headers=HEADERS
-        )
-
-    return {
-        "status": "success",
-        "token": token,
-        "role": role,
-        "full_name": full_name,
-        "email": email
+    function renderTable(rows) {
+        const tbody = document.getElementById('tableBody');
+        if (!rows.length) {
+            tbody.innerHTML = `<tr><td colspan="4" class="empty-row">Heç bir qeyd tapılmadı.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = rows.map(row => `
+            <tr>
+                <td>${escapeHtml(row.email)}</td>
+                <td>${escapeHtml(row.name || '-')}</td>
+                <td>
+                    <select class="role-select" onchange="updateRole(${row.id}, this.value)">
+                        <option value="user" ${row.role === 'user' ? 'selected' : ''}>İstifadəçi</option>
+                        <option value="komissiya" ${row.role === 'komissiya' ? 'selected' : ''}>Komissiya</option>
+                        <option value="admin" ${row.role === 'admin' ? 'selected' : ''}>Admin</option>
+                    </select>
+                </td>
+                <td><button class="delete-btn" onclick="deleteEmail(${row.id}, '${escapeHtml(row.email)}')">Sil</button></td>
+            </tr>
+        `).join('');
     }
 
-@router.post("/api/auth/check-session")
-async def check_session(req: CheckSessionRequest):
-    token = req.token.strip()
-    now   = datetime.utcnow().isoformat()
-
-    async with httpx.AsyncClient() as client:
-        r = await client.get(
-            f"{SUPABASE_URL}/sessions?token=eq.{token}&expires_at=gt.{now}",
-            headers=HEADERS
-        )
-    sessions = r.json()
-    if not sessions or len(sessions) == 0:
-        return {"status": "invalid"}
-
-    s = sessions[0]
-    return {
-        "status": "valid",
-        "email": s["email"],
-        "role":  s["role"]
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     }
 
-@router.post("/api/auth/logout")
-async def logout(req: CheckSessionRequest):
-    token = req.token.strip()
-    async with httpx.AsyncClient() as client:
-        await client.delete(
-            f"{SUPABASE_URL}/sessions?token=eq.{token}",
-            headers=HEADERS
-        )
-    return {"status": "ok"}
+    async function addEmail() {
+        const emailInput = document.getElementById('newEmail');
+        const nameInput = document.getElementById('newName');
+        const roleSelect = document.getElementById('newRole');
+        const btn = document.getElementById('addBtn');
+
+        const email = emailInput.value.trim();
+        const name = nameInput.value.trim();
+        const newRole = roleSelect.value;
+
+        if (!email) { showToast('Gmail ünvanı mütləqdir!', true); return; }
+
+        btn.disabled = true;
+        btn.textContent = 'Əlavə edilir...';
+
+        try {
+            const res = await fetch('/api/admin/add-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, email, name, role: newRole })
+            });
+            const data = await res.json();
+            if (data.status === 'ok') {
+                showToast('✅ İstifadəçi uğurla əlavə edildi!');
+                emailInput.value = '';
+                nameInput.value = '';
+                roleSelect.value = 'user';
+                loadEmails();
+            } else if (data.status === 'forbidden') {
+                showToast('İcazəniz yoxdur', true);
+            } else {
+                showToast(data.message || 'Xəta baş verdi', true);
+            }
+        } catch (e) {
+            showToast('Bağlantı xətası!', true);
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Əlavə Et';
+    }
+
+    async function updateRole(id, newRole) {
+        try {
+            const res = await fetch('/api/admin/update-role', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, id, role: newRole })
+            });
+            const data = await res.json();
+            if (data.status === 'ok') {
+                showToast('✅ Rol yeniləndi');
+            } else {
+                showToast(data.message || 'Rol yenilənmədi', true);
+                loadEmails();
+            }
+        } catch (e) {
+            showToast('Bağlantı xətası!', true);
+            loadEmails();
+        }
+    }
+
+    async function deleteEmail(id, email) {
+        if (!confirm(`"${email}" ünvanını siyahıdan silmək istəyirsiniz?`)) return;
+        try {
+            const res = await fetch('/api/admin/delete-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, id })
+            });
+            const data = await res.json();
+            if (data.status === 'ok') {
+                showToast('✅ Silindi');
+                loadEmails();
+            } else {
+                showToast(data.message || 'Silinmədi', true);
+            }
+        } catch (e) {
+            showToast('Bağlantı xətası!', true);
+        }
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = '/login.html';
+    }
+
+    window.onload = loadEmails;
+</script>
+</body>
+</html>
