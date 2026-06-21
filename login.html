@@ -767,7 +767,7 @@
         deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
     }
 
-    const THIS_ROLE    = 'user';
+    const ALLOWED_ROLES = ['user', 'admin'];
     const REDIRECT_URL = 'index.html';
     let timerInterval = null;
     let timerSeconds  = 600;
@@ -776,7 +776,7 @@
     window.addEventListener('DOMContentLoaded', async () => {
         const token = localStorage.getItem('ptpk_token');
         const role  = localStorage.getItem('ptpk_role');
-        if (token && role === THIS_ROLE) {
+        if (token && ALLOWED_ROLES.includes(role)) {
             const valid = await checkToken(token);
             if (valid) { window.location.href = REDIRECT_URL; return; }
         }
@@ -795,7 +795,7 @@
                 body: JSON.stringify({token})
             });
             const data = await res.json();
-            return data.status === 'valid' && data.role === THIS_ROLE;
+            return data.status === 'valid' && ALLOWED_ROLES.includes(data.role);
         } catch { return false; }
     }
 
@@ -824,7 +824,7 @@
             });
             const data = await res.json();
             if (data.status === 'success') {
-                if (data.role !== THIS_ROLE) {
+                if (!ALLOWED_ROLES.includes(data.role)) {
                     SFX.error();
                     showAlert('Bu e-poçt bu giriş üçün nəzərdə tutulmayıb. Komissiya girişindən istifadə edin.', 'error');
                     btn.disabled = false;
@@ -860,7 +860,7 @@
             });
             const data = await res.json();
             if (data.status === 'success') {
-                if (data.role !== THIS_ROLE) {
+                if (!ALLOWED_ROLES.includes(data.role)) {
                     SFX.error(); showAlert('Giriş rədd edildi. Bu giriş yalnız məktəb istifadəçiləri üçündür.', 'error');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fa-solid fa-shield-halved"></i> Doğrula və Daxil Ol';
