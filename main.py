@@ -231,6 +231,52 @@ async def update_decision(data: DecisionUpdate):
     return {"status": "success"}
 
 
+@app.post("/api/komissiya/upload-doc")
+async def komissiya_upload_doc(
+    appId: str = Form(...),
+    docKey: str = Form(...),
+    file: UploadFile = File(...),
+):
+    """Komissiya üzvünün özünün bir sənədi (yenidən) yükləməsi üçün."""
+    allowed_keys = {
+        "coverLetter": "mushayiet",
+        "residenceCertificate": "yasayis",
+        "xasiyyetname": "xasiyyetname",
+        "idCopies": "sv_sureti",
+        "tabel": "tabel",
+        "forma027": "forma027",
+    }
+    if docKey not in allowed_keys:
+        raise HTTPException(status_code=400, detail="Yanlış sənəd növü")
+
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Fayl seçilmədi")
+
+    data = await file.read()
+    if len(data) == 0:
+        raise HTTPException(status_code=400, detail="Fayl boşdur")
+
+    ext = os.path.splitext(file.filename)[1].lstrip(".") or "pdf"
+    fname = f"{appId}_{allowed_keys[docKey]}.{ext}"
+
+    ok = await upload_to_storage(fname, data, ext)
+    if not ok:
+        raise HTTPException(status_code=502, detail="Fayl Storage-a yüklənmədi")
+
+    # applications cədvəlində uyğun sahəni yenilə
+    async with httpx.AsyncClient() as client:
+        r = await client.patch(
+            f"{SUPABASE_URL}/applications?id=eq.{appId}",
+            headers=HEADERS(),
+            json={docKey: fname}
+        )
+
+    if r.status_code not in (200, 204):
+        raise HTTPException(status_code=502, detail=f"Verilənlər bazası yenilənmədi: {r.text[:200]}")
+
+    return {"status": "success", "fileName": fname}
+
+
 @app.delete("/api/komissiya/delete-application")
 async def delete_application(id: str):
     async with httpx.AsyncClient() as client:
