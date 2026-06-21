@@ -509,6 +509,9 @@
                     <a class="btn-portal" href="https://ptpk-portal.onrender.com" target="_blank" rel="noopener">
                         <i class="fa-solid fa-arrow-up-right-from-square"></i> Şagird Qiymətləndirməsi
                     </a>
+                    <a class="btn-portal" id="admin-panel-link" href="/admin.html" style="display:none; background: var(--warning-orange); border-color: var(--warning-orange);">
+                        <i class="fa-solid fa-user-shield"></i> Admin Panel
+                    </a>
                     <button class="btn-logout" onclick="logout()">
                         <i class="fa-solid fa-right-from-bracket"></i> Çıxış
                     </button>
@@ -1859,6 +1862,10 @@ function filterStudents() {
     const ALLOWED_ROLES = ['komissiya', 'admin'];
     if (!token || !ALLOWED_ROLES.includes(role)) {
         window.location.href = '/login-komissiya.html'; return;
+    }
+    if (role === 'admin') {
+        const adminLink = document.getElementById('admin-panel-link');
+        if (adminLink) adminLink.style.display = 'flex';
     }
     try {
         const res  = await fetch('/api/auth/check-session', {
