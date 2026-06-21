@@ -1856,7 +1856,8 @@ function filterStudents() {
 (async function authGuard() {
     const token = localStorage.getItem('ptpk_token');
     const role  = localStorage.getItem('ptpk_role');
-    if (!token || role !== 'komissiya') {
+    const ALLOWED_ROLES = ['komissiya', 'admin'];
+    if (!token || !ALLOWED_ROLES.includes(role)) {
         window.location.href = '/login-komissiya.html'; return;
     }
     try {
@@ -1865,7 +1866,7 @@ function filterStudents() {
             body: JSON.stringify({token})
         });
         const data = await res.json();
-        if (data.status !== 'valid' || data.role !== 'komissiya') {
+        if (data.status !== 'valid' || !ALLOWED_ROLES.includes(data.role)) {
             localStorage.removeItem('ptpk_token');
             localStorage.removeItem('ptpk_role');
             localStorage.removeItem('ptpk_email');
