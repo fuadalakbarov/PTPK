@@ -31,6 +31,18 @@
         .badge.user { background: #e2e8f0; color: #334155; }
         .delete-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-weight: 500; }
         .delete-btn:hover { text-decoration: underline; }
+
+        @media (max-width: 640px) {
+            body { padding: 16px 10px; }
+            .container { padding: 16px; border-radius: 10px; }
+            .header { flex-wrap: wrap; gap: 10px; }
+            .header h1 { font-size: 18px; }
+            .form-group { flex-direction: column; }
+            input[type="email"], input[type="text"], select, .add-btn { flex: none; width: 100%; }
+            .table-scroll { overflow-x: auto; }
+            table { min-width: 480px; }
+            th, td { padding: 9px 10px; font-size: 13px; }
+        }
     </style>
 </head>
 <body>
@@ -51,18 +63,20 @@
         <button class="add-btn" onclick="addEmail()">Əlavə Et</button>
     </div>
 
-    <table id="emailsTable">
-        <thead>
-            <tr>
-                <th>Gmail</th>
-                <th>Ad / Soyad</th>
-                <th>Rol</th>
-                <th>Əməliyyat</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody">
-            </tbody>
-    </table>
+    <div class="table-scroll">
+        <table id="emailsTable">
+            <thead>
+                <tr>
+                    <th>Gmail</th>
+                    <th>Ad / Soyad</th>
+                    <th>Rol</th>
+                    <th>Əməliyyat</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
 </div>
 
 <script>
