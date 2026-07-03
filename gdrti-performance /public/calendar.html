@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalendar — GDRTI Performans</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="logo"><span class="logo-badge">🎓</span> GDRTI Performans</div>
+    <a href="/admin.html" id="navHome">📊 Sektorlar</a>
+    <a href="/messages.html">💬 Mesajlar</a>
+    <a href="/calendar.html" class="active">📅 Kalendar</a>
+    <div class="userbox" id="userbox"></div>
+    <a href="#" onclick="logout()" class="logout">🚪 Çıxış</a>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="monthLabel"></h1>
+        <div class="subtitle">Tədbirlər, görüşlər və son tarixlər</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn small secondary" onclick="changeMonth(-1)">← Əvvəlki</button>
+        <button class="btn small secondary" onclick="changeMonth(1)">Sonrakı →</button>
+        <button class="btn small" onclick="showEventModal()">+ Hadisə əlavə et</button>
+      </div>
+    </div>
+
+    <div class="cal-header">
+      <div>B.e</div><div>Ç.a</div><div>Ç</div><div>C.a</div><div>C</div><div>Ş</div><div>B</div>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="eventModal" style="display:none;">
+  <div class="modal">
+    <h3>Yeni hadisə</h3>
+    <form id="eventForm">
+      <div class="field"><label>Başlıq</label><input type="text" id="evTitle" required></div>
+      <div class="field"><label>Tarix</label><input type="date" id="evDate" required></div>
+      <div class="field"><label>Saat</label><input type="time" id="evTime"></div>
+      <div class="field">
+        <label>Növ</label>
+        <select id="evType">
+          <option value="event">Ümumi hadisə</option>
+          <option value="meeting">Görüş</option>
+          <option value="deadline">Son tarix</option>
+          <option value="reminder">Xatırlatma</option>
+        </select>
+      </div>
+      <div class="field"><label>Təsvir</label><textarea id="evDesc" rows="2"></textarea></div>
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" onclick="closeEventModal()">Ləğv et</button>
+        <button type="submit" class="btn">Əlavə et</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+const user = requireAuth();
+document.getElementById('userbox').innerHTML = `<b style="color:var(--text)">${user.full_name}</b><br>${user.role==='admin'?'Rəhbər':'İşçi'}`;
+if (user.role !== 'admin') document.getElementById('navHome').outerHTML = `<a href="/my-dashboard.html">🏠 Mənim Panelim</a>`;
+
+let viewDate = new Date();
+const MONTHS = ['Yanvar','Fevral','Mart','Aprel','May','İyun','İyul','Avqust','Sentyabr','Oktyabr','Noyabr','Dekabr'];
+
+function changeMonth(delta){
+  viewDate.setMonth(viewDate.getMonth() + delta);
+  render();
+}
+
+async function render(){
+  document.getElementById('monthLabel').textContent = `${MONTHS[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+  const year = viewDate.getFullYear(), month = viewDate.getMonth();
+  const first = new Date(year, month, 1);
+  const last = new Date(year, month + 1, 0);
+  const from = new Date(year, month, 1).toISOString().slice(0,10);
+  const to = new Date(year, month + 1, 0).toISOString().slice(0,10);
+
+  const events = await apiCall(`/calendar?from=${from}&to=${to}`);
+  const evByDay = {};
+  events.forEach(e => { (evByDay[e.event_date] ||= []).push(e); });
+
+  let startDow = first.getDay(); // 0=Sun
+  startDow = startDow === 0 ? 6 : startDow - 1; // Bazar ertəsi başlanğıc
+
+  const grid = document.getElementById('calGrid');
+  let html = '';
+  for (let i = 0; i < startDow; i++) html += `<div class="cal-day" style="opacity:.3"></div>`;
+
+  const todayStr = new Date().toISOString().slice(0,10);
+  for (let d = 1; d <= last.getDate(); d++){
+    const dateStr = new Date(year, month, d).toISOString().slice(0,10);
+    const isToday = dateStr === todayStr;
+    const dayEvents = evByDay[dateStr] || [];
+    html += `<div class="cal-day ${isToday?'today':''}">
+      <div class="dnum">${d}</div>
+      ${dayEvents.map(e => `<div class="cal-event" title="${e.title}">${e.title}</div>`).join('')}
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function showEventModal(){ document.getElementById('eventModal').style.display = 'flex'; }
+function closeEventModal(){ document.getElementById('eventModal').style.display = 'none'; }
+
+document.getElementById('eventForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    await apiCall('/calendar', 'POST', {
+      title: document.getElementById('evTitle').value,
+      event_date: document.getElementById('evDate').value,
+      event_time: document.getElementById('evTime').value || null,
+      type: document.getElementById('evType').value,
+      description: document.getElementById('evDesc').value
+    });
+    closeEventModal();
+    document.getElementById('eventForm').reset();
+    render();
+  } catch(err){ alert(err.message); }
+});
+
+render();
+</script>
+</body>
+</html>

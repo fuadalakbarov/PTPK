@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mesajlar — GDRTI Performans</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="logo"><span class="logo-badge">🎓</span> GDRTI Performans</div>
+    <a href="/admin.html" id="navHome">📊 Sektorlar</a>
+    <a href="/messages.html" class="active">💬 Mesajlar</a>
+    <a href="/calendar.html">📅 Kalendar</a>
+    <div class="userbox" id="userbox"></div>
+    <a href="#" onclick="logout()" class="logout">🚪 Çıxış</a>
+  </div>
+
+  <div class="main">
+    <div class="topbar"><div><h1>Mesajlar</h1></div></div>
+    <div class="chat-wrap">
+      <div class="chat-list" id="chatList"></div>
+      <div class="chat-panel">
+        <div class="chat-header" id="chatHeader">
+          <div class="empty-state" style="padding:0;">Söhbət seçin</div>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <form class="chat-input" id="chatForm" style="display:none;">
+          <input type="text" id="chatInput" placeholder="Mesaj yazın..." autocomplete="off">
+          <button type="submit" class="btn small">Göndər</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+const user = requireAuth();
+document.getElementById('userbox').innerHTML = `<b style="color:var(--text)">${user.full_name}</b><br>${user.role==='admin'?'Rəhbər':'İşçi'}`;
+if (user.role !== 'admin') document.getElementById('navHome').outerHTML = `<a href="/my-dashboard.html">🏠 Mənim Panelim</a>`;
+
+let allEmployees = [];
+let activeOther = null;
+
+async function loadContacts(){
+  allEmployees = user.role === 'admin' ? await apiCall('/employees') : (await apiCall('/employees')).filter(()=>true);
+  const convos = await apiCall('/messages/conversations');
+  const convoMap = new Map(convos.map(c => [c.other_id, c]));
+
+  // adminlər üçün bütün işçilər görünsün, işçilər üçün də bütün siyahı (kiçik təşkilat üçün sadədir)
+  const list = document.getElementById('chatList');
+  const others = allEmployees.filter(e => e.id !== user.id);
+  list.innerHTML = others.map(e => {
+    const c = convoMap.get(e.id);
+    return `
+    <div class="chat-list-item" onclick="openChat('${e.id}','${e.full_name.replace(/'/g,"\\'")}')" id="contact-${e.id}">
+      ${e.photo_url ? `<img class="emp-photo" style="width:38px;height:38px;font-size:.8rem;" src="${e.photo_url}">` : `<div class="emp-photo" style="width:38px;height:38px;font-size:.8rem;">${initials(e.full_name)}</div>`}
+      <div style="flex:1; min-width:0;">
+        <div style="font-size:.87rem; font-weight:600;">${e.full_name}</div>
+        <div style="font-size:.76rem; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${c ? c.last_message : e.position || ''}</div>
+      </div>
+      ${c && c.unread ? `<span class="dot" style="background:var(--indigo); width:8px; height:8px;"></span>` : ''}
+    </div>`;
+  }).join('') || '<div class="empty-state">İşçi yoxdur</div>';
+
+  const params = new URLSearchParams(location.search);
+  const preselect = params.get('to');
+  if (preselect) {
+    const e = others.find(x => x.id === preselect);
+    if (e) openChat(e.id, e.full_name);
+  }
+}
+
+async function openChat(otherId, name){
+  activeOther = otherId;
+  document.querySelectorAll('.chat-list-item').forEach(el => el.classList.remove('active'));
+  document.getElementById(`contact-${otherId}`)?.classList.add('active');
+  document.getElementById('chatHeader').innerHTML = `<b>${name}</b>`;
+  document.getElementById('chatForm').style.display = 'flex';
+  await renderMessages();
+}
+
+async function renderMessages(){
+  if (!activeOther) return;
+  const msgs = await apiCall(`/messages/thread/${activeOther}`);
+  const box = document.getElementById('chatMessages');
+  box.innerHTML = msgs.map(m => `
+    <div class="msg-bubble ${m.sender_id === user.id ? 'mine' : 'theirs'}">${m.content}</div>
+  `).join('') || '<div class="empty-state">Hələ mesaj yoxdur</div>';
+  box.scrollTop = box.scrollHeight;
+}
+
+document.getElementById('chatForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const input = document.getElementById('chatInput');
+  const content = input.value.trim();
+  if (!content || !activeOther) return;
+  input.value = '';
+  try {
+    await apiCall('/messages', 'POST', { receiver_id: activeOther, content });
+    renderMessages();
+  } catch(err){ alert(err.message); }
+});
+
+loadContacts();
+setInterval(() => { if (activeOther) renderMessages(); }, 5000);
+</script>
+</body>
+</html>

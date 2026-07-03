@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mənim Panelim — GDRTI Performans</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="logo"><span class="logo-badge">🎓</span> GDRTI Performans</div>
+    <a href="/my-dashboard.html" class="active">🏠 Mənim Panelim</a>
+    <a href="/messages.html">💬 Mesajlar</a>
+    <a href="/calendar.html">📅 Kalendar</a>
+    <div class="userbox" id="userbox"></div>
+    <a href="#" onclick="logout()" class="logout">🚪 Çıxış</a>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="greet"></h1>
+        <div class="subtitle">Tapşırıqlarınız və performans göstəriciləriniz</div>
+      </div>
+    </div>
+
+    <div id="pendingBanner" style="display:none; background:#fef3e2; border:1px solid #fde3b0; color:#92600a; border-radius:14px; padding:14px 18px; margin-bottom:20px; font-size:.88rem;">
+      ⏳ Hesabınız yaradılıb, amma hələ heç bir sektora təyin olunmayıbsınız. Admin sizi tezliklə təyin edəcək.
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card"><div class="stat-icon purple">⭐</div><div class="num" id="statPoints">0</div><div class="lbl">Ümumi bal</div></div>
+      <div class="stat-card"><div class="stat-icon blue">📈</div><div class="num" id="statCompletion">0%</div><div class="lbl">Tamamlama faizi</div></div>
+      <div class="stat-card"><div class="stat-icon green">✅</div><div class="num" id="statCompleted">0</div><div class="lbl">Tamamlanmış</div></div>
+      <div class="stat-card"><div class="stat-icon amber">⏰</div><div class="num" id="statOverdue">0</div><div class="lbl">Gecikmiş</div></div>
+    </div>
+
+    <h2 style="font-size:1.05rem; margin-bottom:16px;">Tapşırıqlarım</h2>
+    <div id="taskList"></div>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+const user = requireAuth();
+if (user.role === 'admin') location.href = '/admin.html';
+document.getElementById('userbox').innerHTML = `<b style="color:var(--text)">${user.full_name}</b><br>${user.position || 'İşçi'}`;
+document.getElementById('greet').textContent = `Salam, ${user.full_name.split(' ')[0]}`;
+if (!user.sector_id) document.getElementById('pendingBanner').style.display = 'block';
+
+async function load(){
+  const tasks = await apiCall('/tasks/mine');
+  const completed = tasks.filter(t=>t.status==='completed');
+  const overdue = tasks.filter(t=>t.status==='overdue');
+  const completionRate = tasks.length ? Math.round(completed.length/tasks.length*100) : 0;
+  let points = 0;
+  completed.forEach(t=>{
+    const onTime = !t.due_date || !t.completed_at || new Date(t.completed_at) <= new Date(t.due_date+'T23:59:59');
+    let base = onTime ? 10 : 6;
+    if (t.quality_score != null) base = base * (t.quality_score/100);
+    points += base;
+  });
+  points -= overdue.length * 3;
+  points = Math.max(0, Math.round(points));
+
+  document.getElementById('statPoints').textContent = points;
+  document.getElementById('statCompletion').textContent = completionRate + '%';
+  document.getElementById('statCompleted').textContent = completed.length;
+  document.getElementById('statOverdue').textContent = overdue.length;
+
+  const list = document.getElementById('taskList');
+  list.innerHTML = tasks.map(t => `
+    <div class="task-item">
+      <div class="row1">
+        <h4>${t.title}</h4>
+        <span class="badge ${t.status}">${STATUS_LABELS[t.status]}</span>
+      </div>
+      ${t.description ? `<p>${t.description}</p>` : ''}
+      <div class="foot">
+        <span>${t.due_date ? 'Son tarix: ' + t.due_date : 'Tarix yoxdur'}</span>
+        <select class="status-select" onchange="updateStatus('${t.id}', this.value)">
+          <option value="pending" ${t.status==='pending'?'selected':''}>Gözləyir</option>
+          <option value="in_progress" ${t.status==='in_progress'?'selected':''}>İcrada</option>
+          <option value="completed" ${t.status==='completed'?'selected':''}>Tamamlandı</option>
+        </select>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-state">Hələ tapşırıq yoxdur</div>';
+}
+
+async function updateStatus(id, status){
+  try { await apiCall(`/tasks/${id}/status`, 'PATCH', { status }); load(); }
+  catch(err){ alert(err.message); }
+}
+
+load();
+</script>
+</body>
+</html>

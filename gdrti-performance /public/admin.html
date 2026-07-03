@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — GDRTI Performans</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="logo"><span class="logo-badge">🎓</span> GDRTI Performans</div>
+    <a href="/admin.html" class="active">📊 Sektorlar</a>
+    <a href="/messages.html">💬 Mesajlar</a>
+    <a href="/calendar.html">📅 Kalendar</a>
+    <div class="userbox" id="userbox"></div>
+    <a href="#" onclick="logout()" class="logout">🚪 Çıxış</a>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <h1>Sektor Performansı</h1>
+        <div class="subtitle">Bütün sektorların fəaliyyət göstəriciləri</div>
+      </div>
+      <button class="btn excel" onclick="exportSectorsCSV()">📊 Excel Endir</button>
+    </div>
+
+    <div id="pendingSection" style="display:none; margin-bottom:32px;">
+      <div class="topbar">
+        <div>
+          <h1 style="font-size:1.1rem;">⏳ Gözləyən işçilər</h1>
+          <div class="subtitle">Google ilə qeydiyyatdan keçib, sektor gözləyirlər</div>
+        </div>
+      </div>
+      <div class="emp-list" id="pendingList"></div>
+    </div>
+
+    <div class="grid sectors" id="sectorsGrid"></div>
+
+    <div id="employeesSection" style="display:none; margin-top:32px;">
+      <div class="topbar">
+        <div>
+          <h1 id="sectorTitle"></h1>
+          <div class="subtitle">İşçilərin performans göstəriciləri</div>
+        </div>
+        <button class="btn small" onclick="showTaskModal()">+ Tapşırıq ver</button>
+      </div>
+      <div class="emp-list" id="empList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="taskModal" style="display:none;">
+  <div class="modal">
+    <h3>Yeni tapşırıq</h3>
+    <form id="taskForm">
+      <div class="field">
+        <label>İşçi</label>
+        <select id="taskEmployee" required></select>
+      </div>
+      <div class="field">
+        <label>Başlıq</label>
+        <input type="text" id="taskTitle" required placeholder="Tapşırığın adı">
+      </div>
+      <div class="field">
+        <label>Təsvir</label>
+        <textarea id="taskDesc" rows="3" placeholder="Ətraflı izah (istəyə görə)"></textarea>
+      </div>
+      <div class="field">
+        <label>Son tarix</label>
+        <input type="date" id="taskDue">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" onclick="closeTaskModal()">Ləğv et</button>
+        <button type="submit" class="btn">Təyin et</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+const user = requireAuth();
+if (user.role !== 'admin') location.href = '/my-dashboard.html';
+document.getElementById('userbox').innerHTML = `<b style="color:var(--text)">${user.full_name}</b><br>Rəhbər`;
+
+let currentSectorId = null;
+let allEmployees = [];
+
+let lastSectors = [];
+async function loadSectors(){
+  const sectors = await apiCall('/sectors');
+  lastSectors = sectors;
+  const grid = document.getElementById('sectorsGrid');
+  grid.innerHTML = sectors.map(s => `
+    <div class="card sector-card" onclick="openSector('${s.id}','${s.name.replace(/'/g,"\\'")}')">
+      <div class="top">
+        <div>
+          <h3>${s.name}</h3>
+          <div class="meta">${s.employee_count} işçi · ${s.task_count} tapşırıq</div>
+        </div>
+        <div class="dot" style="background:${s.color}"></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${s.avg_completion}%; background:${s.color}"></div></div>
+      <div class="stat-row">
+        <span>Tamamlama: <b>${s.avg_completion}%</b></span>
+        <span>Orta bal: <b>${s.avg_points}</b></span>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-state">Hələ sektor yoxdur</div>';
+}
+
+async function openSector(id, name){
+  currentSectorId = id;
+  document.getElementById('sectorTitle').textContent = name;
+  document.getElementById('employeesSection').style.display = 'block';
+  const employees = await apiCall(`/sectors/${id}/employees`);
+  const list = document.getElementById('empList');
+  list.innerHTML = employees.map(e => `
+    <div class="emp-row" onclick="location.href='/employee-detail.html?id=${e.id}'">
+      ${e.photo_url ? `<img class="emp-photo" src="${e.photo_url}">` : `<div class="emp-photo">${initials(e.full_name)}</div>`}
+      <div class="emp-info">
+        <div class="name">${e.full_name}</div>
+        <div class="pos">${e.position || ''}</div>
+      </div>
+      <div class="emp-progress">
+        <div class="progress-bar"><div class="progress-fill" style="width:${e.stats.completionRate}%"></div></div>
+        <div style="font-size:.72rem; color:var(--text-dim); margin-top:3px;">${e.stats.completedCount}/${e.stats.totalCount} tapşırıq</div>
+      </div>
+      <div class="emp-points">
+        <div class="num">${e.stats.points}</div>
+        <div class="label">bal</div>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-state">Bu sektorda işçi yoxdur</div>';
+  document.getElementById('employeesSection').scrollIntoView({behavior:'smooth'});
+}
+
+function renderPending(){
+  const pending = allEmployees.filter(e => !e.sector_id && e.role === 'employee');
+  const section = document.getElementById('pendingSection');
+  if (!pending.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  document.getElementById('pendingList').innerHTML = pending.map(e => `
+    <div class="emp-row" style="cursor:default;">
+      ${e.photo_url ? `<img class="emp-photo" src="${e.photo_url}">` : `<div class="emp-photo">${initials(e.full_name)}</div>`}
+      <div class="emp-info">
+        <div class="name">${e.full_name}</div>
+        <div class="pos">${e.email}</div>
+      </div>
+      <select class="status-select" id="sectorPick-${e.id}" style="min-width:180px;">
+        <option value="">Sektor seç...</option>
+        ${lastSectors.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+      </select>
+      <input type="text" class="status-select" id="posPick-${e.id}" placeholder="Vəzifə" style="width:140px;">
+      <button class="btn small" onclick="assignSector('${e.id}')">Təyin et</button>
+    </div>
+  `).join('');
+}
+
+async function assignSector(empId){
+  const sectorId = document.getElementById(`sectorPick-${empId}`).value;
+  const position = document.getElementById(`posPick-${empId}`).value;
+  if (!sectorId) { alert('Sektor seçin'); return; }
+  try {
+    await apiCall(`/employees/${empId}`, 'PUT', { sector_id: sectorId, position });
+    allEmployees = await apiCall('/employees');
+    renderPending();
+    loadSectors();
+  } catch(err){ alert(err.message); }
+}
+
+function exportSectorsCSV(){
+  const rows = [['Sektor','İşçi sayı','Tapşırıq sayı','Tamamlama %','Orta bal']];
+  lastSectors.forEach(s => rows.push([s.name, s.employee_count, s.task_count, s.avg_completion, s.avg_points]));
+  const csv = '\uFEFF' + rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'sektor-performansi.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function showTaskModal(){
+  document.getElementById('taskModal').style.display = 'flex';
+  const sel = document.getElementById('taskEmployee');
+  sel.innerHTML = allEmployees
+    .filter(e => !currentSectorId || e.sector_id === currentSectorId)
+    .map(e => `<option value="${e.id}">${e.full_name}</option>`).join('');
+}
+function closeTaskModal(){ document.getElementById('taskModal').style.display = 'none'; }
+
+document.getElementById('taskForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    await apiCall('/tasks', 'POST', {
+      employee_id: document.getElementById('taskEmployee').value,
+      title: document.getElementById('taskTitle').value,
+      description: document.getElementById('taskDesc').value,
+      due_date: document.getElementById('taskDue').value || null
+    });
+    closeTaskModal();
+    document.getElementById('taskForm').reset();
+    if (currentSectorId) openSector(currentSectorId, document.getElementById('sectorTitle').textContent);
+    loadSectors();
+  } catch(err){ alert(err.message); }
+});
+
+(async function init(){
+  allEmployees = await apiCall('/employees');
+  await loadSectors();
+  renderPending();
+})();
+</script>
+</body>
+</html>

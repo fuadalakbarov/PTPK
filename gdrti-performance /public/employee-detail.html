@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İşçi Profili — GDRTI Performans</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="logo"><span class="logo-badge">🎓</span> GDRTI Performans</div>
+    <a href="/admin.html">📊 Sektorlar</a>
+    <a href="/messages.html">💬 Mesajlar</a>
+    <a href="/calendar.html">📅 Kalendar</a>
+    <div class="userbox" id="userbox"></div>
+    <a href="#" onclick="logout()" class="logout">🚪 Çıxış</a>
+  </div>
+
+  <div class="main">
+    <a href="/admin.html" style="color:var(--text-dim); font-size:.85rem;">← Geri</a>
+    <div class="profile-head" style="margin-top:14px;">
+      <div class="emp-photo" id="photoBox"></div>
+      <div>
+        <h1 id="empName"></h1>
+        <div class="subtitle" id="empPos"></div>
+      </div>
+      <button class="btn small" style="margin-left:auto;" onclick="location.href='/messages.html?to='+empId">💬 Mesaj yaz</button>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card"><div class="stat-icon purple">⭐</div><div class="num" id="statPoints">0</div><div class="lbl">Ümumi bal</div></div>
+      <div class="stat-card"><div class="stat-icon blue">📈</div><div class="num" id="statCompletion">0%</div><div class="lbl">Tamamlama faizi</div></div>
+      <div class="stat-card"><div class="stat-icon green">✅</div><div class="num" id="statCompleted">0</div><div class="lbl">Tamamlanmış</div></div>
+      <div class="stat-card"><div class="stat-icon amber">⏰</div><div class="num" id="statOverdue">0</div><div class="lbl">Gecikmiş</div></div>
+    </div>
+
+    <div class="flex-between mb-16">
+      <h2 style="font-size:1.05rem;">Tapşırıqlar</h2>
+      <button class="btn small" onclick="showTaskModal()">+ Yeni tapşırıq</button>
+    </div>
+    <div id="taskList"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="taskModal" style="display:none;">
+  <div class="modal">
+    <h3>Yeni tapşırıq</h3>
+    <form id="taskForm">
+      <div class="field"><label>Başlıq</label><input type="text" id="taskTitle" required></div>
+      <div class="field"><label>Təsvir</label><textarea id="taskDesc" rows="3"></textarea></div>
+      <div class="field"><label>Son tarix</label><input type="date" id="taskDue"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" onclick="closeTaskModal()">Ləğv et</button>
+        <button type="submit" class="btn">Təyin et</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-bg" id="qualityModal" style="display:none;">
+  <div class="modal">
+    <h3>Keyfiyyət balı ver</h3>
+    <form id="qualityForm">
+      <div class="field"><label>Bal (0-100)</label><input type="number" id="qualityScore" min="0" max="100" required></div>
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" onclick="document.getElementById('qualityModal').style.display='none'">Ləğv et</button>
+        <button type="submit" class="btn">Yadda saxla</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+const user = requireAuth();
+document.getElementById('userbox').innerHTML = `<b style="color:var(--text)">${user.full_name}</b><br>${user.role==='admin'?'Rəhbər':'İşçi'}`;
+
+const params = new URLSearchParams(location.search);
+const empId = params.get('id');
+let currentQualityTaskId = null;
+
+async function load(){
+  const emp = await apiCall(`/employees/${empId}`);
+  document.getElementById('empName').textContent = emp.full_name;
+  document.getElementById('empPos').textContent = emp.position || '';
+  document.getElementById('photoBox').innerHTML = emp.photo_url
+    ? `<img src="${emp.photo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+    : initials(emp.full_name);
+
+  document.getElementById('statPoints').textContent = emp.stats.points;
+  document.getElementById('statCompletion').textContent = emp.stats.completionRate + '%';
+  document.getElementById('statCompleted').textContent = emp.stats.completedCount;
+  document.getElementById('statOverdue').textContent = emp.stats.overdueCount;
+
+  const list = document.getElementById('taskList');
+  list.innerHTML = (emp.tasks || []).map(t => `
+    <div class="task-item">
+      <div class="row1">
+        <h4>${t.title}</h4>
+        <span class="badge ${t.status}">${STATUS_LABELS[t.status]}</span>
+      </div>
+      ${t.description ? `<p>${t.description}</p>` : ''}
+      <div class="foot">
+        <span>${t.due_date ? 'Son tarix: ' + t.due_date : 'Tarix yoxdur'} ${t.quality_score != null ? ' · Keyfiyyət: ' + t.quality_score : ''}</span>
+        <span style="display:flex; gap:8px;">
+          ${user.role === 'admin' ? `<button class="btn small secondary" onclick="openQuality('${t.id}', ${t.quality_score || 0})">Keyfiyyət ver</button>` : ''}
+        </span>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-state">Hələ tapşırıq yoxdur</div>';
+}
+
+function showTaskModal(){ document.getElementById('taskModal').style.display = 'flex'; }
+function closeTaskModal(){ document.getElementById('taskModal').style.display = 'none'; }
+
+document.getElementById('taskForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    await apiCall('/tasks', 'POST', {
+      employee_id: empId,
+      title: document.getElementById('taskTitle').value,
+      description: document.getElementById('taskDesc').value,
+      due_date: document.getElementById('taskDue').value || null
+    });
+    closeTaskModal();
+    document.getElementById('taskForm').reset();
+    load();
+  } catch(err){ alert(err.message); }
+});
+
+function openQuality(taskId, current){
+  currentQualityTaskId = taskId;
+  document.getElementById('qualityScore').value = current;
+  document.getElementById('qualityModal').style.display = 'flex';
+}
+document.getElementById('qualityForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  try {
+    await apiCall(`/tasks/${currentQualityTaskId}/quality`, 'PATCH', {
+      quality_score: parseInt(document.getElementById('qualityScore').value)
+    });
+    document.getElementById('qualityModal').style.display = 'none';
+    load();
+  } catch(err){ alert(err.message); }
+});
+
+load();
+</script>
+</body>
+</html>

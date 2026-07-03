@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDRTI Performans Sistemi — Giriş</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-hero-text">
+    <h1>GDRTI Performans İdarəetmə Sistemi</h1>
+    <p>Sektorların və işçilərin fəaliyyət göstəricilərini izləyin, tapşırıq təyin edin, kalendarı idarə edin.</p>
+  </div>
+  <div class="login-card">
+    <h1>İşçi girişi</h1>
+    <p class="sub">Gəncə-Daşkəsən Regional Təhsil İdarəsi</p>
+
+    <button type="button" class="btn google-btn" id="googleBtn">
+      <svg width="18" height="18" viewBox="0 0 18 18" style="margin-right:8px;"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.83.86-3.06.86-2.36 0-4.35-1.59-5.06-3.73H.9v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.94 10.69A5.4 5.4 0 0 1 3.66 9c0-.59.1-1.16.28-1.69V4.98H.9A9 9 0 0 0 0 9c0 1.45.35 2.83.9 4.02l3.04-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .9 4.98l3.04 2.33C4.65 5.17 6.64 3.58 9 3.58z"/></svg>
+      Google ilə daxil ol
+    </button>
+    <button type="button" class="btn google-btn" id="qrBtn">📱 QR kod ilə daxil ol</button>
+    <div class="error-msg" id="googleErr"></div>
+
+    <div class="divider"><span>və ya admin girişi</span></div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="email" required placeholder="admin@gdrti.az">
+      </div>
+      <div class="field">
+        <label>Şifrə</label>
+        <input type="password" id="password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn">Daxil ol</button>
+      <div class="error-msg" id="errMsg"></div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-bg" id="qrModal" style="display:none;">
+  <div class="modal" style="text-align:center; max-width:340px;">
+    <h3>📱 QR kod ilə daxil ol</h3>
+    <p style="font-size:.85rem; color:var(--text-dim); margin-bottom:18px;">
+      Telefonunuzun kamerası ilə kodu skan edin, açılan səhifədə Google ilə təsdiqləyin.
+    </p>
+    <div id="qrImgBox" style="background:#fff; border-radius:14px; padding:14px; display:inline-block; border:1px solid var(--border);">
+      <img id="qrImg" src="" alt="QR kod" width="220" height="220">
+    </div>
+    <div id="qrStatus" style="margin-top:14px; font-size:.85rem; color:var(--text-dim);">Skan edilməsi gözlənilir...</div>
+    <button type="button" class="btn secondary" style="margin-top:16px;" onclick="closeQrModal()">Bağla</button>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/supabase-config.js"></script>
+<script src="/js/api.js"></script>
+<script>
+if (getToken()) {
+  const u = getUser();
+  location.href = u && u.role === 'admin' ? '/admin.html' : '/my-dashboard.html';
+}
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const errEl = document.getElementById('errMsg');
+  errEl.textContent = '';
+  try {
+    const data = await apiCall('/auth/login', 'POST', { email, password });
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    location.href = data.user.role === 'admin' ? '/admin.html' : '/my-dashboard.html';
+  } catch (err) {
+    errEl.textContent = err.message;
+  }
+});
+
+// GOOGLE İLƏ DAXİL OL
+document.getElementById('googleBtn').addEventListener('click', async () => {
+  await supabaseClient.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: location.origin + '/index.html' }
+  });
+});
+
+// Google-dan geri qayıdanda (URL-də token varsa) sessiyanı yoxlayırıq
+(async function checkGoogleSession(){
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) return;
+  const errEl = document.getElementById('googleErr');
+  try {
+    const data = await apiCall('/auth/google', 'POST', { access_token: session.access_token });
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    await supabaseClient.auth.signOut(); // Supabase sessiyasını təmizlə, bizim öz tokenimizi işlədirik
+    if (data.user.pending) {
+      alert('Hesabınız yaradıldı! Admin sizi bir sektora təyin edənə qədər gözləyin.');
+    }
+    location.href = data.user.role === 'admin' ? '/admin.html' : '/my-dashboard.html';
+  } catch (err) {
+    errEl.textContent = err.message;
+  }
+})();
+
+// QR İLƏ DAXİL OL
+let qrPollTimer = null;
+document.getElementById('qrBtn').addEventListener('click', async () => {
+  document.getElementById('qrModal').style.display = 'flex';
+  document.getElementById('qrStatus').textContent = 'Kod yaradılır...';
+  try {
+    const { session_id } = await apiCall('/auth/qr/create', 'POST', {});
+    const confirmUrl = `${location.origin}/qr-confirm.html?session=${session_id}`;
+    document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(confirmUrl)}`;
+    document.getElementById('qrStatus').textContent = 'Skan edilməsi gözlənilir...';
+
+    qrPollTimer = setInterval(async () => {
+      try {
+        const s = await apiCall(`/auth/qr/status/${session_id}`);
+        if (s.status === 'confirmed') {
+          clearInterval(qrPollTimer);
+          document.getElementById('qrStatus').textContent = '✅ Təsdiqləndi! Daxil olunur...';
+          localStorage.setItem('token', s.token);
+          localStorage.setItem('user', JSON.stringify(s.user));
+          setTimeout(() => {
+            location.href = s.user.role === 'admin' ? '/admin.html' : '/my-dashboard.html';
+          }, 500);
+        } else if (s.status === 'expired') {
+          clearInterval(qrPollTimer);
+          document.getElementById('qrStatus').textContent = '⏱ Kodun vaxtı bitdi. Yenidən açın.';
+        }
+      } catch (e) { /* səssizcə davam et, müvəqqəti şəbəkə xətası ola bilər */ }
+    }, 2000);
+  } catch (err) {
+    document.getElementById('qrStatus').textContent = 'Xəta: ' + err.message;
+  }
+});
+
+function closeQrModal(){
+  document.getElementById('qrModal').style.display = 'none';
+  if (qrPollTimer) clearInterval(qrPollTimer);
+}
+</script>
+</body>
+</html>
