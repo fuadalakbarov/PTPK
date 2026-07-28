@@ -1,56 +1,11 @@
 <!DOCTYPE html>
 <html lang="az">
-    <script>
-(async function authGuard() {
-    const token = localStorage.getItem('ptpk_token');
-    if (!token) { window.location.href = '/login.html'; return; }
-    try {
-        const res = await fetch('/api/auth/check-session', {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({token})
-        });
-        const data = await res.json();
-        if (data.status !== 'valid') {
-            localStorage.removeItem('ptpk_token');
-            localStorage.removeItem('ptpk_role');
-            localStorage.removeItem('ptpk_email');
-            window.location.href = '/login.html';
-        }
-    } catch { window.location.href = '/login.html'; }
-})();
-
-async function logout() {
-    const token = localStorage.getItem('ptpk_token');
-    try {
-        await fetch('/api/auth/logout', {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({token})
-        });
-    } catch {}
-    localStorage.removeItem('ptpk_token');
-    localStorage.removeItem('ptpk_role');
-    localStorage.removeItem('ptpk_email');
-    window.location.href = '/login.html';
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    const email = localStorage.getItem('ptpk_email') || '';
-    const el = document.getElementById('user-name-display');
-    if (el && email) el.textContent = email;
-
-    if (localStorage.getItem('ptpk_role') === 'admin') {
-        const adminLink = document.getElementById('admin-panel-link');
-        if (adminLink) adminLink.style.display = 'flex';
-    }
-});
-</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PTPK | Rəqəmsal Sənəd Qəbulu Sistemi</title>
-    <meta name="theme-color" content="#0284c7">
+    <title>PTPK | Məktəb Portalı</title>
+    <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="PTPK">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="image.png">
@@ -58,430 +13,534 @@ window.addEventListener('DOMContentLoaded', () => {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         :root {
-            --gradient-start: #0284c7;  
-            --gradient-end: #0f172a;    
-            --primary-navy: #0f172a;     
-            --brand-blue: #0284c7;       
-            --focus-blue: #0284c7;       
-            --text-dark: #0f172a;        
-            --text-muted: #475569;       
-            --border-strong: #0284c7;    
-            --border-window: #0f172a;    
+            --primary-navy: #0f172a;
+            --brand-blue: #0284c7;
+            --text-dark: #0f172a;
+            --text-muted: #475569;
+            --success-green: #16a34a;
+            --excel-green: #107c41;
+            --danger-red: #dc2626;
+            --warning-orange: #d97706;
         }
 
-        * { 
-            box-sizing: border-box; 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; 
-            padding: 0; 
-        }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
 
-        body { 
-            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             background-attachment: fixed;
-            min-height: 100vh;
-            width: 100vw;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
+            min-height: 100vh; width: 100vw;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
             padding: 20px;
+            padding-top: max(20px, env(safe-area-inset-top));
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
         }
 
         .app-window {
-            width: 100%;
-            max-width: 950px;
-            background: #ffffff;
-            border-radius: 16px;
-            border: 2px solid var(--border-window);
-            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3);
-            overflow: hidden;
-            margin: auto;
+            display: flex; width: 100%; max-width: 1600px; height: 88vh;
+            background: #fff; border-radius: 14px;
+            border: 2px solid var(--primary-navy);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4); overflow: hidden;
         }
 
+        /* Sidebar */
+        .nav-sidebar {
+            width: 70px; display: flex; flex-direction: column; align-items: center;
+            justify-content: space-between; padding: 20px 0;
+            background: #f8fafc; border-right: 2px solid #e2e8f0; flex-shrink: 0;
+        }
+        .nav-item {
+            width: 44px; height: 44px; border-radius: 10px; display: flex;
+            justify-content: center; align-items: center;
+            color: var(--text-muted); font-size: 16px; cursor: pointer;
+            transition: all 0.2s; text-decoration: none;
+        }
+        .nav-item:hover { background: #e2e8f0; color: var(--primary-navy); }
+        .nav-item.active { background: var(--brand-blue); color: #fff; }
+
+        /* Viewport */
         .viewport {
-            padding: 30px 40px;
-            display: flex;
-            flex-direction: column;
-            background: #ffffff;
+            flex: 1; padding: 20px 25px;
+            display: flex; flex-direction: column;
+            background: #fff; height: 100%; overflow: hidden;
+            min-height: 0;
         }
 
+        /* Header */
         .brand-header {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e2e8f0;
-            margin-bottom: 25px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding-bottom: 12px; border-bottom: 2px solid #e2e8f0; flex-shrink: 0;
+        }
+        .brand-logo-area { display: flex; align-items: center; gap: 12px; }
+        .brand-logo { height: 38px; }
+        .brand-text h1 { font-size: 18px; font-weight: 700; color: var(--primary-navy); }
+
+        .school-stats { display: flex; gap: 10px; }
+        .stat-chip {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 6px;
+            font-size: 12px; font-weight: 700; border: 1px solid #cbd5e1;
+        }
+        .stat-chip.total { background: #f1f5f9; color: var(--primary-navy); }
+
+        /* Controls */
+        .controls-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 12px; gap: 12px; flex-shrink: 0;
+            background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;
+        }
+        .filter-group { display: flex; align-items: center; gap: 10px; flex: 1; }
+
+        .select-school-filter {
+            flex: 1; max-width: 620px; padding: 8px 12px;
+            font-size: 13px; font-weight: 600;
+            border: 2px solid var(--primary-navy); border-radius: 6px;
+            color: var(--primary-navy); outline: none;
+            background: #fff; cursor: pointer; appearance: auto;
         }
 
-        .brand-header-right {
-            margin-left: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 6px;
+        .search-wrap { position: relative; max-width: 280px; width: 100%; }
+        .search-input {
+            width: 100%; padding: 8px 12px 8px 35px;
+            font-size: 13px; font-weight: 600;
+            border: 2px solid var(--primary-navy); border-radius: 6px;
+            color: var(--primary-navy); outline: none;
+        }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--primary-navy); }
+
+        .btn-excel {
+            display: flex; align-items: center; gap: 6px;
+            background: var(--excel-green); color: #fff;
+            border: 1px solid #0b592e; padding: 8px 14px;
+            font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer;
+        }
+        .btn-excel:hover { background: #0e6c38; }
+        .btn-excel:disabled { background: #cbd5e1; border-color: #cbd5e1; cursor: not-allowed; }
+
+        /* Panel */
+        .panel-layout {
+            flex: 1; display: grid; grid-template-columns: 2.5fr 1fr;
+            gap: 20px; margin-top: 12px; overflow: hidden;
+        }
+        .panel-col { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+        .section-title {
+            font-size: 12px; font-weight: 700;
+            color: var(--primary-navy); margin-bottom: 6px; text-transform: uppercase;
         }
 
-        .user-name-tag {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
+        /* Table container */
+        .table-container {
+            flex: 1; overflow: auto;
+            border: 2px solid var(--primary-navy); border-radius: 6px; background: #fff;
+        }
+        .excel-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+        .excel-table th {
+            background: var(--primary-navy); color: #fff; font-weight: 700;
+            padding: 10px; position: sticky; top: 0; z-index: 10;
+        }
+        .student-row { cursor: pointer; transition: background 0.15s; background: #fff; }
+        .student-row:nth-child(even) { background: #f8fafc; }
+        .student-row:hover, .student-row.active { background: #f0fdf4 !important; }
+        .student-row td { padding: 9px 10px; border: 1px solid #e2e8f0; font-weight: 500; }
+
+        /* Placeholder boxes */
+        .placeholder-box {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; height: 100%;
+            color: var(--text-muted); font-size: 14px; font-weight: 600;
+            text-align: center; padding: 40px; gap: 14px;
+        }
+        .placeholder-box i { font-size: 46px; color: var(--brand-blue); }
+        .placeholder-box.empty i { font-size: 36px; color: #cbd5e1; }
+
+        /* Pills */
+        .pill {
+            font-size: 11px; font-weight: 700; padding: 3px 8px;
+            border-radius: 4px; display: inline-block; white-space: nowrap;
+        }
+        .pill.quvve  { background: #e0f2fe; color: #0369a1; }
+
+        /* Right panel */
+        .preview-container {
+            border: 2px solid var(--brand-blue); border-radius: 6px;
+            background: #fff; display: flex; flex-direction: column;
+            height: 100%; overflow: hidden;
+        }
+        .right-body { flex: 1; overflow-y: auto; padding: 14px; }
+
+        .info-block { margin-bottom: 10px; }
+        .info-block strong {
+            font-size: 10px; text-transform: uppercase;
+            color: var(--text-muted); display: block; margin-bottom: 2px; letter-spacing: 0.4px;
+        }
+        .info-block span { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+
+        .commission-box {
+            margin-top: 12px; padding: 10px 12px;
+            background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 6px;
+        }
+        .commission-box h4 { font-size: 11px; color: var(--brand-blue); margin-bottom: 6px; font-weight: 700; }
+        .commission-box p  { font-size: 12px; font-weight: 500; color: var(--text-dark); line-height: 1.5; }
+
+        /* Action Buttons */
+        .btn-download-pdf {
+            width: 100%; background: var(--brand-blue); color: #fff;
+            height: 40px; border: none; border-radius: 6px;
+            font-size: 13px; font-weight: 700; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            gap: 8px; margin-top: 12px; transition: background 0.2s;
+        }
+        .btn-download-pdf:hover { background: #0369a1; }
+        .btn-download-pdf:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+
+        /* Tab switcher */
+        .tab-bar { display:flex; gap:0; margin-top:12px; flex-shrink:0; border-bottom:2px solid var(--primary-navy); }
+        .tab-btn {
+            padding:8px 18px; font-size:12px; font-weight:700; cursor:pointer;
+            border:none; background:#f1f5f9; color:var(--text-muted);
+            border-radius:6px 6px 0 0; margin-right:4px;
+            border:2px solid #e2e8f0; border-bottom:none;
+        }
+        .tab-btn.active { background:var(--primary-navy); color:#fff; border-color:var(--primary-navy); }
+        .tab-content { display:none; flex:1; overflow:hidden; flex-direction:column; min-height:0; }
+        .tab-content.active { display:flex; }
+
+        /* Muraciet tracking */
+        .doc-status-row { display:flex; flex-direction:column; gap:0; }
+        .muraciet-card {
+            border:1px solid #e2e8f0; border-radius:8px; margin-bottom:10px;
+            overflow:hidden; background:#fff;
+        }
+        .muraciet-card-header {
+            display:flex; align-items:center; justify-content:space-between;
+            padding:10px 14px; background:#f8fafc; cursor:pointer;
+            border-bottom:1px solid #e2e8f0;
+        }
+        .muraciet-card-header:hover { background:#f1f5f9; }
+        .muraciet-card-body { padding:14px; display:none; }
+        .muraciet-card-body.open { display:block; }
+        .doc-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+        .doc-chip {
+            display:flex; align-items:center; gap:8px; padding:8px 10px;
+            border-radius:6px; font-size:12px; font-weight:600;
+            border:1px solid #e2e8f0;
+        }
+        .doc-chip.ok { background:#f0fdf4; border-color:#bbf7d0; color:#15803d; }
+        .doc-chip.missing { background:#fef2f2; border-color:#fecaca; color:#dc2626; }
+        .error-note-box {
+            background:#fff7ed; border:1px solid #fed7aa; border-radius:6px;
+            padding:10px 14px; margin-top:8px;
+        }
+        .error-note-box .error-label {
+            font-size:10px; font-weight:700; color:#c2410c;
+            text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;
+        }
+        .error-note-box p { font-size:13px; color:#7c2d12; font-weight:500; line-height:1.5; }
+
+        /* Resubmit modal */
+        .modal-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.5);
+            display:flex; align-items:center; justify-content:center;
+            z-index:1000; display:none;
+        }
+        .modal-overlay.open { display:flex; }
+        .modal-box {
+            background:#fff; border-radius:12px; padding:24px;
+            width:520px; max-width:95vw; max-height:90vh; overflow-y:auto;
+            border:2px solid var(--primary-navy);
+        }
+        .modal-box h3 { font-size:15px; font-weight:700; color:var(--primary-navy); margin-bottom:4px; }
+        .modal-box .modal-sub { font-size:12px; color:var(--text-muted); margin-bottom:16px; }
+        .resubmit-field { margin-bottom:14px; }
+        .resubmit-field label {
+            display:block; font-size:11px; font-weight:700;
+            color:var(--text-muted); text-transform:uppercase;
+            letter-spacing:0.4px; margin-bottom:6px;
+        }
+        .resubmit-field .file-wrap {
+            border:2px dashed #cbd5e1; border-radius:6px; padding:10px;
+            text-align:center; background:#f8fafc; cursor:pointer; position:relative;
+        }
+        .resubmit-field .file-wrap:hover { border-color:var(--brand-blue); }
+        .resubmit-field .file-wrap input[type=file] {
+            position:absolute; inset:0; opacity:0; cursor:pointer;
+        }
+        .resubmit-field .file-wrap .fw-label { font-size:12px; font-weight:600; color:var(--text-muted); }
+        .resubmit-field .file-wrap .fw-chosen { font-size:11px; color:var(--success-green); font-weight:700; margin-top:4px; }
+        .btn-resubmit-send {
+            width:100%; background:var(--brand-blue); color:#fff;
+            border:none; border-radius:6px; height:42px;
+            font-size:14px; font-weight:700; cursor:pointer; margin-top:8px;
+        }
+        .btn-resubmit-send:hover { background:#0369a1; }
+        .btn-resubmit-send:disabled { background:#94a3b8; cursor:wait; }
+        .btn-modal-close {
+            background:none; border:1px solid #e2e8f0; border-radius:6px;
+            padding:6px 14px; font-size:12px; font-weight:600;
+            cursor:pointer; color:var(--text-muted); margin-top:8px; width:100%;
         }
 
-        .btn-logout {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: none;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 7px;
-            padding: 6px 12px;
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.2s;
+        /* İstifadə Qaydaları Modal */
+        .rules-modal-overlay {
+            position:fixed; inset:0; background:rgba(15,23,42,0.6);
+            display:none; align-items:center; justify-content:center;
+            z-index:2000; backdrop-filter:blur(2px);
         }
-        .btn-logout:hover {
-            background: #fee2e2;
-            border-color: #fca5a5;
-            color: #dc2626;
+        .rules-modal-overlay.open { display:flex; }
+        .rules-modal-box {
+            background:#fff; border-radius:14px;
+            width:600px; max-width:95vw; max-height:88vh;
+            overflow:hidden; display:flex; flex-direction:column;
+            border:2px solid var(--primary-navy);
+            box-shadow:0 20px 60px rgba(0,0,0,0.25);
+        }
+        .rules-modal-header {
+            background:var(--primary-navy); color:#fff;
+            padding:16px 20px; display:flex; align-items:center;
+            justify-content:space-between; flex-shrink:0;
+        }
+        .rules-modal-header h2 {
+            font-size:15px; font-weight:700; margin:0;
+            display:flex; align-items:center; gap:8px;
+        }
+        .rules-modal-close {
+            background:none; border:none; color:#fff;
+            font-size:18px; cursor:pointer; line-height:1;
+            opacity:0.8; transition:opacity 0.2s;
+        }
+        .rules-modal-close:hover { opacity:1; }
+        .rules-modal-body {
+            padding:20px 24px; overflow-y:auto; flex:1;
+        }
+        .rules-section { margin-bottom:20px; }
+        .rules-section:last-child { margin-bottom:0; }
+        .rules-section-title {
+            font-size:12px; font-weight:700; color:var(--brand-blue);
+            text-transform:uppercase; letter-spacing:0.6px;
+            margin-bottom:10px; padding-bottom:6px;
+            border-bottom:2px solid #e2e8f0;
+            display:flex; align-items:center; gap:6px;
+        }
+        .rules-list { list-style:none; padding:0; margin:0; }
+        .rules-list li {
+            font-size:13px; color:var(--text-dark); line-height:1.6;
+            padding:7px 0 7px 22px; position:relative;
+            border-bottom:1px solid #f1f5f9;
+        }
+        .rules-list li:last-child { border-bottom:none; }
+        .rules-list li::before {
+            content:''; position:absolute; left:6px; top:14px;
+            width:6px; height:6px; border-radius:50%;
+            background:var(--brand-blue); flex-shrink:0;
+        }
+        .rules-list li strong { color:var(--primary-navy); }
+        .rules-warning-box {
+            background:#fef3c7; border:1px solid #fcd34d;
+            border-radius:8px; padding:12px 14px; margin-top:16px;
+            font-size:12px; color:#92400e; line-height:1.6;
+            display:flex; gap:10px; align-items:flex-start;
+        }
+        .rules-warning-box i { color:#d97706; font-size:15px; flex-shrink:0; margin-top:1px; }
+        .rules-modal-footer {
+            padding:14px 20px; border-top:1px solid #e2e8f0;
+            display:flex; justify-content:flex-end; flex-shrink:0;
+            background:#f8fafc;
+        }
+        .rules-close-btn {
+            background:var(--brand-blue); color:#fff; border:none;
+            border-radius:8px; padding:9px 22px; font-size:13px;
+            font-weight:700; cursor:pointer; transition:background 0.2s;
+        }
+        .rules-close-btn:hover { background:#0369a1; }
+        .resubmit-status { font-size:12px; font-weight:700; margin-top:8px; text-align:center; display:none; }
+        .resubmit-status.ok { color:var(--success-green); }
+        .resubmit-status.err { color:var(--danger-red); }
+        .stat-chip.pending { background:#fef3c7; color:#d97706; border-color:#fcd34d; }
+        .stat-chip.error { background:#fee2e2; color:#dc2626; border-color:#fca5a5; }
+
+        /* Gizli Çap Sahəsi */
+        #printable-blank { display: none; }
+        @media print {
+            body * { visibility: hidden; }
+            #printable-blank, #printable-blank * { visibility: visible; }
+            #printable-blank {
+                position: absolute; left: 0; top: 0;
+                width: 100%; padding: 40px; display: block !important;
+                color: #000 !important; background: #fff !important;
+            }
+            .p-header { text-align: center; margin-bottom: 35px; border-bottom: 3px double #000; padding-bottom: 15px; }
+            .p-footer { margin-top: 50px; display: flex; justify-content: space-between; font-weight: bold; }
         }
 
-        .brand-logo {
-            height: 55px;
-            width: auto;
+        /* ── TABLET (768px-1024px) ── */
+        @media (max-width: 1024px) {
+            body { padding: 12px; }
+            .app-window { height: 92vh; }
+            .panel-layout { grid-template-columns: 1fr; }
+            .panel-col:last-child { display: none; }
+            .brand-header { flex-wrap: wrap; gap: 8px; }
+            .school-stats { flex-wrap: wrap; }
+            .controls-row { flex-wrap: wrap; gap: 8px; }
+            .filter-group { width: 100%; }
+            .select-school-filter { max-width: 100%; }
         }
 
-        .brand-text h1 {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--primary-navy);
-        }
-
-        .brand-text p {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-top: 2px;
-            font-weight: 500;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .input-group.full-width {
-            grid-column: span 2;
-        }
-
-        .input-group label {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--primary-navy);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .input-group input, .input-group select {
-            width: 100%;
-            padding: 10px 14px;
-            font-size: 14px;
-            font-weight: 400;
-            border: 2px solid #cbd5e1;
-            border-radius: 8px;
-            outline: none;
-            color: var(--text-dark);
-            transition: border-color 0.2s ease;
-            background-color: #ffffff;
-            appearance: auto;
-            -webkit-appearance: auto;
-        }
-
-        .input-group input {
-            font-weight: 600;
-        }
-
-        .input-group input:focus, .input-group select:focus {
-            border-color: var(--focus-blue);
-        }
-
-        .input-group select option {
-            font-weight: 400;
-            font-size: 14px;
-            color: var(--text-dark);
-            padding: 4px 8px;
-        }
-
-        .input-group select optgroup {
-            font-weight: 700;
-            font-size: 13px;
-            color: var(--brand-blue);
-        }
-
-        .file-drop {
-            border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-            background: #f8fafc;
-            position: relative;
-            transition: all 0.2s ease;
-        }
-
-        .file-drop:hover {
-            border-color: var(--brand-blue);
-            background: #f0f9ff;
-        }
-
-        .file-drop input[type="file"] {
-            width: 100%;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-        }
-
-        .btn-send {
-            width: 100%;
-            background: var(--primary-navy);
-            color: #ffffff;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 6px rgba(15, 23, 42, 0.1);
-            transition: background 0.2s ease;
-        }
-
-        .btn-send:hover {
-            background: var(--brand-blue);
-        }
-
-        .footer-links {
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-        }
-
-        .footer-links a {
-            font-size: 12px;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .footer-links a:hover {
-            color: var(--brand-blue);
-        }
-
-        .custom-copyright {
-            width: 100%;
-            text-align: center;
-            font-size: 12px;
-            color: #ffffff;
-            opacity: 0.8;
-            font-weight: 500;
-            margin-top: 20px;
-        }
-
+        /* ── MOBILE (max 768px) ── */
         @media (max-width: 768px) {
-            body { padding: 12px; padding-top: max(12px, env(safe-area-inset-top)); padding-bottom: max(12px, env(safe-area-inset-bottom)); }
-            .app-window { border-radius: 12px; }
-            .form-grid {
-                grid-template-columns: 1fr;
+            body { padding: 0; justify-content: flex-start; }
+            .app-window {
+                border-radius: 0; height: 100dvh;
+                border: none; flex-direction: column;
             }
-            .input-group.full-width {
-                grid-column: span 1;
+            .nav-sidebar {
+                width: 100%; height: auto; flex-direction: row;
+                padding: 8px 16px; padding-top: max(8px, env(safe-area-inset-top));
+                border-right: none; border-bottom: 2px solid #e2e8f0;
+                justify-content: space-between; align-items: center;
             }
+            .nav-sidebar > div { display: flex; gap: 8px; }
+            .nav-item { width: 38px; height: 38px; font-size: 15px; }
             .viewport {
-                padding: 16px;
+                padding: 12px 16px;
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
+                overflow-y: auto; height: auto; flex: 1;
             }
-            .brand-header { gap: 10px; flex-wrap: wrap; }
-            .brand-logo { height: 42px; }
-            .brand-text h1 { font-size: 16px; }
-            .brand-header-right { margin-left: auto; }
-            .footer-links { gap: 12px; flex-wrap: wrap; }
-        }
-        @media (max-width: 480px) {
-            .brand-header { padding-bottom: 14px; }
+            .brand-header { gap: 8px; }
+            .brand-logo { height: 30px; }
             .brand-text h1 { font-size: 14px; }
-            .brand-text p { font-size: 11px; }
-            .btn-send { font-size: 14px; padding: 12px; }
-            div[style*="display:flex; gap:12px"] { flex-direction: column; }
-            a[href="/mekteb.html"] { padding: 12px !important; text-align: center; }
+            .brand-text p { display: none; }
+            .school-stats { gap: 6px; }
+            .stat-chip { padding: 4px 10px; font-size: 11px; }
+            .controls-row { flex-direction: column; gap: 8px; padding: 8px; }
+            .filter-group { flex-direction: column; width: 100%; }
+            .select-school-filter, .search-wrap { max-width: 100%; width: 100%; }
+            .panel-layout { grid-template-columns: 1fr; margin-top: 8px; }
+            .panel-col:last-child { display: none; }
+            .table-container { overflow-x: auto; }
+            .excel-table { font-size: 12px; min-width: 720px; }
+            .excel-table th, .student-row td { padding: 7px 8px; }
+            .doc-grid { grid-template-columns: 1fr; }
+            .modal-box { width: 95vw !important; }
         }
-
-        /* ── MODAL ── */
-        .ptpk-modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(15,23,42,0.55);
-            backdrop-filter: blur(4px);
-            z-index: 9999;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .ptpk-modal-overlay.active { display: flex; }
-
-        .ptpk-modal {
-            background: #fff;
-            border-radius: 14px;
-            border: 2px solid #0f172a;
-            box-shadow: 0 24px 60px rgba(15,23,42,0.3);
-            width: 100%;
-            max-width: 680px;
-            max-height: 85vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            animation: modalIn .22s ease;
-        }
-        @keyframes modalIn {
-            from { opacity:0; transform: translateY(18px) scale(.97); }
-            to   { opacity:1; transform: translateY(0) scale(1); }
-        }
-        .ptpk-modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 18px 24px;
-            border-bottom: 2px solid #e2e8f0;
-            background: #f8fafc;
-        }
-        .ptpk-modal-header h2 {
-            font-size: 16px;
-            font-weight: 700;
-            color: #0f172a;
-        }
-        .ptpk-modal-close {
-            background: none;
-            border: none;
-            font-size: 20px;
-            color: #94a3b8;
-            cursor: pointer;
-            line-height: 1;
-            padding: 4px 8px;
-            border-radius: 6px;
-            transition: all .2s;
-        }
-        .ptpk-modal-close:hover { background: #fee2e2; color: #dc2626; }
-
-        .ptpk-modal-body {
-            padding: 24px;
-            overflow-y: auto;
-            flex: 1;
-            font-size: 13.5px;
-            color: #334155;
-            line-height: 1.75;
-        }
-        .ptpk-modal-body h3 {
-            font-size: 14px;
-            font-weight: 700;
-            color: #0f172a;
-            margin: 18px 0 8px;
-            padding-bottom: 4px;
-            border-bottom: 1.5px solid #e2e8f0;
-        }
-        .ptpk-modal-body h3:first-child { margin-top: 0; }
-        .ptpk-modal-body ul {
-            padding-left: 18px;
-            margin: 6px 0;
-        }
-        .ptpk-modal-body ul li { margin-bottom: 5px; }
-        .ptpk-modal-body p { margin-bottom: 8px; }
-        .ptpk-modal-body .badge {
-            display: inline-block;
-            background: #eff6ff;
-            color: #0284c7;
-            border: 1px solid #bfdbfe;
-            border-radius: 5px;
-            padding: 1px 8px;
-            font-size: 12px;
-            font-weight: 600;
-            margin: 2px 2px;
-        }
-        .ptpk-modal-footer {
-            padding: 14px 24px;
-            border-top: 1.5px solid #e2e8f0;
-            text-align: right;
-            background: #f8fafc;
-        }
-        .ptpk-modal-footer button {
-            background: #0f172a;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 9px 22px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background .2s;
-        }
-        .ptpk-modal-footer button:hover { background: #0284c7; }
     </style>
 </head>
 <body>
 
 <div class="app-window">
-    <div class="viewport">
-        <div class="brand-header">
-            <img src="image.png" alt="PTPK Logo" class="brand-logo">
-            <div class="brand-text">
-                <h1>Rəqəmsal Sənəd Qəbulu Sistemi</h1>
-                <p>Psixoloji-Tibbi-Pedaqoji Komissiya Portalı</p>
+
+    <div class="nav-sidebar">
+        <div>
+            <a href="index.html" class="nav-item" title="Sənəd Qəbul Formasına Qayıt">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+        </div>
+        <div class="nav-item active" title="Məktəb Portalı">
+            <i class="fa-solid fa-school"></i>
+        </div>
+        <div>
+            <div class="nav-item" title="İstifadə Qaydaları" onclick="openRulesModal()" style="cursor:pointer;">
+                <i class="fa-solid fa-circle-info"></i>
             </div>
-            <div class="brand-header-right">
-                <span class="user-name-tag" id="user-name-display"></span>
-                <a id="admin-panel-link" href="/admin.html" style="display:none; align-items:center; gap:6px; background:#d97706; color:#fff; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:700; text-decoration:none;">
+        </div>
+    </div>
+
+    <!-- İstifadə Qaydaları Modal -->
+    <div class="rules-modal-overlay" id="rulesModal">
+        <div class="rules-modal-box">
+            <div class="rules-modal-header">
+                <h2><i class="fa-solid fa-book-open"></i> İstifadə Qaydaları — Məktəb Portalı</h2>
+                <button class="rules-modal-close" onclick="closeRulesModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="rules-modal-body">
+
+                <div class="rules-section">
+                    <div class="rules-section-title"><i class="fa-solid fa-school"></i> Ümumi Məlumat</div>
+                    <ul class="rules-list">
+                        <li>Bu portal <strong>məktəb əməkdaşlarının</strong> şagird sənədlərini izləməsi və idarə etməsi üçün nəzərdə tutulmuşdur.</li>
+                        <li>Portala giriş yalnız <strong>müvafiq müəssisəyə aid</strong> seçim edilərək mümkündür — siyahıdan öz məktəbinizi seçin.</li>
+                        <li>Hər müəssisə yalnız <strong>özünə aid müraciətləri</strong> görə bilir; başqa məktəblərin məlumatlarına giriş qadağandır.</li>
+                    </ul>
+                </div>
+
+                <div class="rules-section">
+                    <div class="rules-section-title"><i class="fa-solid fa-file-lines"></i> Sənəd Statusları</div>
+                    <ul class="rules-list">
+                        <li><strong>Qüvvədə:</strong> Komissiya tərəfindən yoxlanılmış və qəbul edilmiş müraciətlər.</li>
+                        <li><strong>Gözləmədə:</strong> Hələ komissiyaya çatmamış və ya baxılmamış müraciətlər.</li>
+                        <li><strong>Düzəliş lazım:</strong> Komissiya tərəfindən natamam və ya yanlış tapılan, yenidən göndərilməsi tələb olunan müraciətlər.</li>
+                        <li>Statuslar yalnız komissiya tərəfindən dəyişdirilir; məktəb tərəfindən manual dəyişiklik edilmir.</li>
+                    </ul>
+                </div>
+
+                <div class="rules-section">
+                    <div class="rules-section-title"><i class="fa-solid fa-rotate-right"></i> Yenidən Göndərmə</div>
+                    <ul class="rules-list">
+                        <li><strong>Düzəliş lazım</strong> statuslu müraciətlər üçün <strong>"Yenidən Göndər"</strong> düyməsindən istifadə edin.</li>
+                        <li>Yenidən göndərmədən əvvəl komissiya qeydinə diqqət edin — hansı sənədin düzəldilmə səbəbi orada qeyd olunur.</li>
+                        <li>Yüklənən sənədlər <strong>PDF formatında</strong> olmalı, ölçüsü <strong>10 MB-ı</strong> aşmamalıdır.</li>
+                        <li>Göndərmə zamanı yaşıl rəngli uğur mesajı göründükdə əməliyyat tamamlanmış sayılır.</li>
+                    </ul>
+                </div>
+
+                <div class="rules-section">
+                    <div class="rules-section-title"><i class="fa-solid fa-magnifying-glass"></i> Axtarış və Filtrasiya</div>
+                    <ul class="rules-list">
+                        <li>Şagird adına və ya <strong>FİN koduna</strong> görə axtarış edə bilərsiniz.</li>
+                        <li>Sənəd statusuna görə filtrasiya etmək üçün yuxarıdakı filtr menyusundan istifadə edin.</li>
+                        <li>Siyahı avtomatik olaraq məktəb seçimi dəyişdikdə yenilənir.</li>
+                    </ul>
+                </div>
+
+                <div class="rules-section">
+                    <div class="rules-section-title"><i class="fa-solid fa-print"></i> Çap</div>
+                    <ul class="rules-list">
+                        <li>Müraciət detalları görünərkən <strong>"Çap et"</strong> düyməsi ilə rəsmi çap blanki əldə edə bilərsiniz.</li>
+                        <li>Çap zamanı yalnız müvafiq bölmə çap olunur; interfeys elementləri görünmür.</li>
+                    </ul>
+                </div>
+
+                <div class="rules-warning-box">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Şagirdlərə aid şəxsi məlumatlar məxfidir. Bu məlumatları icazəsiz şəxslərlə paylaşmaq <strong>qadağandır</strong>. Portaldan yalnız rəsmi iş məqsədləri üçün istifadə edilməlidir.</span>
+                </div>
+
+            </div>
+            <div class="rules-modal-footer">
+                <button class="rules-close-btn" onclick="closeRulesModal()">Bağla</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="viewport">
+
+        <div class="brand-header">
+            <div class="brand-logo-area">
+                <img src="image.png" alt="PTPK" class="brand-logo">
+                <div class="brand-text">
+                    <h1>Məktəb Sənəd Monitorinq Portalı</h1>
+                </div>
+            </div>
+            <div class="school-stats">
+                <div class="stat-chip total">Qüvvədə: <span id="stat-ok" style="color:var(--brand-blue); font-weight:700; margin-left:3px;">0</span></div>
+                <div class="stat-chip pending">Gözləmədə: <span id="stat-pending" style="margin-left:3px;">0</span></div>
+                <div class="stat-chip error">Düzəliş lazım: <span id="stat-error" style="margin-left:3px;">0</span></div>
+                <a id="admin-panel-link" href="/admin.html" style="display:none; align-items:center; gap:6px; background:var(--warning-orange); color:#fff; padding:6px 14px; border-radius:6px; font-size:12px; font-weight:700; text-decoration:none;">
                     <i class="fa-solid fa-user-shield"></i> Admin Panel
                 </a>
-                <button class="btn-logout" onclick="logout()">
-                    <i class="fa-solid fa-right-from-bracket"></i> Çıxış
-                </button>
             </div>
         </div>
 
-        <form id="studentForm">
-            <div class="form-grid">
-                <div class="input-group">
-                    <label>Şagirdin Soyadı, Adı, Atasının adı</label>
-                    <input type="text" id="studentName" name="studentName" placeholder="S.A.A." required>
-                </div>
+        <div class="controls-row">
+            <div class="filter-group">
+                <select id="schoolFilter" class="select-school-filter" onchange="onSchoolChange()">
+                    <option value="">— Müəssisə Girişi üçün Siyahıdan Məktəbinizi Seçin —</option>
 
-                <div class="input-group">
-                    <label>FİN Kod</label>
-                    <input type="text" id="finCode" name="finCode" placeholder="7 rəqəmli FİN" maxlength="7" style="text-transform: uppercase;" required>
-                </div>
-
-                <div class="input-group">
-                    <label>Ümumtəhsil Müəssisəsi</label>
-                    <select id="schoolSelect" name="schoolSelect" required>
-                        <option value="" disabled selected>— Məktəbi seçin —</option>
-
+                   
                         <optgroup label="📍 Gəncə şəhəri">
                             <option value="Gəncə şəhər İ.Qayıbov adına 1 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər İ.Qayıbov adına 1 nömrəli tam orta ümumtəhsil məktəbi</option>
                             <option value="Gəncə şəhər Ə.Cavad adına 2 nömrəli tam orta ümumtəhsil məktəbi">Gəncə şəhər Ə.Cavad adına 2 nömrəli tam orta ümumtəhsil məktəbi</option>
@@ -681,245 +740,676 @@ window.addEventListener('DOMContentLoaded', () => {
                             <option value="Naftalan şəhər Qaşaltı Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi">Naftalan şəhər Qaşaltı Qaraqoyunlu kənd tam orta ümumtəhsil məktəbi</option>
                         </optgroup>
                     </select>
-                </div>
-
-                <div class="input-group">
-                    <label>Müraciət Növü</label>
-                    <select id="applicationType" name="applicationType" required>
-                        <option value="" disabled selected>Seçin...</option>
-                        <option value="Yeni">Yeni</option>
-                        <option value="Təkrar">Təkrar</option>
-                    </select>
-                </div>
-
-                <div class="input-group full-width">
-                    <label>Tədris İli</label>
-                    <select id="academicYear" name="academicYear" required>
-                        <option value="2025/2026">2025/2026</option>
-                        <option value="2026/2027">2026/2027</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label>1. Məktəbin müşayiət məktubu</label>
-                    <div class="file-drop"><input type="file" id="coverLetter" name="coverLetter" required></div>
-                </div>
-
-                <div class="input-group">
-                    <label>2. Yaşayış yerindən arayış</label>
-                    <div class="file-drop"><input type="file" id="residenceCertificate" name="residenceCertificate" required></div>
-                </div>
-
-                <div class="input-group">
-                    <label>3. Xasiyyətnamə (Məktəb tərəfindən)</label>
-                    <div class="file-drop"><input type="file" id="xasiyyetname" name="xasiyyetname" required></div>
-                </div>
-
-                <div class="input-group">
-                    <label>4. Valideyn və şagirdin ŞV surətləri</label>
-                    <div class="file-drop"><input type="file" id="idCopies" name="idCopies" required></div>
-                </div>
-
-                <div class="input-group">
-                    <label>5. Qiymət cədvəli / tabel (Məktəb tərəfindən)</label>
-                    <div class="file-drop"><input type="file" id="tabel" name="tabel" required></div>
-                </div>
-
-                <div class="input-group">
-                    <label>6. Tibb müəssisəsindən çıxarış (Forma 027 - Sahə həkimi)</label>
-                    <div class="file-drop"><input type="file" id="forma027" name="forma027" required></div>
+    
+                </select>
+                <div class="search-wrap">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="studentSearch" class="search-input"
+                           placeholder="Şagird adı ilə süzgəclə..." oninput="renderTable()" disabled>
                 </div>
             </div>
-
-            <div style="display:flex; gap:12px;">
-                <button type="button" class="btn-send" onclick="submitForm()" style="flex:1;">
-                    Sənədləri Portala Göndər <i class="fa-solid fa-paper-plane"></i>
-                </button>
-                <a href="/mekteb.html" style="
-                    display:flex; align-items:center; justify-content:center; gap:8px;
-                    background:#f0f9ff; color:var(--brand-blue);
-                    border:2px solid var(--brand-blue); border-radius:8px;
-                    padding:0 22px; font-size:14px; font-weight:700;
-                    text-decoration:none; white-space:nowrap;">
-                    <i class="fa-solid fa-school"></i> Məktəb Portalı
-                </a>
-            </div>
-        </form>
-
-        <div class="footer-links">
-            <a href="#" onclick="openModal('telimat'); return false;">❓ Təlimat və Qaydalar</a>
-            <a href="#" onclick="openModal('razilasma'); return false;">🔗 İstifadəçi Razılaşması</a>
-            <a href="mailto:fuad.pennsl@gmail.com?subject=Texniki%20Dəstək">📞 Texniki Dəstək</a>
+            <button id="excelBtn" class="btn-excel" onclick="exportExcel()" disabled>
+                Siyahını Çıxar (Excel) <i class="fa-solid fa-file-excel"></i>
+            </button>
         </div>
+
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('tab-qerarlar', this)">
+                <i class="fa-solid fa-list-check"></i> Qərar Reyestri
+            </button>
+            <button class="tab-btn" onclick="switchTab('tab-muraciet', this)">
+                <i class="fa-solid fa-folder-open"></i> Müraciət İzləmə
+            </button>
+
+        </div>
+
+        <div id="tab-qerarlar" class="tab-content active">
+        <div class="panel-layout">
+
+            <div class="panel-col">
+                <div class="section-title"><i class="fa-solid fa-list-check"></i> Reyestr siyahısı (Təsdiqlənənlər)</div>
+                <div class="table-container">
+
+                    <div class="placeholder-box" id="securityBox">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>Məxfiliyin tam qorunması məqsədilə yuxarıdakı süzgəcdən rəsmi məktəbinizi seçin.<br><br>
+                        <span style="font-size:12px; font-weight:500; color:#64748b;">Hər ümumtəhsil müəssisəsi yalnız öz məktəbinə aid olan təsdiqlənmiş komissiya qərarlarına baxa bilər.</span></span>
+                    </div>
+
+                    <div class="placeholder-box empty" id="emptyBox" style="display:none;">
+                        <i class="fa-solid fa-inbox"></i>
+                        Bu məktəb üzrə komissiya tərəfindən hələ ki rəsmiləşmiş (Təsdiqlənmiş) qərar tapılmadı.
+                    </div>
+
+                    <table class="excel-table" id="mektebTable" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th style="width:30%">Şagirdin S.A.A.</th>
+                                <th style="width:14%">FİN Kodu</th>
+                                <th style="width:12%">Tədris İli</th>
+                                <th style="width:16%">Müraciət Növü</th>
+                                <th style="width:14%">Komissiya Statusu</th>
+                                <th style="width:14%">Təhsil Forması</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel-col">
+                <div class="section-title"><i class="fa-solid fa-circle-info"></i> Rəsmi Çıxarış və Qərar Panel</div>
+                <div class="preview-container">
+                    <div class="right-body" id="emptyRight"
+                         style="display:flex; align-items:center; justify-content:center;
+                                height:100%; color:var(--text-muted); text-align:center;
+                                font-size:13px; font-weight:600;">
+                        Qərarı görmək və PDF formatında endirmək üçün soldakı siyahıdan şagirdin üzərinə klikləyin.
+                    </div>
+                    
+                    <div class="right-body" id="detailPanel" style="display:none;">
+                        <div class="info-block">
+                            <strong>Şagirdin Tam Adı</strong>
+                            <span id="d-name" style="font-size:15px; font-weight:700; color:var(--primary-navy);">-</span>
+                        </div>
+                        <div class="info-block">
+                            <strong>FİN Kodu</strong>
+                            <span id="d-fin">-</span>
+                        </div>
+                        <div class="info-block">
+                            <strong>Təhsil Müəssisəsi</strong>
+                            <span id="d-school" style="font-size:12px; color:var(--text-muted); font-weight:500;">-</span>
+                        </div>
+                        <div class="info-block">
+                            <strong>Tədris İli / Müraciət</strong>
+                            <span id="d-year-type">-</span>
+                        </div>
+                        <div class="info-block">
+                            <strong>Komissiya Qərarı</strong>
+                            <span id="d-decision">-</span>
+                        </div>
+                        <div class="info-block">
+                            <strong>Qərarın Qüvvədə Olma Müddəti</strong>
+                            <span id="d-expiry">-</span>
+                        </div>
+                        <div class="info-block">
+                            <strong>Təyin Olunan Təhsil Forması</strong>
+                            <span id="d-form" style="font-weight:700; color:var(--brand-blue);">-</span>
+                        </div>
+
+                        <div id="commissionBox" class="commission-box" style="display:none;">
+                            <h4><i class="fa-solid fa-comment-medical"></i> Katib/Komissiya Ekspertiza Qeydi</h4>
+                            <p id="d-notes">-</p>
+                        </div>
+
+                        <button id="printBtn" class="btn-download-pdf" onclick="downloadDecisionPDF()" disabled>
+                            <i class="fa-solid fa-file-pdf"></i> Rəsmi Qərarı Endir / Çap Et
+                        </button>
+                        <button id="excelSingleBtn" class="btn-download-pdf" onclick="exportExcelSingle()" disabled
+                                style="background:#107c41; margin-top:6px;">
+                            <i class="fa-solid fa-file-excel"></i> Excel Kimi Endir (.xls)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /panel-layout -->
+        </div><!-- /tab-qerarlar -->
+
+        <div id="tab-muraciet" class="tab-content">
+            <div style="display:flex; gap:16px; flex:1; overflow:hidden; margin-top:12px; min-height:0;">
+                <!-- Left: list -->
+                <div style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+                    <div class="section-title"><i class="fa-solid fa-folder-open"></i> Göndərilmiş Müraciətlər</div>
+                    <div class="table-container" style="flex:1; overflow-y:auto; padding:12px; min-height:0;" id="muraciet-list-container">
+                        <div style="color:var(--text-muted); font-size:13px; font-weight:600; text-align:center; padding:40px;">
+                            Yuxarıdan məktəbinizi seçin.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /tab-muraciet -->
+
+
+    </div><!-- /viewport -->
+</div><!-- /app-window -->
+
+<!-- Resubmit Modal -->
+<div class="modal-overlay" id="resubmitModal">
+    <div class="modal-box">
+        <h3><i class="fa-solid fa-upload"></i> Sənədi Yenidən Göndər</h3>
+        <div class="modal-sub" id="resubmit-modal-sub">Şagird adı</div>
+        <div id="resubmit-fields"></div>
+        <div class="resubmit-status" id="resubmit-status"></div>
+        <button class="btn-resubmit-send" id="resubmit-send-btn" onclick="sendResubmit()">
+            <i class="fa-solid fa-paper-plane"></i> Göndər
+        </button>
+        <button class="btn-modal-close" onclick="closeResubmitModal()">Bağla</button>
+<div id="printable-blank">
+    <div class="p-header">
+        <h2 style="font-size:18px; letter-spacing:0.5px;">AZƏRBAYCAN RESPUBLİKASI ELM VƏ TƏHSİL NAZİRLİYİ</h2>
+        <h3 style="font-size:15px; margin-top:5px; color:#333;">Psixoloji-Tibbi-Pedaqoji Komissiyası — Rəsmi Çıxarış Qərarı</h3>
+    </div>
+    <div style="font-size:14px; line-height:2.4; margin-top:25px;">
+        <p><strong>Məktəb/Müəssisə:</strong> <span id="p-school" style="border-bottom:1px dashed #000; padding-bottom:2px;"></span></p>
+        <p><strong>Şagirdin S.A.A.:</strong> <span id="p-name" style="font-weight:bold; border-bottom:1px dashed #000; padding-bottom:2px;"></span></p>
+        <p><strong>FİN Kodu:</strong> <span id="p-fin" style="font-family:monospace; font-weight:bold;"></span></p>
+        <p><strong>Tədris İli:</strong> <span id="p-year"></span></p>
+        <p><strong>Müraciət Kateqoriyası:</strong> <span id="p-type"></span></p>
+        <p><strong>Komissiya Statusu:</strong> <span style="color:green; font-weight:bold;">Təsdiqlənib (Qüvvədədir)</span></p>
+        <p><strong>Təyin Edilmiş Təhsil Forması:</strong> <span id="p-form" style="font-weight:bold; text-decoration:underline;"></span></p>
+        <p><strong>Qərarın Müddəti:</strong> <span id="p-expiry"></span></p>
+        <p style="margin-top:20px; font-weight:bold;">Komissiyanın Xüsusi Rəyi və Qeydləri:</p>
+        <p id="p-notes" style="border:1px solid #333; padding:15px; background:#fff; min-height:90px; line-height:1.6; margin-top:5px; border-radius:4px;"></p>
+    </div>
+    <div class="p-footer">
+        <span>Komissiya Katibi: ______________</span>
+        <span>Tarix: 2026-cı il</span>
     </div>
 </div>
 
-<div class="custom-copyright">
-    <span>© 2026 Psixoloji-Tibbi-Pedaqoji Komissiya. by F.Alakbarov</span>
-</div>
-
 <script>
-// PWA Service Worker
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
-}
-async function submitForm() {
-    const form = document.getElementById('studentForm');
-    
-    // Formadakı boşluqları yoxlayırıq
-    const fin = document.getElementById('finCode').value.trim();
-    const name = document.getElementById('studentName').value.trim();
-    const schoolSelect = document.getElementById('schoolSelect');
-    
-    if(!fin || !name || schoolSelect.value === "") {
-        alert("Zəhmət olmasa tələb olunan xanaları tam doldurun!");
-        return;
+    // Admin Panel düyməsini yalnız admin rolu üçün göstər
+    if (localStorage.getItem('ptpk_role') === 'admin') {
+        const adminLink = document.getElementById('admin-panel-link');
+        if (adminLink) adminLink.style.display = 'flex';
     }
 
-    // 6 sənədin yüklənib-yüklənmədiyini yoxlayırıq
-    const reqFiles = ['coverLetter', 'residenceCertificate', 'xasiyyetname', 'idCopies', 'tabel', 'forma027'];
-    for(let id of reqFiles) {
-        if(document.getElementById(id).files.length === 0) {
-            alert("Zəhmət olmasa tələb olunan 6 sənədin hər birini tam yükləyin!");
+    // İstifadə Qaydaları Modal
+    function openRulesModal() {
+        document.getElementById('rulesModal').classList.add('open');
+    }
+    function closeRulesModal() {
+        document.getElementById('rulesModal').classList.remove('open');
+    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeRulesModal();
+    });
+
+    let allApplications = [];
+    let selectedApp = null;
+
+    // ── TAB SWITCHER ──
+    function switchTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+
+        const school = document.getElementById('schoolFilter').value;
+
+        if (tabId === 'tab-muraciet') {
+            if (school) {
+                // Hər tab keçidində təzə data çək
+                fetch('/api/komissiya/get-applications')
+                    .then(r => r.json())
+                    .then(data => { allApplications = data; renderMuracietTab(); })
+                    .catch(() => renderMuracietTab());
+            } else {
+                renderMuracietTab();
+            }
+        } else if (tabId === 'tab-qerarlar') {
+            if (school) {
+                // Hər tab keçidində təzə data çək
+                fetch('/api/komissiya/get-applications')
+                    .then(r => r.json())
+                    .then(data => { allApplications = data; renderTable(); })
+                    .catch(() => {});
+            }
+        }
+    }
+
+    // ── MURACIET TAB ──
+    const DOC_FIELDS = [
+        { key: 'coverLetter',          label: '1. Məktəbin müşayiət məktubu' },
+        { key: 'residenceCertificate', label: '2. Yaşayış yerindən arayış' },
+        { key: 'xasiyyetname',         label: '3. Xasiyyətnamə' },
+        { key: 'idCopies',             label: '4. Valideyn/Şagird ŞV surəti' },
+        { key: 'tabel',                label: '5. Qiymət cədvəli / Tabel' },
+        { key: 'forma027',             label: '6. Forma 027 (Tibb arayışı)' },
+    ];
+
+    function renderMuracietTab() {
+        const selectedSchool = document.getElementById('schoolFilter').value;
+        const container = document.getElementById('muraciet-list-container');
+        if (!selectedSchool) {
+            container.innerHTML = '<div style="color:var(--text-muted);font-size:13px;font-weight:600;text-align:center;padding:40px;">Yuxarıdan məktəbinizi seçin.</div>';
             return;
         }
+
+        if (allApplications.length === 0) {
+            container.innerHTML = '<div style="color:var(--text-muted);font-size:13px;font-weight:600;text-align:center;padding:40px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:28px;display:block;margin-bottom:8px;"></i>Məlumatlar yüklənir...</div>';
+            fetch('/api/komissiya/get-applications')
+                .then(r => r.json())
+                .then(data => { allApplications = data; renderMuracietTab(); });
+            return;
+        }
+
+        // Məktəb adını normallaşdır
+        const normSchool = selectedSchool.trim().toLowerCase();
+        const schoolApps = allApplications.filter(a => (a.schoolText||'').trim().toLowerCase() === normSchool);
+        console.log('[Müraciət tab] Seçilmiş məktəb:', selectedSchool, '| Tapılan:', schoolApps.length, '| Ümumi:', allApplications.length);
+        if (schoolApps.length === 0) {
+            container.innerHTML = '<div style="color:var(--text-muted);font-size:13px;font-weight:600;text-align:center;padding:40px;"><i class="fa-solid fa-inbox" style="font-size:32px;display:block;margin-bottom:8px;color:#cbd5e1;"></i>Bu məktəbdən müraciət yoxdur.</div>';
+            updateStats([], []);
+            return;
+        }
+
+        updateStats(schoolApps.filter(a => {
+            const s = a.decisionStatus||'';
+            return s==='Qüvvədədir'||s==='Təsdiqləndi'||s==='Aktiv'||s.indexOf('vv')!==-1;
+        }), schoolApps);
+
+        container.innerHTML = '';
+        schoolApps.forEach(app => {
+            const card = buildMuracietCard(app);
+            container.appendChild(card);
+        });
     }
 
-    // Bütün form məlumatlarını və faylları paketləyirik
-    const formData = new FormData(form);
+    function updateStats(approved, all) {
+        const errorApps = all.filter(a => (a.docError && a.docError.trim()) || a.decisionStatus === 'Düzəliş lazım');
+        const pending = all.filter(a => {
+            const s = a.decisionStatus||'';
+            return s==='Gözləmədə'||s==='';
+        });
+        document.getElementById('stat-ok').textContent = approved.length;
+        document.getElementById('stat-pending').textContent = pending.length;
+        document.getElementById('stat-error').textContent = errorApps.length;
+    }
 
-    try {
-        // Məlumatları Mac-inizdə işləyən Python serverinə (port 8001) göndəririk
-        const response = await fetch('/api/school/submit-student', {
-            method: 'POST',
-            body: formData
+    function buildMuracietCard(app) {
+        const hasError = (app.docError && app.docError.trim()) || app.decisionStatus === 'Düzəliş lazım';
+        const st = app.decisionStatus || 'Gözləmədə';
+        const isApproved = st==='Qüvvədədir'||st==='Təsdiqləndi'||st==='Aktiv'||st.indexOf('vv')!==-1;
+        const isDuzelis = st === 'Düzəliş lazım';
+
+        let statusColor = '#d97706'; let statusBg = '#fef3c7';
+        if (isApproved)  { statusColor = '#15803d'; statusBg = '#dcfce7'; }
+        if (isDuzelis || hasError) { statusColor = '#c2410c'; statusBg = '#fff7ed'; }
+
+        const statusLabel = isApproved ? 'Qüvvədədir' : isDuzelis ? '⚠️ Düzəliş lazım' : hasError ? '⚠️ Düzəliş lazım' : 'Gözləmədə';
+
+        const missingDocs = DOC_FIELDS.filter(f => !app[f.key] || app[f.key].length <= 3);
+        const allDocsOk = missingDocs.length === 0;
+
+        const card = document.createElement('div');
+        card.className = 'muraciet-card';
+
+        let headerHtml = `
+            <div class="muraciet-card-header" onclick="toggleCard(this)">
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:var(--primary-navy);">${app.name} <span style="font-family:monospace;font-weight:500;font-size:11px;color:var(--text-muted);">(${app.fin})</span></div>
+                    <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${app.year||'-'} · ${app.type||'-'}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    ${hasError || isDuzelis ? '<span style="font-size:11px;font-weight:700;background:#c2410c;color:#fff;padding:3px 9px;border-radius:4px;display:flex;align-items:center;gap:4px;"><i class="fa-solid fa-triangle-exclamation"></i> Düzəliş lazım</span>' : ''}
+                    <span style="font-size:11px;font-weight:700;background:${statusBg};color:${statusColor};padding:3px 10px;border-radius:4px;">${statusLabel}</span>
+                    <i class="fa-solid fa-chevron-down" style="color:var(--text-muted);font-size:11px;"></i>
+                </div>
+            </div>`;
+
+        let docGridHtml = '<div class="doc-grid">';
+        DOC_FIELDS.forEach(f => {
+            const has = app[f.key] && app[f.key].length > 3;
+            docGridHtml += `<div class="doc-chip ${has?'ok':'missing'}">
+                <i class="fa-solid ${has?'fa-circle-check':'fa-circle-xmark'}"></i>
+                <span>${f.label}</span>
+            </div>`;
+        });
+        docGridHtml += '</div>';
+
+        let errorHtml = '';
+        if (hasError) {
+            // docError mətnini sətir-sətir ayır, strukturlu göstər
+            const lines = app.docError.trim().split('\n').filter(l => l.trim());
+            const listItems = lines.map(l => {
+                const isBullet = l.trim().startsWith('•');
+                if (isBullet) {
+                    return `<div style="display:flex;align-items:flex-start;gap:6px;padding:3px 0;">
+                        <i class="fa-solid fa-circle-xmark" style="color:#dc2626;font-size:13px;margin-top:1px;flex-shrink:0;"></i>
+                        <span style="font-size:12px;font-weight:600;color:#7f1d1d;">${l.trim().replace(/^•\s*/,'')}</span>
+                    </div>`;
+                }
+                return `<div style="font-size:11px;font-weight:600;color:#991b1b;margin-bottom:4px;">${l}</div>`;
+            }).join('');
+
+            errorHtml = `<div class="error-note-box" style="border:2px solid #fca5a5;background:#fff1f1;border-radius:8px;padding:12px 14px;margin-top:10px;">
+                <div class="error-label" style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#dc2626;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px dashed #fca5a5;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Komissiya Xəta Qeydi — Düzəliş Tələb Olunur
+                </div>
+                <div>${listItems}</div>
+            </div>`;
+        }
+
+        let resubmitBtn = '';
+        if (hasError || !allDocsOk || isDuzelis) {
+            resubmitBtn = `<button onclick="openResubmitModal('${app.id}')" style="margin-top:12px;background:var(--brand-blue);color:#fff;border:none;border-radius:6px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;width:100%;">
+                <i class="fa-solid fa-upload"></i> Sənədi Yenidən Göndər
+            </button>`;
+        }
+
+        card.innerHTML = headerHtml + `<div class="muraciet-card-body">${docGridHtml}${errorHtml}${resubmitBtn}</div>`;
+        return card;
+    }
+
+    function toggleCard(header) {
+        const body = header.nextElementSibling;
+        const icon = header.querySelector('.fa-chevron-down, .fa-chevron-up');
+        body.classList.toggle('open');
+        if (icon) icon.className = body.classList.contains('open') ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
+    }
+
+    // ── RESUBMIT MODAL ──
+    let resubmitAppId = null;
+    let resubmitApp = null;
+
+    function openResubmitModal(appId) {
+        resubmitApp = allApplications.find(a => a.id === appId);
+        if (!resubmitApp) return;
+        resubmitAppId = appId;
+
+        document.getElementById('resubmit-modal-sub').textContent = resubmitApp.name + ' (' + resubmitApp.fin + ')';
+        document.getElementById('resubmit-status').style.display = 'none';
+
+        // Build fields for missing or all docs
+        const fields = document.getElementById('resubmit-fields');
+        fields.innerHTML = '';
+
+        DOC_FIELDS.forEach(f => {
+            const hasMissing = !resubmitApp[f.key] || resubmitApp[f.key].length <= 3;
+            const hasError = resubmitApp.docError && resubmitApp.docError.trim();
+            if (!hasMissing && !hasError) return; // only show missing or if error (show all)
+
+            const div = document.createElement('div');
+            div.className = 'resubmit-field';
+            div.innerHTML = `
+                <label>${f.label} ${hasMissing ? '<span style="color:#dc2626;">✗ Yoxdur</span>' : ''}</label>
+                <div class="file-wrap">
+                    <div class="fw-label"><i class="fa-solid fa-upload"></i> Faylı seçin</div>
+                    <div class="fw-chosen" id="chosen-${f.key}"></div>
+                    <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                        onchange="markChosen(this, '${f.key}')">
+                </div>`;
+            fields.appendChild(div);
         });
 
-        if (response.ok) {
-            alert("Uğurlu əməliyyat! Sənədlər rəsmi verilənlər bazasına (SQLite) yazıldı və fayllar yadda saxlanıldı.");
-            form.reset();
-        } else {
-            alert("Server xətası baş verdi. Məlumat yazılmadı.");
+        // If error present, show all fields
+        if (resubmitApp.docError) {
+            fields.innerHTML = '';
+            DOC_FIELDS.forEach(f => {
+                const div = document.createElement('div');
+                div.className = 'resubmit-field';
+                div.innerHTML = `
+                    <label>${f.label}</label>
+                    <div class="file-wrap">
+                        <div class="fw-label"><i class="fa-solid fa-upload"></i> Faylı seçin (dəyişdirilməyəcəksə boş buraxın)</div>
+                        <div class="fw-chosen" id="chosen-${f.key}"></div>
+                        <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                            onchange="markChosen(this, '${f.key}')">
+                    </div>`;
+                fields.appendChild(div);
+            });
         }
-    } catch (error) {
-        console.error("Bağlantı xətası:", error);
-        alert("Python serverinə bağlanmaq mümkün olmadı! Terminalda 'main.py'-ın işlədiyindən əmin olun.");
+
+        document.getElementById('resubmitModal').classList.add('open');
     }
-}
-</script>
 
-<!-- ══ TƏLİMAT VƏ QAYDALAR MODALI ══ -->
-<div class="ptpk-modal-overlay" id="modal-telimat" onclick="closeModalOutside(event, 'telimat')">
-    <div class="ptpk-modal">
-        <div class="ptpk-modal-header">
-            <h2>❓ Təlimat və Qaydalar</h2>
-            <button class="ptpk-modal-close" onclick="closeModal('telimat')">✕</button>
-        </div>
-        <div class="ptpk-modal-body">
-            <h3>📌 Sistem haqqında</h3>
-            <p>PTPK Rəqəmsal Sənəd Qəbulu Sistemi Psixoloji-Tibbi-Pedaqoji Komissiyaya müraciət prosesini rəqəmsallaşdırmaq məqsədilə yaradılmışdır. Məktəblər bu sistem vasitəsilə şagird sənədlərini onlayn təqdim edə bilər.</p>
-
-            <h3>📋 Müraciət Proseduru</h3>
-            <ul>
-                <li>Sistemə daxil olmaq üçün məktəbə verilmiş giriş məlumatlarından istifadə edin.</li>
-                <li>Şagirdin FİN kodunu və tam adını düzgün daxil edin.</li>
-                <li>Müraciət növünü və tədris ilini seçin.</li>
-                <li>Tələb olunan 6 sənədi müvafiq xanalara yükləyin.</li>
-                <li><strong>«Sənədləri Portala Göndər»</strong> düyməsini sıxın.</li>
-            </ul>
-
-            <h3>📁 Tələb Olunan Sənədlər</h3>
-            <ul>
-                <li><span class="badge">1</span> Məktəbin müşayiət məktubu</li>
-                <li><span class="badge">2</span> Yaşayış yerindən arayış</li>
-                <li><span class="badge">3</span> Xasiyyətnamə (məktəb tərəfindən)</li>
-                <li><span class="badge">4</span> Valideyn və şagirdin ŞV surətləri</li>
-                <li><span class="badge">5</span> Qiymət cədvəli / tabel (məktəb tərəfindən)</li>
-                <li><span class="badge">6</span> Tibb müəssisəsindən çıxarış (Forma 027 – Sahə həkimi)</li>
-            </ul>
-
-            <h3>📎 Fayl Formatları</h3>
-            <p>Sənədlər aşağıdakı formatlarda qəbul edilir: <span class="badge">PDF</span> <span class="badge">JPG</span> <span class="badge">PNG</span> <span class="badge">DOC</span> <span class="badge">DOCX</span></p>
-
-            <h3>⚠️ Vacib Qeydlər</h3>
-            <ul>
-                <li>Bütün 6 sənəd tam və oxunaqlı olmalıdır.</li>
-                <li>FİN kod 7 simvoldan ibarət olmalıdır.</li>
-                <li>Sənədlər göndərildikdən sonra komissiya tərəfindən yoxlanılacaq.</li>
-                <li>Çatışmazlıq aşkar edilərsə, məktəbə bildiriş göndəriləcək.</li>
-                <li>Sistem hər bir müraciətə avtomatik ID nömrəsi təyin edir.</li>
-            </ul>
-
-            <h3>🕐 İş Saatları</h3>
-            <p>Komissiya iş günləri saat <strong>09:00 – 17:00</strong> arasında müraciətlərə baxır. Göndərilmiş sənədlər növbəti iş günü daxilində qeydiyyata alınır.</p>
-        </div>
-        <div class="ptpk-modal-footer">
-            <button onclick="closeModal('telimat')">Bağla</button>
-        </div>
-    </div>
-</div>
-
-<!-- ══ İSTİFADƏÇİ RAZILАŞMASI MODALI ══ -->
-<div class="ptpk-modal-overlay" id="modal-razilasma" onclick="closeModalOutside(event, 'razilasma')">
-    <div class="ptpk-modal">
-        <div class="ptpk-modal-header">
-            <h2>🔗 İstifadəçi Razılaşması</h2>
-            <button class="ptpk-modal-close" onclick="closeModal('razilasma')">✕</button>
-        </div>
-        <div class="ptpk-modal-body">
-            <h3>1. Ümumi Müddəalar</h3>
-            <p>Bu razılaşma PTPK Rəqəmsal Sənəd Qəbulu Sistemi (<strong>«Sistem»</strong>) ilə istifadəçi (<strong>«Məktəb»</strong>) arasında bağlanır. Sistemdən istifadə etməklə siz bu şərtləri tam qəbul etmiş sayılırsınız.</p>
-
-            <h3>2. İstifadəçinin Öhdəlikləri</h3>
-            <ul>
-                <li>Yalnız həqiqi və dəqiq məlumatları daxil etmək.</li>
-                <li>Şagirdlərə aid sənədləri təhrif etmədən, orijinal şəkildə yükləmək.</li>
-                <li>Giriş məlumatlarını (istifadəçi adı, şifrə) üçüncü şəxslərlə paylaşmamaq.</li>
-                <li>Sistemdən yalnız rəsmi məktəb müraciətləri üçün istifadə etmək.</li>
-                <li>Hər hansı texniki nasazlığı dərhal texniki dəstəyə bildirmək.</li>
-            </ul>
-
-            <h3>3. Məlumatların Mühafizəsi</h3>
-            <p>Sistemə daxil edilən bütün şəxsi məlumatlar (<strong>FİN, ad, sənədlər</strong>) Azərbaycan Respublikasının «Fərdi məlumatlar haqqında» Qanununa uyğun olaraq qorunur. Məlumatlar yalnız komissiya işçiləri tərəfindən, xidməti məqsədlər çərçivəsində istifadə edilir.</p>
-
-            <h3>4. Sistemin İstifadə Şərtləri</h3>
-            <ul>
-                <li>Sistem 7/24 əlçatan olmağa çalışır, lakin texniki işlər zamanı müvəqqəti fasilələr mümkündür.</li>
-                <li>İstifadəçi hesabı üçüncü şəxslər tərəfindən sui-istifadə edildikdə məsuliyyət məktəbin üzərinə düşür.</li>
-                <li>Saxta məlumat daxil edildiyi aşkar olunarsa, müraciət ləğv edilib müvafiq qurumlar xəbərdar ediləcək.</li>
-            </ul>
-
-            <h3>5. Məsuliyyətin Məhdudlaşdırılması</h3>
-            <p>Komissiya, göndərilmiş sənədlərdəki çatışmazlıqlardan irəli gələn gecikmələrə görə məsuliyyət daşımır. Sənədlər tam və vaxtında göndərilməsi məktəbin öhdəliyidir.</p>
-
-            <h3>6. Dəyişikliklər</h3>
-            <p>Komissiya bu razılaşmanı öncədən xəbərdarlıq etmədən yeniləmək hüququnu özündə saxlayır. Dəyişikliklər sistemdə elan edildiyi gündən qüvvəyə minir.</p>
-
-            <p style="margin-top:16px; font-size:12px; color:#94a3b8;">Son yenilənmə: May 2026 &nbsp;|&nbsp; © 2026 Psixoloji-Tibbi-Pedaqoji Komissiya</p>
-        </div>
-        <div class="ptpk-modal-footer">
-            <button onclick="closeModal('razilasma')">Oxudum, Bağla</button>
-        </div>
-    </div>
-</div>
-
-<script>
-function openModal(name) {
-    document.getElementById('modal-' + name).classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
-function closeModal(name) {
-    document.getElementById('modal-' + name).classList.remove('active');
-    document.body.style.overflow = '';
-}
-function closeModalOutside(e, name) {
-    if (e.target === document.getElementById('modal-' + name)) closeModal(name);
-}
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        ['telimat','razilasma'].forEach(closeModal);
+    function closeResubmitModal() {
+        document.getElementById('resubmitModal').classList.remove('open');
+        resubmitAppId = null;
+        resubmitApp = null;
     }
-});
+
+    function markChosen(input, key) {
+        const el = document.getElementById('chosen-' + key);
+        el.textContent = input.files[0] ? '✓ ' + input.files[0].name : '';
+    }
+
+    async function sendResubmit() {
+        if (!resubmitAppId) return;
+        const btn = document.getElementById('resubmit-send-btn');
+        const statusEl = document.getElementById('resubmit-status');
+        btn.disabled = true;
+        statusEl.style.display = 'block';
+        statusEl.className = 'resubmit-status';
+        statusEl.textContent = 'Göndərilir...';
+
+        const formData = new FormData();
+        formData.append('appId', resubmitAppId);
+
+        let anyFile = false;
+        DOC_FIELDS.forEach(f => {
+            const input = document.querySelector(`#resubmit-fields input[onchange*="${f.key}"]`);
+            if (input && input.files[0]) {
+                formData.append(f.key, input.files[0]);
+                anyFile = true;
+            }
+        });
+
+        if (!anyFile) {
+            statusEl.className = 'resubmit-status err';
+            statusEl.textContent = '⚠️ Heç bir fayl seçilmədi!';
+            btn.disabled = false;
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/school/resubmit-docs', { method:'POST', body:formData });
+            if (res.ok) {
+                statusEl.className = 'resubmit-status ok';
+                statusEl.textContent = '✅ Sənədlər uğurla göndərildi! Komissiya yoxlayacaq.';
+                btn.textContent = 'Göndərildi ✅';
+                // Refresh data and close modal
+                setTimeout(async () => {
+                    const r = await fetch('/api/komissiya/get-applications');
+                    allApplications = await r.json();
+                    renderMuracietTab();
+                    closeResubmitModal();
+                }, 3000);
+            } else {
+                statusEl.className = 'resubmit-status err';
+                statusEl.textContent = '⚠️ Server xətası baş verdi.';
+            }
+        } catch(e) {
+            statusEl.className = 'resubmit-status err';
+            statusEl.textContent = '⚠️ Bağlantı xətası!';
+        }
+        btn.disabled = false;
+    }
+
+        async function onSchoolChange() {
+        const schoolValue = document.getElementById('schoolFilter').value;
+        const searchInput = document.getElementById('studentSearch');
+        const excelBtn = document.getElementById('excelBtn');
+
+        clearDetailPanel();
+
+        if (!schoolValue) {
+            document.getElementById('securityBox').style.display = 'flex';
+            document.getElementById('emptyBox').style.display = 'none';
+            document.getElementById('mektebTable').style.display = 'none';
+            searchInput.disabled = true;
+            excelBtn.disabled = true;
+            document.getElementById('stat-ok').textContent = '0';
+
+            return;
+        }
+
+        // Hər dəfə serverdən təzə data çək (keşdən oxuma)
+        try {
+            const r = await fetch('/api/komissiya/get-applications');
+            allApplications = await r.json();
+        } catch(e) {
+            allApplications = [];
+            alert('Serverə qoşulmaq mümkün olmadı!');
+            return;
+        }
+
+        searchInput.value = '';
+        searchInput.disabled = false;
+        excelBtn.disabled = false;
+        renderTable();
+        const muracietTab = document.getElementById('tab-muraciet');
+        if (muracietTab && muracietTab.classList.contains('active')) renderMuracietTab();
+
+    }
+
+    function renderTable() {
+        const selectedSchool = document.getElementById('schoolFilter').value;
+        const searchKeyword = document.getElementById('studentSearch').value.trim().toUpperCase();
+
+        let filtered = allApplications.filter(app => {
+            const schoolMatch = (app.schoolText || '').trim() === selectedSchool.trim();
+            const st = (app.decisionStatus || '');
+            const statusMatch = st === 'Qüvvədədir' || st === 'Təsdiqləndi' || st === 'Aktiv' || st.indexOf('vv') !== -1;
+            return schoolMatch && statusMatch;
+        });
+
+        if (searchKeyword) {
+            filtered = filtered.filter(app => (app.name || '').toUpperCase().includes(searchKeyword));
+        }
+
+        const tbody = document.getElementById('tableBody');
+        const secBox  = document.getElementById('securityBox');
+        const emptyBox = document.getElementById('emptyBox');
+        const table   = document.getElementById('mektebTable');
+
+        tbody.innerHTML = '';
+
+        if (filtered.length === 0) {
+            secBox.style.display = 'none';
+            emptyBox.style.display = 'flex';
+            table.style.display = 'none';
+            document.getElementById('stat-ok').textContent = '0';
+            return;
+        }
+
+        secBox.style.display = 'none';
+        emptyBox.style.display = 'none';
+        table.style.display = 'table';
+
+        let count = 0;
+        filtered.forEach(app => {
+            count++;
+            const tr = document.createElement('tr');
+            tr.className = 'student-row';
+            tr.onclick = () => activateRowAndShowDetails(app, tr);
+
+            const statusBadge = `<span class="pill" style="background:#dcfce7; color:#15803d;">Qüvvədədir</span>`;
+            const eduFormText = (app.educationForm && app.educationForm !== '-') ? app.educationForm : 'Qeyd edilməyib';
+
+            tr.innerHTML = `
+                <td><strong>${app.name || '-'}</strong></td>
+                <td style="font-family:monospace; font-weight:700;">${app.fin || '-'}</td>
+                <td>${app.year || '-'}</td>
+                <td>${app.type || '-'}</td>
+                <td>${statusBadge}</td>
+                <td style="color:#0284c7; font-weight:700;">${eduFormText}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('stat-ok').textContent = count;
+    }
+
+    function activateRowAndShowDetails(app, tr) {
+        selectedApp = app;
+        document.querySelectorAll('.student-row').forEach(r => r.classList.remove('active'));
+        tr.classList.add('active');
+
+        document.getElementById('emptyRight').style.display = 'none';
+        document.getElementById('detailPanel').style.display = 'block';
+        document.getElementById('printBtn').disabled = false;
+
+        document.getElementById('d-name').textContent    = app.name || '-';
+        document.getElementById('d-fin').textContent     = app.fin || '-';
+        document.getElementById('d-school').textContent  = app.schoolText || '-';
+        document.getElementById('d-year-type').textContent = (app.year || '-') + ' / ' + (app.type || '-');
+        document.getElementById('d-expiry').textContent  = app.expiryDate || 'Daimi';
+        document.getElementById('d-form').textContent    = app.educationForm || '-';
+
+        document.getElementById('d-decision').innerHTML = '<span class="pill" style="background:#e0f2fe; color:#0369a1; font-weight:700;">Qüvvədədir</span>';
+
+        const notesBox = document.getElementById('commissionBox');
+        const notesEl  = document.getElementById('d-notes');
+        if (app.notes && app.notes.trim()) {
+            notesEl.textContent = app.notes;
+            notesBox.style.display = 'block';
+        } else {
+            notesBox.style.display = 'none';
+        }
+    }
+
+    function clearDetailPanel() {
+        selectedApp = null;
+        document.getElementById('emptyRight').style.display = 'flex';
+        document.getElementById('detailPanel').style.display = 'none';
+        document.querySelectorAll('.student-row').forEach(r => r.classList.remove('active'));
+    }
+
+    function downloadDecisionPDF() {
+        if (!selectedApp) return;
+        const app = selectedApp;
+
+        // Komissiyadan yüklənmiş skan/PDF fayl varsa, onu endir
+        if (app.hasManualFile && app.manualFileData) {
+            const link = document.createElement("a");
+            link.href = app.manualFileData;
+            link.download = "Rəsmi_Qərar_" + (app.manualFileName || app.fin + ".pdf");
+            link.click();
+            return;
+        }
+
+        // Skan fayl yoxdursa, çap et
+        document.getElementById('p-school').textContent  = app.schoolText || '-';
+        document.getElementById('p-name').textContent    = app.name || '-';
+        document.getElementById('p-fin').textContent     = app.fin || '-';
+        document.getElementById('p-year').textContent    = app.year || '-';
+        document.getElementById('p-type').textContent    = app.type || '-';
+        document.getElementById('p-form').textContent    = app.educationForm || '-';
+        document.getElementById('p-expiry').textContent  = app.expiryDate || 'Daimi';
+        document.getElementById('p-notes').textContent   = app.notes || 'Komissiya tərəfindən hər hansı bir əlavə xüsusi rəy daxil edilməmişdir.';
+        window.print();
+    }
+
+    function exportExcel() {
+        const table = document.getElementById('mektebTable');
+        const schoolName = document.getElementById('schoolFilter').value;
+        const cleanName = schoolName.replace(/[^a-zA-Z0-9_əıöğçşƏİÖĞÇŞ]/g, "_");
+        const a = document.createElement('a');
+        a.href = 'data:application/vnd.ms-excel,\ufeff' + table.outerHTML.replace(/ /g,'%20');
+        a.download = `PTPK_Qerarlar_${cleanName}.xls`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    function exportExcelSingle() {
+        if (!selectedApp) return;
+        const app = selectedApp;
+        const rows = [
+            ['Şagirdin S.A.A.', 'FİN Kodu', 'Məktəb', 'Tədris İli', 'Müraciət Növü', 'Komissiya Statusu', 'Təhsil Forması', 'Müddət', 'Komissiya Rəyi'],
+            [
+                app.name || '-', app.fin || '-', app.schoolText || '-',
+                app.year || '-', app.type || '-', 'Qüvvədədir',
+                (app.educationForm && app.educationForm !== '-') ? app.educationForm : 'Təyin edilməyib',
+                (app.expiryDate && app.expiryDate !== '-') ? app.expiryDate : 'Daimi',
+                app.notes || '-'
+            ]
+        ];
+        let html = '<table border="1"><thead>';
+        html += '<tr>' + rows[0].map(h => `<th style="background:#0f172a;color:#fff;font-weight:bold;">${h}</th>`).join('') + '</tr>';
+        html += '</thead><tbody>';
+        html += '<tr>' + rows[1].map(c => `<td>${c}</td>`).join('') + '</tr>';
+        html += '</tbody></table>';
+        const cleanFin = (app.fin || 'unknown').replace(/[^a-zA-Z0-9]/g, '_');
+        const a = document.createElement('a');
+        a.href = 'data:application/vnd.ms-excel,\ufeff' + encodeURIComponent(html);
+        a.download = `PTPK_${cleanFin}_Qerar.xls`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
 </script>
 </body>
 </html>
